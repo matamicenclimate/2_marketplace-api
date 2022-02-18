@@ -29,8 +29,6 @@ jobs:
     if: "(branch = develop AND type = push)"
     services:
     - docker
-    before_script:
-    - cp ./compose/production/start ./start
     script:
     - VERSION=`node -p "require('./package.json').version"`
     - IMAGE_ID=registry.dekaside.com/$PROJECT_NAME/$REPO_NAME

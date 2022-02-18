@@ -3,7 +3,7 @@ version: "3.3"
 services:
   business:
     image: registry.dekaside.com/climatenft/climate-nft-marketplace-api:latest
-    command: ./start
+    command: yarn start
     env_file:
       - ./.env.backend
     networks:

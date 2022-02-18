@@ -1,0 +1,11 @@
+# Node modules
+/node_modules/
+
+# Output artifacts
+/dist/
+
+# Database stubs
+/*.db
+
+# Logging artifacts
+/*.log

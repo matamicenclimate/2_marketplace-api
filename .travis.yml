@@ -1,3 +1,4 @@
+---
 os: linux
 dist: bionic
 language: node_js
@@ -5,7 +6,7 @@ node_js:
 - lts/*
 notifications:
   slack:
-    secure: sfm6Y0fGJvyH3cpFRldJ45To7DQfmJpVEWFSbvYvQrAAgCoLsdP6c4jnLcvSFqmyYTrbeJz4dYKEp9E0Uvjx+8BiNii2fn8cel1HNoDsudxsotu6+CieSA9Qo9b74KSEVVRDeNV4dXTz5cwTPq8UOaWNAtYNdRi5tycHKu4WiSSqGvgohBvmXM74cD6cQWsUb2Y1OTmzepLtotly4nGzoV0RQ6WBDaftK72SaoyAF7GIDmYyMr1EKlb87pejFvfXI8zpPeLVdJNjjMF4IFzFysjVdvbR4XaKVWD3Uip+8SCvTbH85NaKrv1lwNW0scqnrOyeDrcUntgixARVcUVOqCwhPtAaOPZkoHrhS5nsnbowI+Fp6bLlPxzJR9utozLZMARmh+LMA7inQE4jzXE8ya1+s0EmAC5ofrMHbmzAdYHLil25ALQrj7abIwgRknG+LaUnQCFKtz6liF91dC+WpvHflnLFI9ehBBeVXpQWE1o0xPNbnmqRkyDyHjqcOFYZvmRxvbcS42B3d9X8ojxwME/fI3zuHc+YaBFObzt6cHfOz0vtVAySqz/P0EvHl7VKOc3nfGn6l5ciRe82Kji5mQAUHAvKBto6mHEYD13ilOEEE9gm4PfO2CdU443QfAOcKwS3mIoCuoZ+uL9cnC7FNRZl0E2CoQmtUJ9iVP//m00=
+    secure: Ak97VFl3u03AG7l5nqoFGOwkar47goqTjq+lPYRKfeRWpQHEPZ5ROvJxTUYdl5V714M984qT3MM52O1Q9LQs69QwZa6wgrm29kUD4x91aB9lII39epV1oSp3CRR3F1uDsc32Sz/CM8RHC38GHjdFohSfgN1OylO/WWW8lChlQs0ZHHYkHKQ92AGdmEiRx055RmLuhq1s0cIr9uIlcQdKJbU1JLA2wRXmzMIM0S9auPvw2cNQwpk4hTtUGCGU9+QBAqDx9QWsAZWJIXuKxR69/65tuB0agQ8cDRDXwMK5XJUw1VVFyyZc4FQoKDMnmuKxCpwl5S99TlerDViGSBUVe7W3DVL5LDbO/SbqrmdFqwXLMl9tJfPL2V4bwddWoCUQOqAcvDNaIhWjtCRIZAk0HWxanPC+xD/cO1AQzDORVVmWCq+TsdfIk4y5v7qvJXd1Yb+59Zx58WtAM6TRmew/qHh8oMIksQsieyKvYkdKvVJHIblJkVnUgD/133HGrmYRwJWMleTi8BQ/T3i3GIm70NqG/giQ8V2vm6ouVWZiX5Uvl+qnFgHFI+nDUzZwxVISUGA+C112jTrvSrmcS/GlHjzjz1Hqa3SaH7wSkyEGom1GGOkgRrzi4zdxi2QkAinWGJL0cCNfBRCTNfedARk5FOnmJamSfh0HmREW2JeSG3w=
     template:
     - "*Project:* %{repository_name}"
     - "*Build:* <%{build_url}|#%{build_number}> (<%{compare_url}|%{commit}>) of %{repository_slug}@%{branch}"
@@ -19,11 +20,13 @@ env:
 jobs:
   include:
   - stage: test
-    if: (branch = develop AND (type = pull_request OR type = push))
+    if: "(branch = develop AND (type = pull_request OR type = push))"
+    before_script:
+    - cp .env.example .env
     script:
     - yarn test
   - stage: build and push latest
-    if: (branch = develop AND type = push)
+    if: "(branch = develop AND type = push)"
     services:
     - docker
     script:
@@ -36,7 +39,4 @@ jobs:
       --password-stdin
     - docker push $IMAGE_ID:$VERSION
     - docker push $IMAGE_ID:latest
-  # - stage: deploy
-  #   if: (branch = develop AND type = push)
-  #   script:
-  #   - curl -X POST "${SERVICE_WEBHOOK_STAGING}"
+

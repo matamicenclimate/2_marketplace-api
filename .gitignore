@@ -9,3 +9,6 @@
 
 # Logging artifacts
 /*.log
+
+# Env File
+.env

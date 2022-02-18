@@ -1,0 +1,42 @@
+os: linux
+dist: bionic
+language: node_js
+node_js:
+- lts/*
+notifications:
+  slack:
+    secure: sfm6Y0fGJvyH3cpFRldJ45To7DQfmJpVEWFSbvYvQrAAgCoLsdP6c4jnLcvSFqmyYTrbeJz4dYKEp9E0Uvjx+8BiNii2fn8cel1HNoDsudxsotu6+CieSA9Qo9b74KSEVVRDeNV4dXTz5cwTPq8UOaWNAtYNdRi5tycHKu4WiSSqGvgohBvmXM74cD6cQWsUb2Y1OTmzepLtotly4nGzoV0RQ6WBDaftK72SaoyAF7GIDmYyMr1EKlb87pejFvfXI8zpPeLVdJNjjMF4IFzFysjVdvbR4XaKVWD3Uip+8SCvTbH85NaKrv1lwNW0scqnrOyeDrcUntgixARVcUVOqCwhPtAaOPZkoHrhS5nsnbowI+Fp6bLlPxzJR9utozLZMARmh+LMA7inQE4jzXE8ya1+s0EmAC5ofrMHbmzAdYHLil25ALQrj7abIwgRknG+LaUnQCFKtz6liF91dC+WpvHflnLFI9ehBBeVXpQWE1o0xPNbnmqRkyDyHjqcOFYZvmRxvbcS42B3d9X8ojxwME/fI3zuHc+YaBFObzt6cHfOz0vtVAySqz/P0EvHl7VKOc3nfGn6l5ciRe82Kji5mQAUHAvKBto6mHEYD13ilOEEE9gm4PfO2CdU443QfAOcKwS3mIoCuoZ+uL9cnC7FNRZl0E2CoQmtUJ9iVP//m00=
+    template:
+    - "*Project:* %{repository_name}"
+    - "*Build:* <%{build_url}|#%{build_number}> (<%{compare_url}|%{commit}>) of %{repository_slug}@%{branch}"
+    - "*Duration:* %{duration}"
+    - "*Result:* %{result}"
+    - "*Message:* %{message}"
+env:
+  global:
+  - PROJECT_NAME=climatenft
+  - REPO_NAME=climate-nft-marketplace-api
+jobs:
+  include:
+  - stage: test
+    if: (branch = develop AND (type = pull_request OR type = push))
+    script:
+    - yarn test
+  - stage: build and push latest
+    if: (branch = develop AND type = push)
+    services:
+    - docker
+    script:
+    - VERSION=`node -p "require('./package.json').version"`
+    - IMAGE_ID=registry.dekaside.com/$PROJECT_NAME/$REPO_NAME
+    - cp ./compose/production/start ./start
+    - docker build . -f ./compose/production/Dockerfile --tag $IMAGE_ID:latest --tag
+      $IMAGE_ID:$VERSION
+    - echo "$HARBOR_PASSWORD" | docker login registry.dekaside.com --username "$HARBOR_USERNAME"
+      --password-stdin
+    - docker push $IMAGE_ID:$VERSION
+    - docker push $IMAGE_ID:latest
+  # - stage: deploy
+  #   if: (branch = develop AND type = push)
+  #   script:
+  #   - curl -X POST "${SERVICE_WEBHOOK_STAGING}"

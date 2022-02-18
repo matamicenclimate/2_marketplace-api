@@ -7,7 +7,7 @@ services:
     env_file:
       - ./.env.backend
     networks:
-      - climate-nft-marketplace-api
+      - climate-nft-marketplace
 
   business-proxy:
     image: registry.dekaside.com/library/nginx:latest
@@ -22,7 +22,7 @@ services:
       - business
     networks:
       - traefik-public
-      - climate-nft-marketplace-api
+      - climate-nft-marketplace
     deploy:
       labels:
         - traefik.enable=true
@@ -40,4 +40,4 @@ services:
 networks:
   traefik-public:
     external: true
-  climate-nft-marketplace-api:
+  climate-nft-marketplace:

@@ -29,14 +29,18 @@ jobs:
     if: "(branch = develop AND type = push)"
     services:
     - docker
+    before_script:
+    - cp ./compose/production/start ./start
     script:
     - VERSION=`node -p "require('./package.json').version"`
     - IMAGE_ID=registry.dekaside.com/$PROJECT_NAME/$REPO_NAME
-    - cp ./compose/production/start ./start
     - docker build . -f ./compose/production/Dockerfile --tag $IMAGE_ID:latest --tag
       $IMAGE_ID:$VERSION
     - echo "$HARBOR_PASSWORD" | docker login registry.dekaside.com --username "$HARBOR_USERNAME"
       --password-stdin
     - docker push $IMAGE_ID:$VERSION
     - docker push $IMAGE_ID:latest
-
+  - stage: deploy
+    if: (branch = develop AND type = push)
+    script:
+    - curl -X POST "${SERVICE_WEBHOOK_STAGING}"

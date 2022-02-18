@@ -8,7 +8,7 @@ RUN apk add --update \
 && rm -rf /var/cache/apk/*
 
 COPY ./package*.json ./
-RUN npm install
+RUN yarn
 
 COPY . .
 

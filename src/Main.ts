@@ -23,9 +23,9 @@ export default class Main {
   
   static setup() {
     const app = new Application()
-    app.use(cors())
     app.use(handleErrors)
     useKoaServer(app, {
+      cors: true,
       defaultErrorHandler: false,
       controllers: [`${__dirname}/controllers/*.ts`],
     })

@@ -2,9 +2,9 @@ import './InjectContainers'
 import Application from 'koa'
 import Entry from 'ts-entry-point'
 import { useKoaServer } from 'routing-controllers'
-import cors from '@koa/cors'
 import { handleErrors } from './middlewares/handleErrors'
 import config from './config/default'
+import { cors } from './middlewares/cors'
 
 @Entry
 export default class Main {
@@ -23,6 +23,7 @@ export default class Main {
   
   static setup() {
     const app = new Application()
+    app.use(cors)
     app.use(handleErrors)
     useKoaServer(app, {
       cors: true,

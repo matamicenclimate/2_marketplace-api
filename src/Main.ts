@@ -23,8 +23,8 @@ export default class Main {
   
   static setup() {
     const app = new Application()
-    app.use(cors)
     app.use(handleErrors)
+    app.use(cors)
     useKoaServer(app, {
       cors: true,
       defaultErrorHandler: false,

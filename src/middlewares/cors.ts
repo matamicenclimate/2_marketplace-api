@@ -1,9 +1,8 @@
-import { Context, Next } from "koa"
-
-export function cors (ctx: Context, next: Next) {
-  ctx.res.header('Access-Control-Allow-Origin', '*')
-  ctx.res.header('Access-Control-Allow-Methods', '*')
-  ctx.res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
-  next()
+import Koa from 'koa'
+export async function cors(ctx: Koa.Context, next: Koa.Next) {
+  ctx.res.setHeader('Access-Control-Allow-Origin', '*')
+  ctx.res.setHeader('Access-Control-Allow-Methods', '*')
+  ctx.res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
+  await next()
 }
 

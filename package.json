@@ -18,13 +18,13 @@
     "typescript": "^4.5.5"
   },
   "dependencies": {
+    "@koa/cors": "^3.1.0",
     "@octantis/option": "^1.2.0",
     "body-parser": "^1.19.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
     "dotenv": "^16.0.0",
     "express": "^4.17.2",
-    "kcors": "^2.2.2",
     "multer": "^1.4.4",
     "reflect-metadata": "^0.1.13",
     "routing-controllers": "^0.9.0",

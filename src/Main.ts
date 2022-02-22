@@ -2,7 +2,7 @@ import './InjectContainers'
 import Application from 'koa'
 import Entry from 'ts-entry-point'
 import { useKoaServer } from 'routing-controllers'
-const cors = require('@koa/cors');
+import cors from '@koa/cors'
 import { handleErrors } from './middlewares/handleErrors'
 import config from './config/default'
 

@@ -2,9 +2,15 @@
 
 Api for climate nft marketplace
 
-## Install dependencies
+## Prepare your API
 
-`yarn install`
+  ### Create your `.env` file
+
+  `cp .env.example .env`
+
+  ### Install dependencies
+
+  `yarn`
 
 ## Start app
 

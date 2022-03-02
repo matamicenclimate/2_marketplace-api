@@ -48,21 +48,11 @@ export default class IpfsService {
 	} = data
 
 	const metadata: NFTMetadata = getFileMetadata(file, title, author, description)
-	const result: any = await storage.store({
-    name: 'Pinpie',
-    description: 'Pin is not delicious beef!',
-    image: new File(
-      [
-        await fs.promises.readFile('/Users/sergio/Documents/workspace/deka/climate-nft-marketplace-api/test/testSupport/ipfs.png')
-      ],
-      '/Users/sergio/Documents/workspace/deka/climate-nft-marketplace-api/test/testSupport/ipfs.png',
-      { type: 'image/png' }
-    ),
-  })
+	const result: any = await storage.store({...metadata, image:file})
 	.catch(error => {
 		console.log(error.message)
 		console.log(error.stack)
-	})
+	}) 
 
   console.log('IPFS URL for the metadata:', result.url)
   console.log('metadata.json contents:\n', result.data)

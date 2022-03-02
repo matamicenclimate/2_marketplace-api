@@ -1,7 +1,10 @@
-import { Get, Post, BodyParam, UploadedFile, JsonController, Param } from 'routing-controllers'
+import { Post, BodyParam, UploadedFile, JsonController, Req } from 'routing-controllers'
 import { Inject, Service } from 'typedi'
 import IpfsService from '../services/IpfsService'
-import { IpfsRequestData } from '../interfaces'
+import { IpfsRequestData, IpfsStorageInterface } from '../interfaces'
+import {
+  IpfsStorage
+} from '../infrastructure/IpfsStorage'
 
 @Service()
 @JsonController('/api')
@@ -12,8 +15,17 @@ export default class IpfsController {
 
 
 	@Post('/v1/ipfs')
-  async invoke(@BodyParam('data') data: IpfsRequestData, @UploadedFile('file') file: File) {
-    return this.service.execute(data, file)
+  async invoke(
+    @BodyParam('data') data: IpfsRequestData,
+    @UploadedFile('file') file: any
+  ) {
+
+    const adapters: {
+      storage: IpfsStorageInterface
+    } = {
+      storage: new IpfsStorage()
+    }
+    return this.service.execute(adapters, data, file)
   }
 
 }

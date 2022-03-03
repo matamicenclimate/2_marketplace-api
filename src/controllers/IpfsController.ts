@@ -20,6 +20,7 @@ export default class IpfsController {
     @BodyParam('data') data: any,
     @UploadedFile('file') file: any
   ) {
+    if (typeof data === 'string') data = JSON.parse(data)
     const adapters: {
       storage: IpfsStorageInterface,
       logger: CustomLogger

@@ -27,14 +27,14 @@ export interface Arc69Interface {
 
 @Service()
 export default class IpfsService {
-  async execute(adapters, data: string, file: any) {
+  async execute(adapters, data: IpfsRequestData, file: any) {
 		const { storage, logger } = adapters
 		logger.info('Execute upload ipfs service', { ifpsRequestData: data })
 		const {
 			title,
 			author,
 			description
-		}: IpfsRequestData = JSON.parse(data)
+		} = data
 		
 		const metadata: NftMetadataInterface = new NftMetadata(file, title, author, description).serialize()
 		storage.prepare(metadata, file)

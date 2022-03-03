@@ -33,6 +33,7 @@ describe('IPFS', () => {
         expect(response.statusCode).to.eq(SUCCESS)
         expect(response.body.ipnft).to.be.eq(nftStorageResponse.ipnft)
         expect(response.body.url).to.be.eq(nftStorageResponse.url)
+        expect(response.body.image_url).to.be.eq('https://ipfs.io/ipfs/bafybeic7bjx2tjm2aqug3hcr7gbylzsnjiakhgwkbznurt2r3rm7ye3z74/ipfs.png')
         expect(response.body.data).to.deep.eq(nftStorageResponse.data)
         expect(response.body.arc69.standard).to.be.eq('arc69')
         expect(response.body.arc69.description).to.be.eq(nftStorageResponse.data.description)

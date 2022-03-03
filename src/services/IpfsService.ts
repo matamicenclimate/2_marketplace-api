@@ -28,7 +28,8 @@ export interface Arc69Interface {
 @Service()
 export default class IpfsService {
   async execute(adapters, data: IpfsRequestData, file: any) {
-		const { storage } = adapters
+		const { storage, logger } = adapters
+		logger.info('Execute upload ipfs service', { ifpsRequestData: data })
 		const {
 			title,
 			author,
@@ -39,6 +40,7 @@ export default class IpfsService {
 		storage.prepare(metadata, file)
 		const result = await storage.store()
 		result.arc69 = new Arc69Metadata(description, result.data.image.href, result.data.properties).serialize()
+
 		return result
   }
 }

@@ -40,6 +40,7 @@ export default class IpfsService {
 		storage.prepare(metadata, file)
 		const result = await storage.store()
 		result.arc69 = new Arc69Metadata(description, result.data.image.href, result.data.properties).serialize()
+    result.image_url = result.data.image.href.replace('ipfs://', 'https://ipfs.io/ipfs/')
 
 		return result
   }

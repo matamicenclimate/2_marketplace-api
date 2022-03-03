@@ -17,7 +17,7 @@ export default class IpfsController {
 
 	@Post('/v1/ipfs')
   async invoke(
-    @BodyParam('data') data: IpfsRequestData,
+    @BodyParam('data') data: any,
     @UploadedFile('file') file: any
   ) {
     const adapters: {

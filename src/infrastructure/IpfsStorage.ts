@@ -5,7 +5,6 @@ import ServiceException from './errors/ServiceException'
 
 class IpfsStorage {
   private token
-  private ifpsData: any
   private ipfsData: any
   public storage: any
   private logger: CustomLogger
@@ -30,7 +29,7 @@ class IpfsStorage {
 
   prepare (metadata, file) {
     try {
-      this.ifpsData = {
+      this.ipfsData = {
         ...metadata,
         image: new File(
           [
@@ -38,8 +37,8 @@ class IpfsStorage {
           ],
           file.originalname,
           { type: file.mimetype }
-          )
-        }
+        )
+      }
     } catch (error) {
       const message = `Instanciate NFTStorage 'File' class error: ${error.message}`
       this.logger.error(message, { stack: error.stack })
@@ -52,7 +51,7 @@ class IpfsStorage {
       return await this.storage.store(this.ipfsData)
     } catch (error) {
       const message = `Calling store of 'NFTStorage' error: ${error.message}`
-      this.logger.error(message, { stack: error.stack })
+      this.logger.error(message, { stack: error.stack, ipfsData: this.ipfsData })
       throw new ServiceException(message)
     }
   }

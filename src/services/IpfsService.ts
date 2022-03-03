@@ -1,8 +1,9 @@
 import { Service } from 'typedi'
 import { IpfsRequestData } from '../interfaces'
 import NftMetadata from '../domain/NftMetadata'
+import Arc69Metadata from '../domain/Arc69Metadata'
 
-export type NftMetadataInterface = {
+export interface NftMetadataInterface {
 	name: string
 	description: string
 	image: string
@@ -16,7 +17,13 @@ export type NftMetadataInterface = {
 	}
 }
 
-
+export interface Arc69Interface {
+	standard: string
+	description: string
+	external_url: string
+	mime_type: string
+	properties: unknown
+}
 
 @Service()
 export default class IpfsService {
@@ -30,6 +37,8 @@ export default class IpfsService {
 		
 		const metadata: NftMetadataInterface = new NftMetadata(file, title, author, description).serialize()
 		storage.prepare(metadata, file)
-		return storage.store()
+		const result = await storage.store()
+		result.arc69 = new Arc69Metadata(description, result.data.image.href, result.data.properties).serialize()
+		return result
   }
 }

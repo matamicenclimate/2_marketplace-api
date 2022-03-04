@@ -24,7 +24,7 @@ export default class Main {
   }
   
   static setup() {
-    const swaggerDocument: any = swagger.loadDocumentSync('/Users/sergio/Documents/workspace/deka/climate-nft-marketplace-api/src/public/api.yaml');
+    const swaggerDocument: any = swagger.loadDocumentSync('./src/public/api.yaml');
     const app = new Application()
     app.use(handleErrors)
     app.use(cors)

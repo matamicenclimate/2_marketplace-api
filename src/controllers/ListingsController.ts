@@ -1,6 +1,11 @@
 import { Get, JsonController } from 'routing-controllers'
 import { Inject, Service } from 'typedi'
 
+// ONLY DEV - Prints swagger json
+// import { getMetadataArgsStorage } from 'routing-controllers'
+// import { routingControllersToSpec } from 'routing-controllers-openapi'
+// import util from 'util'
+
 @Service()
 @JsonController('/api')
 export default class ListingsController {
@@ -46,3 +51,8 @@ export default class ListingsController {
     ]
   }
 }
+
+// ONLY DEV - Prints swagger json
+// const storage = getMetadataArgsStorage()
+// const spec = routingControllersToSpec(storage)
+// console.log(util.inspect(spec, false, null, true /* enable colors */))

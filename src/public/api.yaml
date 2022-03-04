@@ -1,0 +1,92 @@
+---
+components:
+  schemas: {}
+info:
+  title: Climate NFT marketplace api open API
+  version: 1.0.0
+openapi: 3.0.0
+paths:
+  "/api/v1/healthz":
+    get:
+      operationId: HealthzController.invoke
+      responses:
+        '200':
+          content:
+            application/json: {}
+          description: Successful response
+        "400":
+          content:
+            application/json: {}
+          description: "Server Exception"
+        "500":
+          content:
+            application/json: {}
+          description: "Server Error"
+      summary: Healthz api endpoint
+      tags:
+        - Healthz
+  "/api/v1/ipfs":
+    post:
+      summary: "Uploads an image to IPFS"
+      description: ""
+      operationId: IpfsController.invoke
+      consumes:
+        - "multipart/form-data"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Upload file and data"
+          required: true
+          type: "object"
+          schema:
+            $ref: "#/definitions/Ipfs"
+      responses:
+        '200':
+          content:
+            application/json: {}
+          description: Successful response
+        "400":
+          content:
+            application/json: {}
+          description: "Server Exception"
+        "500":
+          content:
+            application/json: {}
+          description: "Server Error"
+      tags:
+        - Ipfs
+  "/api/v1/nfts":
+    get:
+      operationId: ListingsController.invoke
+      responses:
+        '200':
+          content:
+            application/json: {}
+          description: Successful response
+        "400":
+          content:
+            application/json: {}
+          description: "Server Exception"
+        "500":
+          content:
+            application/json: {}
+          description: "Server Error"
+      summary: Listing NFT
+      tags:
+        - Listings
+
+definitions:
+  Ipfs:
+    type: "object"
+    properties:
+      data:
+        type: "string"
+        required: true
+        description: "JSON string with title, author and description"
+      file:
+        type: "file"
+        required: true
+        in: "formData"
+        description: "file to upload"

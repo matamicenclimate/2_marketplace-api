@@ -2,7 +2,7 @@ import { Post, BodyParam, UploadedFile, JsonController, Req } from 'routing-cont
 import { Inject, Service } from 'typedi'
 import IpfsService from '../services/IpfsService'
 import CustomLogger from '../infrastructure/CustomLogger'
-import { IpfsRequestData, IpfsStorageInterface } from '../interfaces'
+import { IpfsStorageInterface } from '../interfaces'
 import {
   IpfsStorage
 } from '../infrastructure/IpfsStorage'
@@ -30,5 +30,4 @@ export default class IpfsController {
     }
     return this.service.execute(adapters, data, file)
   }
-
 }

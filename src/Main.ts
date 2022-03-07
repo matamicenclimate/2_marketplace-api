@@ -7,6 +7,7 @@ import config from './config/default'
 import { cors } from './middlewares/cors'
 import { ui, validate } from 'swagger2-koa'
 import * as swagger from 'swagger2'
+import CustomLogger from './infrastructure/CustomLogger'
 
 @Entry
 export default class Main {
@@ -19,8 +20,8 @@ export default class Main {
   static readonly port = config.port
 
   private static done() {
-    console.log(`Listening on port ${Main.port}!`)
-    console.log(`Go and test the API!`)
+    const logger = new CustomLogger()
+    logger.info(`Listening on port ${Main.port}!`)
   }
   
   static setup() {
@@ -31,7 +32,6 @@ export default class Main {
     app.use(ui(swaggerDocument, '/api/v1/docs'))
     // app.use(validate(swaggerDocument))
 
-console.log("API started");
     useKoaServer(app, {
       cors: true,
       defaultErrorHandler: false,

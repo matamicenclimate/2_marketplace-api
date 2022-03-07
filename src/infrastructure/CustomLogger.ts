@@ -6,15 +6,19 @@ import LoggerInterface from './LoggerInterface'
 export default class CustomLogger implements LoggerInterface {
   private logger: Logger
   constructor () {
-    this.logger = logger()
+    this.logger = logger({
+      transport: {
+        target: 'pino-pretty'
+      },
+    })
   }
 
-  info (message: string, data: any) {
+  info (message: string, data: any = {}) {
     const child = this.logger.child(data)
     if(process.env.NODE_ENV !== 'testing') child.info(message)
   }
 
-  error (message: string, data: any) {
+  error (message: string, data: any = {}) {
     const child = this.logger.child(data)
     if(process.env.NODE_ENV !== 'testing') child.error(message)
   }

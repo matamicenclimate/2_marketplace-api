@@ -12,3 +12,7 @@
 
 # Env File
 .env
+
+# Editors
+
+.vscode

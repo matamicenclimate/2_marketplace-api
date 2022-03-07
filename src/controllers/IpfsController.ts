@@ -1,4 +1,4 @@
-import { Post, BodyParam, UploadedFile, JsonController, Req } from 'routing-controllers'
+import { Post, BodyParam, UploadedFile, Controller } from 'routing-controllers'
 import { Inject, Service } from 'typedi'
 import IpfsService from '../services/IpfsService'
 import CustomLogger from '../infrastructure/CustomLogger'
@@ -8,7 +8,7 @@ import {
 } from '../infrastructure/IpfsStorage'
 
 @Service()
-@JsonController('/api')
+@Controller('/api')
 export default class IpfsController {
   @Inject()
   private readonly service!: IpfsService

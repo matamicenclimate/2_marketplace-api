@@ -1,0 +1,26 @@
+@startuml useCases
+left to right direction
+
+actor UploadToIPFS as utipfs
+package IpfsController {
+  usecase IpfsControllerUC as "Inject adapters with metadate and file to upload
+  Use 'IpfsService execute' method"
+}
+package IpfsService {
+  usecase IpfsServiceUC as "Store in NFT.Storage within an adapter and Arc69 metadata
+  uploaded file"
+}
+utipfs --> IpfsControllerUC
+IpfsControllerUC --> IpfsServiceUC
+
+actor Healthz as healthz
+package HealthzController {
+  usecase HealthzControllerUC as "Ensure app is on healthz controler
+  Use 'HealthzService execute' method"
+}
+package HealthzService {
+  usecase HealthzServiceUC as "status on app to healthz"
+}
+healthz --> HealthzControllerUC
+HealthzControllerUC --> HealthzServiceUC
+@enduml

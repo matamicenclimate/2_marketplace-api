@@ -19,3 +19,8 @@ Api for climate nft marketplace
 ## Run tests
 
 `yarn test`
+
+
+## Use Cases endpoints
+
+![Use Cases](./docs/images/useCases.png)

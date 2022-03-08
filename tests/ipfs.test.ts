@@ -21,7 +21,7 @@ describe('IPFS', () => {
 			})
 		});
     const body = {
-      title: 'Upload File',
+      title: 'Title - Upload File',
       description: 'First file description',
       author: 'Author of First upload file'
     }
@@ -33,13 +33,14 @@ describe('IPFS', () => {
         expect(response.statusCode).to.eq(SUCCESS)
         expect(response.body.ipnft).to.be.eq(nftStorageResponse.ipnft)
         expect(response.body.url).to.be.eq(nftStorageResponse.url)
+        expect(response.body.title).to.be.eq(nftStorageResponse.title)
         expect(response.body.image_url).to.be.eq('https://cloudflare-ipfs.com/ipfs/bafybeic7bjx2tjm2aqug3hcr7gbylzsnjiakhgwkbznurt2r3rm7ye3z74/ipfs.png')
-        expect(response.body.data).to.deep.eq(nftStorageResponse.data)
+        expect(response.body.arc69).to.deep.eq(nftStorageResponse.arc69)
         expect(response.body.arc69.standard).to.be.eq('arc69')
-        expect(response.body.arc69.description).to.be.eq(nftStorageResponse.data.description)
-        expect(response.body.arc69.external_url).to.be.eq(nftStorageResponse.data.image.href)
-        expect(response.body.arc69.mime_type).to.be.eq(nftStorageResponse.data.properties.file.type)
-        expect(response.body.arc69.properties).to.deep.eq(nftStorageResponse.data.properties)
+        expect(response.body.arc69.description).to.be.eq(nftStorageResponse.arc69.description)
+        expect(response.body.arc69.mime_type).to.be.eq(nftStorageResponse.arc69.properties.file.type)
+        expect(response.body.arc69.properties).to.deep.eq(nftStorageResponse.arc69.properties)
+        expect(response.body.data).to.deep.eq(nftStorageResponse.data)
       }).then(done).catch(done)
   })
   describe('Errors', () => {

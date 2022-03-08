@@ -1,7 +1,23 @@
 export const nftStorageResponse = {
 	ipnft: 'bafyreie3f76qjzelgeboxr3rikzfi6iabs2xj7nt4qfqmflaauepka7opm',
 	url: 'ipfs://bafyreie3f76qjzelgeboxr3rikzfi6iabs2xj7nt4qfqmflaauepka7opm/metadata.json',
-	data: {
+  arc69: {
+    standard: 'arc69',
+    description: 'First file description',
+    external_url: 'ipfs://bafybeibnz5b3qeokxal45f4q5nmeigiehkhr3yev3grolpzuflkwusw4m4/Screenshot%20from%202022-03-04%2011-20-39.png',
+    mime_type: 'image/png',
+    properties: {
+        file: {
+           name: 'Screenshot from 2022-03-04 11-20-39.png',
+            type: 'image/png',
+            size: 1034
+        },
+        artist: 'Author of First upload file'
+    }
+  },
+  image_url: 'https://cloudflare-ipfs.com/ipfs/bafybeibnz5b3qeokxal45f4q5nmeigiehkhr3yev3grolpzuflkwusw4m4/Screenshot%20from%202022-03-04%2011-20-39.png',
+  title: 'Title - Upload File',
+  data: {
 		name: 'Upload File',
 		description: 'First file description',
 		properties: {

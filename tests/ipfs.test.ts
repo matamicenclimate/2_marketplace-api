@@ -39,7 +39,9 @@ describe('IPFS', () => {
         expect(response.body.arc69.standard).to.be.eq('arc69')
         expect(response.body.arc69.description).to.be.eq(nftStorageResponse.arc69.description)
         expect(response.body.arc69.mime_type).to.be.eq(nftStorageResponse.arc69.properties.file.type)
-        expect(response.body.arc69.properties).to.deep.eq(nftStorageResponse.arc69.properties)
+        expect(response.body.arc69.properties.file).to.deep.eq(nftStorageResponse.arc69.properties.file)
+        expect(response.body.arc69.properties.artist).to.be.eq(nftStorageResponse.arc69.properties.artist)
+        expect(Boolean(response.body.arc69.properties.date)).to.be.true
         expect(response.body.data).to.deep.eq(nftStorageResponse.data)
       }).then(done).catch(done)
   })

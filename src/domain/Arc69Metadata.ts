@@ -12,7 +12,10 @@ export default class Arc69Metadata {
 		this.description = description
 		this.external_url = url
 		this.mime_type = properties.file.type
-		this.properties = properties
+		this.properties = {
+			...properties,
+			date: new Date().toISOString()
+		} 
   }
   serialize(): Arc69Interface {
 		return {

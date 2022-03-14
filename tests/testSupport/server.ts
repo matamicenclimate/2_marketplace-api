@@ -8,8 +8,6 @@ let server: Server
 import Main from '../../src/Main'
 if (!server) {
   const { app } = Main.setup()
-  server = app.listen((err) => {
-    if (err) console.log(err.message)
-  })
+  server = app.listen() 
 }
 export default server

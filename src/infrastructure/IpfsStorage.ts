@@ -8,7 +8,7 @@ class IpfsStorage {
   private ipfsData: any
   public storage: any
   private logger: CustomLogger
-  constructor (logger) {
+  constructor(logger: CustomLogger) {
     this.token = config.nft.storage.token
     this.storage = null
     this.ipfsData = null
@@ -16,7 +16,7 @@ class IpfsStorage {
     this.invoke()
   }
 
-  invoke () {
+  invoke() {
     try {
       const token = this.token
       this.storage = new NFTStorage({ token })
@@ -27,7 +27,7 @@ class IpfsStorage {
     }
   }
 
-  prepare (metadata, file) {
+  prepare(metadata: any, file: { buffer: BlobPart; originalname: string; mimetype: any }) {
     try {
       this.ipfsData = {
         ...metadata,
@@ -60,4 +60,3 @@ class IpfsStorage {
 export {
   IpfsStorage
 }
-	

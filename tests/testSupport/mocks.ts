@@ -12,7 +12,11 @@ export const nftStorageResponse = {
             type: 'image/png',
             size: 1034
         },
-        artist: 'Author of First upload file'
+        artist: 'Author of First upload file',
+        cause: 'Cause property',
+        cause_percentage: 50,
+        prop1: 'Prop1 property',
+        prop2: 'Prop2 property',
     }
   },
   image_url: 'https://cloudflare-ipfs.com/ipfs/bafybeibnz5b3qeokxal45f4q5nmeigiehkhr3yev3grolpzuflkwusw4m4/Screenshot%20from%202022-03-04%2011-20-39.png',

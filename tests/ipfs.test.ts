@@ -9,6 +9,17 @@ import { nftStorageResponse } from './testSupport/mocks'
 
 const SUCCESS = 200
 const BAD_REQUEST = 400
+const body = {
+  title: 'Title - Upload File',
+  description: 'First file description',
+  author: 'Author of First upload file',
+  properties: {
+    cause: 'Cause property',
+    cause_percentage: 50,
+    prop1: 'Prop1 property',
+    prop2: 'Prop2 property'
+  }
+}
 
 beforeEach(() => {
   sinon.restore()
@@ -20,11 +31,7 @@ describe('IPFS', () => {
 				resolve(nftStorageResponse as any)
 			})
 		});
-    const body = {
-      title: 'Title - Upload File',
-      description: 'First file description',
-      author: 'Author of First upload file'
-    }
+
     request(server)
       .post(`/api/${process.env.RESTAPI_VERSION}/ipfs`)
       .field('data', JSON.stringify(body))
@@ -41,6 +48,9 @@ describe('IPFS', () => {
         expect(response.body.arc69.mime_type).to.be.eq(nftStorageResponse.arc69.properties.file.type)
         expect(response.body.arc69.properties.file).to.deep.eq(nftStorageResponse.arc69.properties.file)
         expect(response.body.arc69.properties.artist).to.be.eq(nftStorageResponse.arc69.properties.artist)
+        expect(response.body.arc69.properties.cause).to.be.eq(nftStorageResponse.arc69.properties.cause)
+        expect(response.body.arc69.properties.cause_percentage).to.be.eq(nftStorageResponse.arc69.properties.cause_percentage)
+        expect(response.body.arc69.properties.prop1).to.be.eq(nftStorageResponse.arc69.properties.prop1)
         expect(Boolean(response.body.arc69.properties.date)).to.be.true
         expect(response.body.data).to.deep.eq(nftStorageResponse.data)
       }).then(done).catch(done)
@@ -50,11 +60,7 @@ describe('IPFS', () => {
       sinon.stub(NFTStorage.prototype, 'store').callsFake(() => {
         throw new Error('Cannot store')
       });
-      const body = {
-        title: 'Upload File',
-        description: 'First file description',
-        author: 'Author of First upload file'
-      }
+
       request(server)
         .post(`/api/${process.env.RESTAPI_VERSION}/ipfs`)
         .field('data', JSON.stringify(body))
@@ -68,6 +74,31 @@ describe('IPFS', () => {
             expect(response.body.message).to.be.eq("Calling store of 'NFTStorage' error: Cannot store")
             expect(response.body.code).to.eq(BAD_REQUEST)
             expect(Boolean(response.body.stack)).to.be.true
+          }
+        }).then(done).catch(done)
+    })
+  
+    it('on invalid reques params', (done) => {
+      const wrongBody = {
+        title: 'Title - Upload File',
+        description: 'First file description',
+        author: 'Author of First upload file',
+        properties: {
+          cause: 20,
+          cause_percentage: 'should be a number',
+        }
+      }
+
+      request(server)
+        .post(`/api/${process.env.RESTAPI_VERSION}/ipfs`)
+        .field('data', JSON.stringify(wrongBody))
+        .attach('file', ipfsFilePath)
+        .then(response => {
+          try {
+            expect(response.statusCode).to.eq(SUCCESS)
+          } catch (error) {
+            expect(response.statusCode).to.eq(BAD_REQUEST)
+            expect(response.body.message).to.be.eq('Invalid input parameters')
           }
         }).then(done).catch(done)
     })

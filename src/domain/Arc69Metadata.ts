@@ -1,12 +1,12 @@
 import { Arc69Interface } from "../services/IpfsService";
-import { resultPorperties } from "./NftMetadata";
+import { resultProperties } from "./NftMetadata";
 
 export type CauseInfo = {
   cause: string,
-  cause_percentage: number,
+  causePercentage: number,
 }
 
-type Properties = Record<string, any> & resultPorperties & CauseInfo
+type Properties = Record<string, any> & resultProperties & CauseInfo
 
 export default class Arc69Metadata {
   readonly standard = 'arc69'

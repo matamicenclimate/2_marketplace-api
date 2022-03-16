@@ -14,7 +14,7 @@ export const nftStorageResponse = {
         },
         artist: 'Author of First upload file',
         cause: 'Cause property',
-        cause_percentage: 50,
+        causePercentage: 50,
         prop1: 'Prop1 property',
         prop2: 'Prop2 property',
     }

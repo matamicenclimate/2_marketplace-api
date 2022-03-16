@@ -1,6 +1,6 @@
 import { Service } from 'typedi'
 import { IpfsRequestData } from '../interfaces'
-import NftMetadata, { resultPorperties } from '../domain/NftMetadata'
+import NftMetadata, { resultProperties } from '../domain/NftMetadata'
 import Arc69Metadata, { CauseInfo } from '../domain/Arc69Metadata'
 import ServiceException from '../infrastructure/errors/ServiceException'
 
@@ -26,7 +26,7 @@ export interface Arc69Interface {
 	properties: Record<string, any>
 }
 
-function nomalizeProperties(resultProperties: resultPorperties, properties: Record<string, any> & CauseInfo) {
+function nomalizeProperties(resultProperties: resultProperties, properties: Record<string, any> & CauseInfo) {
   return {
     ...resultProperties,
     ...properties
@@ -34,7 +34,7 @@ function nomalizeProperties(resultProperties: resultPorperties, properties: Reco
 }
 
 function isPropertiesValid(properties: Record<string, any>) : properties is CauseInfo & Record<string, any> {
-  return typeof properties.cause === 'string' && typeof properties.cause_percentage === 'number'
+  return typeof properties.cause === 'string' && typeof properties.causePercentage === 'number'
 }
 
 @Service()

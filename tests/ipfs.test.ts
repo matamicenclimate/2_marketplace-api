@@ -15,7 +15,7 @@ const body = {
   author: 'Author of First upload file',
   properties: {
     cause: 'Cause property',
-    cause_percentage: 50,
+    causePercentage: 50,
     prop1: 'Prop1 property',
     prop2: 'Prop2 property'
   }
@@ -49,7 +49,7 @@ describe('IPFS', () => {
         expect(response.body.arc69.properties.file).to.deep.eq(nftStorageResponse.arc69.properties.file)
         expect(response.body.arc69.properties.artist).to.be.eq(nftStorageResponse.arc69.properties.artist)
         expect(response.body.arc69.properties.cause).to.be.eq(nftStorageResponse.arc69.properties.cause)
-        expect(response.body.arc69.properties.cause_percentage).to.be.eq(nftStorageResponse.arc69.properties.cause_percentage)
+        expect(response.body.arc69.properties.causePercentage).to.be.eq(nftStorageResponse.arc69.properties.causePercentage)
         expect(response.body.arc69.properties.prop1).to.be.eq(nftStorageResponse.arc69.properties.prop1)
         expect(Boolean(response.body.arc69.properties.date)).to.be.true
         expect(response.body.data).to.deep.eq(nftStorageResponse.data)
@@ -85,7 +85,7 @@ describe('IPFS', () => {
         author: 'Author of First upload file',
         properties: {
           cause: 20,
-          cause_percentage: 'should be a number',
+          causePercentage: 'should be a number',
         }
       }
 

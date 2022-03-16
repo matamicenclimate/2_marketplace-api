@@ -1,6 +1,6 @@
 import { NftMetadataInterface } from "../services/IpfsService";
 
-export type resultPorperties = {
+export type resultProperties = {
   file: {
     name: string
     type: string

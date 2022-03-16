@@ -12,6 +12,7 @@ export const nftStorageResponse = {
             type: 'image/png',
             size: 1034
         },
+        price: 100,
         artist: 'Author of First upload file',
         cause: 'Cause property',
         causePercentage: 50,

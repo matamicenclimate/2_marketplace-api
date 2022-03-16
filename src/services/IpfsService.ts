@@ -10,11 +10,12 @@ export interface NftMetadataInterface {
 	image: string
   properties: {
     file: {
-        name: string
-        type: string
-        size: number
+      name: string
+      type: string
+      size: number
     }
     artist: string
+    price: number
   }
 }
 
@@ -46,13 +47,14 @@ export default class IpfsService {
       title,
 			author,
 			description,
+      price,
       properties,
 		} = data
     if (!isPropertiesValid(properties)) {
       throw new ServiceException('Invalid input parameters')
     }
 		
-		const metadata: NftMetadataInterface = new NftMetadata(file, title, author, description).serialize()
+		const metadata: NftMetadataInterface = new NftMetadata(file, title, author, description, price).serialize()
 		storage.prepare(metadata, file)
 		const result = await storage.store()
     const propertiesNormalized = nomalizeProperties(result.data.properties, properties)

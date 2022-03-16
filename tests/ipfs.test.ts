@@ -13,6 +13,7 @@ const body = {
   title: 'Title - Upload File',
   description: 'First file description',
   author: 'Author of First upload file',
+  price: 100,
   properties: {
     cause: 'Cause property',
     causePercentage: 50,
@@ -47,6 +48,7 @@ describe('IPFS', () => {
         expect(response.body.arc69.description).to.be.eq(nftStorageResponse.arc69.description)
         expect(response.body.arc69.mime_type).to.be.eq(nftStorageResponse.arc69.properties.file.type)
         expect(response.body.arc69.properties.file).to.deep.eq(nftStorageResponse.arc69.properties.file)
+        expect(response.body.arc69.properties.price).to.deep.eq(nftStorageResponse.arc69.properties.price)
         expect(response.body.arc69.properties.artist).to.be.eq(nftStorageResponse.arc69.properties.artist)
         expect(response.body.arc69.properties.cause).to.be.eq(nftStorageResponse.arc69.properties.cause)
         expect(response.body.arc69.properties.causePercentage).to.be.eq(nftStorageResponse.arc69.properties.causePercentage)

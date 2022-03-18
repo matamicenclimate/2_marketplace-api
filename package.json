@@ -50,6 +50,6 @@
     "start": "ts-node src/Main.ts",
     "dev": "ts-node-dev -r tsconfig-paths/register --respawn src/Main.ts",
     "build": "tsc",
-    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'tests/**/*.ts' --exit"
+    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register -r tsconfig-paths/register 'tests/**/*.ts' --exit"
   }
 }

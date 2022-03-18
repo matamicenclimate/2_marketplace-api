@@ -3,42 +3,44 @@ os: linux
 dist: bionic
 language: node_js
 node_js:
-- lts/*
+  - lts/*
 notifications:
   slack:
     secure: Ak97VFl3u03AG7l5nqoFGOwkar47goqTjq+lPYRKfeRWpQHEPZ5ROvJxTUYdl5V714M984qT3MM52O1Q9LQs69QwZa6wgrm29kUD4x91aB9lII39epV1oSp3CRR3F1uDsc32Sz/CM8RHC38GHjdFohSfgN1OylO/WWW8lChlQs0ZHHYkHKQ92AGdmEiRx055RmLuhq1s0cIr9uIlcQdKJbU1JLA2wRXmzMIM0S9auPvw2cNQwpk4hTtUGCGU9+QBAqDx9QWsAZWJIXuKxR69/65tuB0agQ8cDRDXwMK5XJUw1VVFyyZc4FQoKDMnmuKxCpwl5S99TlerDViGSBUVe7W3DVL5LDbO/SbqrmdFqwXLMl9tJfPL2V4bwddWoCUQOqAcvDNaIhWjtCRIZAk0HWxanPC+xD/cO1AQzDORVVmWCq+TsdfIk4y5v7qvJXd1Yb+59Zx58WtAM6TRmew/qHh8oMIksQsieyKvYkdKvVJHIblJkVnUgD/133HGrmYRwJWMleTi8BQ/T3i3GIm70NqG/giQ8V2vm6ouVWZiX5Uvl+qnFgHFI+nDUzZwxVISUGA+C112jTrvSrmcS/GlHjzjz1Hqa3SaH7wSkyEGom1GGOkgRrzi4zdxi2QkAinWGJL0cCNfBRCTNfedARk5FOnmJamSfh0HmREW2JeSG3w=
     template:
-    - "*Project:* %{repository_name}"
-    - "*Build:* <%{build_url}|#%{build_number}> (<%{compare_url}|%{commit}>) of %{repository_slug}@%{branch}"
-    - "*Duration:* %{duration}"
-    - "*Result:* %{result}"
-    - "*Message:* %{message}"
+      - '*Project:* %{repository_name}'
+      - '*Build:* <%{build_url}|#%{build_number}> (<%{compare_url}|%{commit}>) of %{repository_slug}@%{branch}'
+      - '*Duration:* %{duration}'
+      - '*Result:* %{result}'
+      - '*Message:* %{message}'
 env:
   global:
-  - PROJECT_NAME=climatenft
-  - REPO_NAME=climate-nft-marketplace-api
+    - PROJECT_NAME=climatenft
+    - REPO_NAME=climate-nft-marketplace-api
 jobs:
   include:
-  - stage: test
-    if: "(branch = develop AND (type = pull_request OR type = push))"
-    before_script:
-    - cp .env.example .env
-    script:
-    - yarn test
-  - stage: build and push latest
-    if: "(branch = develop AND type = push)"
-    services:
-    - docker
-    script:
-    - VERSION=`node -p "require('./package.json').version"`
-    - IMAGE_ID=registry.dekaside.com/$PROJECT_NAME/$REPO_NAME
-    - docker build . -f ./compose/production/Dockerfile --tag $IMAGE_ID:latest --tag
-      $IMAGE_ID:$VERSION
-    - echo "$HARBOR_PASSWORD" | docker login registry.dekaside.com --username "$HARBOR_USERNAME"
-      --password-stdin
-    - docker push $IMAGE_ID:$VERSION
-    - docker push $IMAGE_ID:latest
-  - stage: deploy
-    if: (branch = develop AND type = push)
-    script:
-    - curl -X POST "${SERVICE_WEBHOOK_STAGING}"
+    - stage: test
+      if: '(branch = develop AND (type = pull_request OR type = push))'
+      before_script:
+        - git submodule init
+        - git submodule update
+        - cp .env.example .env
+      script:
+        - yarn test
+    - stage: build and push latest
+      if: '(branch = develop AND type = push)'
+      services:
+        - docker
+      script:
+        - VERSION=`node -p "require('./package.json').version"`
+        - IMAGE_ID=registry.dekaside.com/$PROJECT_NAME/$REPO_NAME
+        - docker build . -f ./compose/production/Dockerfile --tag $IMAGE_ID:latest --tag
+          $IMAGE_ID:$VERSION
+        - echo "$HARBOR_PASSWORD" | docker login registry.dekaside.com --username "$HARBOR_USERNAME"
+          --password-stdin
+        - docker push $IMAGE_ID:$VERSION
+        - docker push $IMAGE_ID:latest
+    - stage: deploy
+      if: (branch = develop AND type = push)
+      script:
+        - curl -X POST "${SERVICE_WEBHOOK_STAGING}"

@@ -1,7 +1,7 @@
 import TransactionSigner from '@common/services/TransactionSigner'
 import { Transaction } from 'algosdk'
 import { Inject, Service } from 'typedi'
-import WalletAccountProvider from '../WalletAccountProvider'
+import WalletAccountProvider from './DefaultWalletProvider'
 
 @Service('transaction-signer')
 export default class CustomTransactionSigner implements TransactionSigner {

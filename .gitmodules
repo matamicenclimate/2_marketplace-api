@@ -1,0 +1,3 @@
+[submodule "climate-nft-common"]
+	path = climate-nft-common
+	url = git@github.com:Dekalabs/climate-nft-common.git

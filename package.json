@@ -24,11 +24,13 @@
     "swagger2-koa": "^3.0.1",
     "ts-node": "^10.6.0",
     "ts-node-dev": "^1.1.8",
+    "tsconfig-paths": "^3.14.0",
     "typescript": "^4.5.5"
   },
   "dependencies": {
     "@octantis/option": "^1.2.0",
     "@types/koa": "^2.13.4",
+    "algosdk": "^1.14.0",
     "body-parser": "^1.19.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
@@ -46,7 +48,7 @@
   },
   "scripts": {
     "start": "ts-node src/Main.ts",
-    "dev": "ts-node-dev --respawn src/Main.ts",
+    "dev": "ts-node-dev -r tsconfig-paths/register --respawn src/Main.ts",
     "build": "tsc",
     "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'tests/**/*.ts' --exit"
   }

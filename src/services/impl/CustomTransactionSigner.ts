@@ -2,7 +2,7 @@ import TransactionSigner, {
   TransactionSignerDecorators,
 } from '@common/services/TransactionSigner'
 import { WalletAccountProviderDecorators } from '@common/services/WalletAccountProvider'
-import { Transaction } from 'algosdk'
+import { Account, Transaction } from 'algosdk'
 import WalletAccountProvider from './DefaultWalletProvider'
 
 @TransactionSignerDecorators.Service()
@@ -18,6 +18,10 @@ export default class CustomTransactionSigner implements TransactionSigner {
     //   sig: Buffer.from(payload),
     //   txn: transaction,
     // }
+    return this._signTransaction(transaction, account)
+  }
+
+  async _signTransaction(transaction: Transaction, account: Account): Promise<Uint8Array> {
     return transaction.signTxn(account.sk)
   }
 }

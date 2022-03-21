@@ -26,6 +26,9 @@ const config = {
         die(`Environment variable "NFT_STORAGE_TOKEN" wasn't defined!`),
     },
   },
+  algoClientApiKey:
+    process.env.ALGO_CLIENT_X_API_KEY ??
+    die(`Environment variable "ALGO_CLIENT_X_API_KEY" wasn't defined!`),
   defaultWallet: {
     nemonic:
       process.env.WALLET_NEMONIC ??

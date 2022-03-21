@@ -15,7 +15,7 @@ export default class IpfsController {
   @Inject()
   private readonly logger!: CustomLogger
 
-	@Post('/v1/ipfs')
+  @Post('/v1/ipfs')
   async invoke(
     @BodyParam('data') data: any,
     @UploadedFile('file') file: any

@@ -12,6 +12,6 @@ export default class EnvAlgodConfigProvider implements AlgodConfigProvider {
     return config.algoClientApiKey
   }
   get server(): string {
-    return 'https://testnet-algorand.api.purestake.io/ps2'
+    return config.algoClientServer
   }
 }

@@ -27,6 +27,8 @@ jobs:
         - yarn test
     - stage: build and push latest
       if: '(branch = develop AND type = push)'
+      before_script:
+        - ls -la
       services:
         - docker
       script:

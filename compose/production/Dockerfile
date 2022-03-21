@@ -13,6 +13,6 @@ RUN yarn
 COPY . .
 RUN rm -rf climate-nft-common
 RUN mkdir climate-nft-common 
-COPY ./climate-nft-common/* ./climate-nft-common/.
+COPY ./climate-nft-common/* ./app/climate-nft-common/.
 
 CMD ["yarn", "start"]

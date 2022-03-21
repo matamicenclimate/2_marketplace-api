@@ -22,8 +22,7 @@ jobs:
     - stage: test
       if: '(branch = develop AND (type = pull_request OR type = push))'
       before_script:
-        - git submodule init
-        - git submodule update
+        - git submodule add git@github.com:Dekalabs/climate-nft-common.git
         - cp .env.example .env
       script:
         - yarn test
@@ -31,6 +30,8 @@ jobs:
       if: '(branch = develop AND type = push)'
       services:
         - docker
+      before_script:
+        - git submodule add git@github.com:Dekalabs/climate-nft-common.git
       script:
         - VERSION=`node -p "require('./package.json').version"`
         - IMAGE_ID=registry.dekaside.com/$PROJECT_NAME/$REPO_NAME

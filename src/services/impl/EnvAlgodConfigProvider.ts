@@ -1,7 +1,8 @@
-import AlgodConfigProvider from '@common/services/AlgodConfigProvider'
-import { Service } from 'typedi'
+import AlgodConfigProvider, {
+  AlgodConfigProviderDecorators,
+} from '@common/services/AlgodConfigProvider'
 
-@Service('algod-config')
+@AlgodConfigProviderDecorators.Service()
 export default class EnvAlgodConfigProvider implements AlgodConfigProvider {
   get port(): number | '' {
     return ''

@@ -11,6 +11,7 @@ COPY ./package*.json ./
 RUN yarn
 
 COPY . .
+RUN rm -rf climate-nft-common
 RUN mkdir climate-nft-common 
 COPY ./climate-nft-common/* ./climate-nft-common/.
 

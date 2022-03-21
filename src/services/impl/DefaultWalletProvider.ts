@@ -10,9 +10,9 @@ import config from '../../config/default'
 @WalletAccountProviderDecorators.Service()
 export default class DefaultWalletProvider implements WalletAccountProvider {
   readonly account: Account
-
+  static mnemonicToSecretKey = algosdk.mnemonicToSecretKey
   constructor() {
     const { nemonic } = config.defaultWallet
-    this.account = algosdk.mnemonicToSecretKey(nemonic)
+    this.account = DefaultWalletProvider.mnemonicToSecretKey(nemonic)
   }
 }

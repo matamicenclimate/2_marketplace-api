@@ -27,11 +27,10 @@ jobs:
         - yarn test
     - stage: build and push latest
       if: '(branch = develop AND type = push)'
-      before_script:
-        - ls -la
       services:
         - docker
       script:
+        - ls -la
         - VERSION=`node -p "require('./package.json').version"`
         - IMAGE_ID=registry.dekaside.com/$PROJECT_NAME/$REPO_NAME
         - docker build . -f ./compose/production/Dockerfile --tag $IMAGE_ID:latest --tag

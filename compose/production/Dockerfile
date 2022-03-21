@@ -11,5 +11,7 @@ COPY ./package*.json ./
 RUN yarn
 
 COPY . .
+RUN mkdir climate-nft-common 
+COPY ./climate-nft-common/* ./climate-nft-common/.
 
 CMD ["yarn", "start"]

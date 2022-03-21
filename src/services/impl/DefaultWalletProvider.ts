@@ -2,7 +2,6 @@ import WalletAccountProvider, {
   WalletAccountProviderDecorators,
 } from '@common/services/WalletAccountProvider'
 import algosdk, { Account } from 'algosdk'
-import { Service } from 'typedi'
 import config from '../../config/default'
 
 /**

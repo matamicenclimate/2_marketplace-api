@@ -1,6 +1,6 @@
 import WalletAccountProvider, {
   WalletAccountProviderDecorators,
-} from '../../climate-nft-common-module/src/services/WalletAccountProvider'
+} from '@common/services/WalletAccountProvider'
 import algosdk, { Account } from 'algosdk'
 import config from '../../config/default'
 

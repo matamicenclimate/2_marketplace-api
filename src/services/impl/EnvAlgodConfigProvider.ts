@@ -1,6 +1,6 @@
 import AlgodConfigProvider, {
   AlgodConfigProviderDecorators,
-} from '../../climate-nft-common-module/src/services/AlgodConfigProvider'
+} from '@common/services/AlgodConfigProvider'
 import config from '../../config/default'
 
 @AlgodConfigProviderDecorators.Service()

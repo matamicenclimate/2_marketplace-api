@@ -13,13 +13,18 @@
     "noImplicitAny": true,
     "strictNullChecks": true,
     "baseUrl": ".",
-    "paths": {}
+    "paths": {
+      "@common/*": [
+        "./climate-nft-common/src/*"
+      ]
+    }
   },
   "exclude": [
     "node_modules"
   ],
   "include": [
     "src/**/*.ts",
-    "tests/**/*.ts"
+    "tests/**/*.ts",
+    "climate-nft-common/src/**/*.ts"
   ]
 }

@@ -22,8 +22,6 @@ jobs:
     - stage: test
       if: '(branch = develop AND (type = pull_request OR type = push))'
       before_script:
-        - rm -Rf climate-nft-common
-        - git clone git@github.com:Dekalabs/climate-nft-common.git
         - cp .env.example .env
       script:
         - yarn test

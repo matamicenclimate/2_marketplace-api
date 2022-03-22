@@ -11,12 +11,5 @@ COPY ./package*.json ./
 RUN yarn
 
 COPY . .
-RUN rm -rf climate-nft-common
-RUN mkdir -p climate-nft-common/src/services
-COPY ./climate-nft-common/* ./climate-nft-common/
-RUN mv ./climate-nft-common/services/* ./climate-nft-common/src/services/
-RUN ls -la ./climate-nft-common
-RUN ls -la ./climate-nft-common/src
-RUN ls -la ./climate-nft-common/src/services
 
 CMD ["yarn", "start"]

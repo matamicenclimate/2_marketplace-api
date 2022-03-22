@@ -1,6 +1,6 @@
 import { JsonController, Param, Post } from 'routing-controllers'
 import { Inject, Service } from 'typedi'
-import OptInService from '@common/services/OptInService'
+import OptInService from '../climate-nft-common-module/src/services/OptInService'
 import config from '../config/default'
 import { OpenAPI } from 'routing-controllers-openapi'
 

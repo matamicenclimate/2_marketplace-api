@@ -37,5 +37,8 @@ const config = {
       process.env.WALLET_ADDRESS ??
       die(`Environment variable "WALLET_ID" wasn't defined!`),
   },
+  algoIndexerApi:
+  process.env.ALGO_INDEXER_API ??
+  die(`Environment variable "ALGO_INDEXER_API" wasn't defined!`),
 }
 export default config

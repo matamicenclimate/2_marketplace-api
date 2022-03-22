@@ -12,10 +12,10 @@ RUN yarn
 
 COPY . .
 RUN rm -rf climate-nft-common
-RUN mkdir climate-nft-common
+RUN mkdir -p climate-nft-common/src
 COPY ./climate-nft-common/* ./climate-nft-common/
-RUN ls -la
-RUN ls -la /app
+RUN rm ./climate-nft-common/services
+COPY ./climate-nft-common/src/* ./climate-nft-common/src
 RUN ls -la ./climate-nft-common
 
 CMD ["yarn", "start"]

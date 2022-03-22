@@ -11,7 +11,7 @@ import { OpenAPI } from 'routing-controllers-openapi'
 
 @Service()
 @JsonController('/api')
-export default class ListingsController {
+export default class MintController {
   @Inject()
   readonly optInService: OptInService
 

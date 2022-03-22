@@ -8,6 +8,10 @@ import { cors } from './middlewares/cors'
 import { ui, validate } from 'swagger2-koa'
 import * as swagger from 'swagger2'
 import CustomLogger from './infrastructure/CustomLogger'
+import HealthzController from './controllers/HealthzController'
+import IpfsController from './controllers/IpfsController'
+import ListingsController from './controllers/ListingsController'
+import MintController from './controllers/MintController'
 
 @Entry
 export default class Main {
@@ -23,7 +27,7 @@ export default class Main {
     const logger = new CustomLogger()
     logger.info(`Listening on port ${Main.port}!`)
   }
-  
+
   static setup() {
     const swaggerDocument: any = swagger.loadDocumentSync('./src/public/api.yaml');
     const app = new Application()
@@ -35,7 +39,12 @@ export default class Main {
     useKoaServer(app, {
       cors: true,
       defaultErrorHandler: false,
-      controllers: [`${__dirname}/controllers/*.ts`],
+      controllers: [
+        HealthzController,
+        IpfsController,
+        ListingsController,
+        MintController,
+      ],
     })
     return { app }
   }

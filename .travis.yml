@@ -30,6 +30,7 @@ jobs:
       services:
         - docker
       script:
+        - yarn build
         - ls -la
         - VERSION=`node -p "require('./package.json').version"`
         - IMAGE_ID=registry.dekaside.com/$PROJECT_NAME/$REPO_NAME

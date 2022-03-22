@@ -3,7 +3,7 @@
     "outDir": "dist",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "declaration": true,
+    "declaration": false,
     "sourceMap": true,
     "target": "ES6",
     "moduleResolution": "Node",
@@ -12,6 +12,7 @@
     "resolveJsonModule": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
+    "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
       "@common/*": [

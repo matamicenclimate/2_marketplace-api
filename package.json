@@ -48,9 +48,10 @@
     "typedi": "^0.10.0"
   },
   "scripts": {
-    "start": "ts-node src/Main.ts",
+    "start": "TS_NODE_BASEURL=./dist node -r tsconfig-paths/register dist/src/Main.js || echo \"\n\n\nCompile the project first!!!\n\n\"",
     "dev": "ts-node-dev -r tsconfig-paths/register --respawn src/Main.ts",
     "build": "tsc",
-    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register -r tsconfig-paths/register 'tests/**/*.ts' --timeout 10000 --exit"
+    "clean": "rm -Rf dist",
+    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register -r tsconfig-paths/register 'tests/**/*.ts' --exit"
   }
 }

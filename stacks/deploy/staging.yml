@@ -1,7 +1,43 @@
 version: "3.3"
 
 services:
-  business:
+  climate-frontend:
+    image: registry.dekaside.com/climatenft/climate-nft-marketplace-app:latest
+    command: sh -c "npm run build && npm start"
+    env_file:
+      - ./.env.frontend
+    networks:
+      - climate-nft-marketplace
+
+  climate-frontend-proxy:
+    image: registry.dekaside.com/library/nginx:latest
+    environment:
+      - NGINX_UPSTREAM_APP=app
+      - NGINX_UPSTREAM_SERVER=climate-frontend
+      - NGINX_UPSTREAM_PORT=8081
+      - NGINX_PORT=80
+      - NGINX_HOST=climate-nft-marketplace.staging.dekaside.com
+      - NGINX_MAX_BODY_SIZE=500M
+    depends_on:
+      - climate-frontend
+    networks:
+      - traefik-public
+      - climate-nft-marketplace
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=traefik-public
+        - traefik.constraint-label=traefik-public
+        - traefik.http.routers.climate-nft-marketplace-http.rule=Host(`climate-nft-marketplace.staging.dekaside.com`)
+        - traefik.http.routers.climate-nft-marketplace-http.entrypoints=http
+        - traefik.http.routers.climate-nft-marketplace-http.middlewares=https-redirect
+        - traefik.http.routers.climate-nft-marketplace-https.rule=Host(`climate-nft-marketplace.staging.dekaside.com`)
+        - traefik.http.routers.climate-nft-marketplace-https.entrypoints=https
+        - traefik.http.routers.climate-nft-marketplace-https.tls=true
+        - traefik.http.routers.climate-nft-marketplace-https.tls.certresolver=le
+        - traefik.http.services.climate-nft-marketplace-https.loadbalancer.server.port=80
+
+  climate-backend:
     image: registry.dekaside.com/climatenft/climate-nft-marketplace-api:latest
     command: yarn start
     env_file:
@@ -9,17 +45,17 @@ services:
     networks:
       - climate-nft-marketplace
 
-  business-proxy:
+  climate-backend-proxy:
     image: registry.dekaside.com/library/nginx:latest
     environment:
       - NGINX_UPSTREAM_APP=app
-      - NGINX_UPSTREAM_SERVER=business
+      - NGINX_UPSTREAM_SERVER=climate-backend
       - NGINX_UPSTREAM_PORT=8000
       - NGINX_PORT=80
       - NGINX_HOST=climate-nft-marketplace-api.staging.dekaside.com
       - NGINX_MAX_BODY_SIZE=500M
     depends_on:
-      - business
+      - climate-backend
     networks:
       - traefik-public
       - climate-nft-marketplace
@@ -36,6 +72,42 @@ services:
         - traefik.http.routers.climate-nft-marketplace-api-https.tls=true
         - traefik.http.routers.climate-nft-marketplace-api-https.tls.certresolver=le
         - traefik.http.services.climate-nft-marketplace-api-https.loadbalancer.server.port=80
+
+  climate-nft-causes-backend:
+    image: registry.dekaside.com/climatenft/climate-nft-causes-api:latest
+    command: yarn start
+    env_file:
+      - ./.env.causesBackend
+    networks:
+      - climate-nft-marketplace
+
+  climate-nft-causes-backend-proxy:
+    image: registry.dekaside.com/library/nginx:latest
+    environment:
+      - NGINX_UPSTREAM_APP=app
+      - NGINX_UPSTREAM_SERVER=climate-nft-causes-backend
+      - NGINX_UPSTREAM_PORT=8000
+      - NGINX_PORT=80
+      - NGINX_HOST=climate-nft-causes-api.staging.dekaside.com
+      - NGINX_MAX_BODY_SIZE=500M
+    depends_on:
+      - climate-nft-causes-backend
+    networks:
+      - traefik-public
+      - climate-nft-marketplace
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=traefik-public
+        - traefik.constraint-label=traefik-public
+        - traefik.http.routers.climate-nft-causes-api-http.rule=Host(`climate-nft-causes-api.staging.dekaside.com`)
+        - traefik.http.routers.climate-nft-causes-api-http.entrypoints=http
+        - traefik.http.routers.climate-nft-causes-api-http.middlewares=https-redirect
+        - traefik.http.routers.climate-nft-causes-api-https.rule=Host(`climate-nft-causes-api.staging.dekaside.com`)
+        - traefik.http.routers.climate-nft-causes-api-https.entrypoints=https
+        - traefik.http.routers.climate-nft-causes-api-https.tls=true
+        - traefik.http.routers.climate-nft-causes-api-https.tls.certresolver=le
+        - traefik.http.services.climate-nft-causes-api-https.loadbalancer.server.port=80
 
 networks:
   traefik-public:

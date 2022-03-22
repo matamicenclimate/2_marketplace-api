@@ -10,6 +10,11 @@ RUN apk add --update \
 COPY ./package*.json ./
 RUN yarn
 
-COPY . .
+RUN mkdir -p ./dist/node_modules
+RUN mkdir -p ./src/public
+COPY ./dist/ ./dist/
+COPY ./node_modules/ .
+COPY ./tsconfig.json ./tsconfig.json
+COPY ./src/public/api.yaml ./src/public/api.yaml
 
 CMD ["yarn", "start"]

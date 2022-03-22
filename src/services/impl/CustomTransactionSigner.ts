@@ -1,7 +1,7 @@
 import TransactionSigner, {
   TransactionSignerDecorators,
-} from '@common/services/TransactionSigner'
-import { WalletAccountProviderDecorators } from '@common/services/WalletAccountProvider'
+} from '../../climate-nft-common-module/src/services/TransactionSigner'
+import { WalletAccountProviderDecorators } from '../../climate-nft-common-module/src/services/WalletAccountProvider'
 import { Account, Transaction } from 'algosdk'
 import WalletAccountProvider from './DefaultWalletProvider'
 

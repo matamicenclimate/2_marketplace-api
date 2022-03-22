@@ -1,6 +1,6 @@
 import WalletAccountProvider, {
   WalletAccountProviderDecorators,
-} from '@common/services/WalletAccountProvider'
+} from '../../climate-nft-common-module/src/services/WalletAccountProvider'
 import algosdk, { Account } from 'algosdk'
 import config from '../../config/default'
 
@@ -10,9 +10,9 @@ import config from '../../config/default'
 @WalletAccountProviderDecorators.Service()
 export default class DefaultWalletProvider implements WalletAccountProvider {
   readonly account: Account
-
+  static mnemonicToSecretKey = algosdk.mnemonicToSecretKey
   constructor() {
     const { nemonic } = config.defaultWallet
-    this.account = algosdk.mnemonicToSecretKey(nemonic)
+    this.account = DefaultWalletProvider.mnemonicToSecretKey(nemonic)
   }
 }

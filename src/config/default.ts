@@ -29,6 +29,9 @@ const config = {
   algoClientApiKey:
     process.env.ALGO_CLIENT_X_API_KEY ??
     die(`Environment variable "ALGO_CLIENT_X_API_KEY" wasn't defined!`),
+  algoClientServer:
+    process.env.ALGO_CLIENT_SERVER ??
+    die(`Environment variable "ALGO_CLIENT_SERVER" wasn't defined!`),
   defaultWallet: {
     nemonic:
       process.env.WALLET_NEMONIC ??

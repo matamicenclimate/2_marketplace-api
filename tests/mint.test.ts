@@ -3,9 +3,10 @@ import { expect } from 'chai'
 import sinon from 'sinon'
 import algosdk from 'algosdk'
 import server from './testSupport/server'
-import OptInService from '@common/services/OptInService'
+import OptInService from '../src/climate-nft-common-module/src/services/OptInService'
 import CustomTransactionSigner from 'src/services/impl/CustomTransactionSigner'
 import { responseOptInService } from './testSupport/mocks'
+import DefaultWalletProvider from 'src/services/impl/DefaultWalletProvider'
 
 const SUCCESS = 200
 beforeEach(() => {
@@ -39,6 +40,6 @@ const stubOptInProcess = () => {
     do: () => ({ txId: 'txId' })
   } as any)
   sinon.stub(OptInService, 'makeAssetTransferTransaction').resolves(true)
-
+  sinon.stub(DefaultWalletProvider, 'mnemonicToSecretKey').resolves(true)
   sinon.stub(OptInService, 'waitForConfirmation').resolves(responseOptInService)
 }

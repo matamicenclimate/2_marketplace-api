@@ -2,7 +2,7 @@ import { Inject, Service } from 'typedi'
 const axios = require('axios').default
 import config from '../config/default'
 import algosdk from 'algosdk'
-import CustomLogger from 'src/infrastructure/CustomLogger'
+import CustomLogger from '../infrastructure/CustomLogger'
 
 @Service()
 export default class ListingService {

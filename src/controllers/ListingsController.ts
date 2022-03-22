@@ -1,5 +1,8 @@
 import { Get, JsonController, Param, Post } from 'routing-controllers'
 import { Inject, Service } from 'typedi'
+import ListingService from '../services/ListingService'
+import ServiceException from '../infrastructure/errors/ServiceException'
+import CustomLogger from '../infrastructure/CustomLogger'
 import config from '../config/default'
 
 // ONLY DEV - Prints swagger json
@@ -10,45 +13,20 @@ import config from '../config/default'
 @Service()
 @JsonController('/api')
 export default class ListingsController {
+  @Inject()
+  readonly ListingService: ListingService
+  @Inject()
+  private readonly logger!: CustomLogger
+
   @Get(`/${config.version}/nfts`)
-  async invoke() {
-    return [
-      {
-        image: 'bafybeihj6jett6klfymvf5t6zezl3br4dhpg2rowcyiib4brcaxcmidgd4',
-        title: 'Test',
-        description: 'Some description',
-        artist: 'Some random user',
-        transaction: 'ULT4WDKDAEIPXDCUMQVHGJRT7XEBB7M7SEMXQQLN43R66L76XV5Q',
-      },
-      {
-        image: 'bafybeihj6jett6klfymvf5t6zezl3br4dhpg2rowcyiib4brcaxcmidgd4',
-        title: 'Test 2',
-        description: 'Some description 2',
-        artist: 'Some random user',
-        transaction: 'ULT4WDKDAEIPXDCUMQVHGJRT7XEBB7M7SEMXQQLN43R66L76XV5Q',
-      },
-      {
-        image: 'bafybeihj6jett6klfymvf5t6zezl3br4dhpg2rowcyiib4brcaxcmidgd4',
-        title: 'Test 3',
-        description: 'Some description 3',
-        artist: 'Some random user',
-        transaction: 'ULT4WDKDAEIPXDCUMQVHGJRT7XEBB7M7SEMXQQLN43R66L76XV5Q',
-      },
-      {
-        image: 'bafybeihj6jett6klfymvf5t6zezl3br4dhpg2rowcyiib4brcaxcmidgd4',
-        title: 'Test No Desc',
-        description: '',
-        artist: 'Some random user',
-        transaction: 'ULT4WDKDAEIPXDCUMQVHGJRT7XEBB7M7SEMXQQLN43R66L76XV5Q',
-      },
-      {
-        image: 'bafybeihj6jett6klfymvf5t6zezl3br4dhpg2rowcyiib4brcaxcmidgd4',
-        title: 'Hello',
-        description: 'World',
-        artist: 'Some random user',
-        transaction: 'ULT4WDKDAEIPXDCUMQVHGJRT7XEBB7M7SEMXQQLN43R66L76XV5Q',
-      },
-    ]
+  async listing() {
+    try {
+      return await this.ListingService.listing()
+    } catch (error) {
+      const message = `Listing error: ${error.message}`
+      this.logger.error(message, { stack: error.stack })
+      throw new ServiceException(message)
+    }
   }
 }
 

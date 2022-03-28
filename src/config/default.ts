@@ -19,6 +19,11 @@ const config = {
   version:
     process.env.RESTAPI_VERSION ??
     die(`Environment variable "RESTAPI_VERSION" wasn't defined!`),
+  bid: {
+    increment:
+      process.env.BID_INCREMENT ??
+      die(`Environment variable "BID_INCREMENT" wasn't defined!`),
+  },
   nft: {
     storage: {
       token:
@@ -41,7 +46,7 @@ const config = {
       die(`Environment variable "WALLET_ID" wasn't defined!`),
   },
   algoIndexerApi:
-  process.env.ALGO_INDEXER_API ??
-  die(`Environment variable "ALGO_INDEXER_API" wasn't defined!`),
+    process.env.ALGO_INDEXER_API ??
+    die(`Environment variable "ALGO_INDEXER_API" wasn't defined!`),
 }
 export default config

@@ -1,8 +1,11 @@
-import { JsonController, Param, Post } from 'routing-controllers'
+import { Body, JsonController, Param, Post } from 'routing-controllers'
 import { Inject, Service } from 'typedi'
 import OptInService from '@common/services/OptInService'
+import AuctionService from '../services/AuctionService'
 import config from '../config/default'
 import { OpenAPI } from 'routing-controllers-openapi'
+import ListingService from 'src/services/ListingService'
+import { AssetNote } from '@common/lib/AssetNote'
 
 // ONLY DEV - Prints swagger json
 // import { getMetadataArgsStorage } from 'routing-controllers'
@@ -15,6 +18,12 @@ export default class MintController {
   @Inject()
   readonly optInService: OptInService
 
+  @Inject()
+  readonly auctionService: AuctionService
+
+  @Inject()
+  readonly listingService: ListingService
+
   @OpenAPI({
     description:
       'Creates a new assets (opts-in the asset) in the marketplace account.',
@@ -24,9 +33,14 @@ export default class MintController {
       400: 'Missing (Or wrong/ill formatted) asset ID parameter.',
     },
   })
-  @Post(`/${config.version}/opt-in/:id`)
-  async optIn(@Param('id') id: number) {
-    return await this.optInService.optInAssetByID(id)
+  @Post(`/${config.version}/opt-in`)
+  async optIn(@Body() body: any) {
+    const assetId = body.assetId
+    await this.optInService.optInAssetByID(assetId)
+    const populatedAsset = await this.listingService.populateAsset(assetId)
+    const asset: AssetNote = this.listingService.normalizeAsset(populatedAsset)
+    const response = await this.auctionService.execute(assetId, asset?.arc69?.properties?.price)
+    return response
   }
 }
 

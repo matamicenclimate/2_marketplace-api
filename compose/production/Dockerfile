@@ -10,12 +10,12 @@ RUN apk add --update \
 COPY ./package*.json ./
 RUN yarn
 
-RUN mkdir -p ./dist/node_modules
+RUN mkdir -p ./node_modules
 RUN mkdir -p ./src/public
-RUN mkdir -p ./dist/contracts
+RUN mkdir -p ./contracts
 COPY ./dist/ ./dist/
-COPY ./node_modules/ .
-COPY ./contracts/ ./dist/contracts/
+COPY ./node_modules/ ./node_modules/
+COPY ./contracts/ ./contracts/
 COPY ./tsconfig.json ./tsconfig.json
 COPY ./src/public/api.yaml ./src/public/api.yaml
 

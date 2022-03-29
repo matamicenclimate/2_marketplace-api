@@ -12,7 +12,8 @@ export async function handleErrors(
     ctx.body = customError(error)
     return
   }
-  if (ctx.body == null) {
+  // Do not discard 204 type responses!
+  if (ctx.response.body == null && ctx.status !== 204) {
     ctx.status = 404
     ctx.body = {
       message: 'Not found',

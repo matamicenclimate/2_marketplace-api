@@ -1,10 +1,8 @@
-import AlgodConfigProvider, {
-  AlgodConfigProviderDecorators,
-} from '@common/services/AlgodConfigProvider'
+import * as AlgodConfigProvider from '@common/services/AlgodConfigProvider'
 import config from '../../config/default'
 
-@AlgodConfigProviderDecorators.Service()
-export default class EnvAlgodConfigProvider implements AlgodConfigProvider {
+@AlgodConfigProvider.declare()
+export default class EnvAlgodConfigProvider implements AlgodConfigProvider.type {
   get port(): number | '' {
     return ''
   }

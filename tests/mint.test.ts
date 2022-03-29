@@ -8,27 +8,40 @@ import CustomTransactionSigner from 'src/services/impl/CustomTransactionSigner'
 import { responseOptInService } from './testSupport/mocks'
 import DefaultWalletProvider from 'src/services/impl/DefaultWalletProvider'
 import ListingService from 'src/services/ListingService'
+import { AuctionLogic } from '@common/services/AuctionLogic'
+import { AuctionCreationResult } from '@common/lib/AuctionCreationResult'
 
 const SUCCESS = 200
 beforeEach(() => {
   sinon.restore()
 })
-describe.skip('Mint', () => {
+describe('Mint', () => {
   it('assets by asset id', async () => {
     const assetId = responseOptInService.txn.txn.xaid
     stubOptInProcess()
 
     const response = await request(server)
-      .post(`/api/${process.env.RESTAPI_VERSION}/opt-in/${assetId}`)
-
+      .post(`/api/${process.env.RESTAPI_VERSION}/opt-in`)
+      .send({
+        assetId
+      })
     expect(response.statusCode).to.eq(SUCCESS)
-    expect(response.body).to.deep.eq(responseOptInService)
+    expect(response.body.appIndex).to.eq(242354235)
   })
 })
 
 const stubOptInProcess = () => {
-  sinon.stub(ListingService.prototype, 'normalizeAsset').resolves(true)
-  sinon.stub(ListingService.prototype, 'normalizeAsset').returns(
+  sinon.stub(AuctionLogic.prototype, 'createAuction').resolves({
+    'application-index': 242354235
+  } as AuctionCreationResult)
+  sinon.stub(AuctionLogic.prototype, 'fundAuction').resolves({
+    txId: 20942,
+  } as { txId: number; result: Record<string, unknown>; })
+  sinon.stub(AuctionLogic.prototype, 'makeAppCallSetupProc').resolves({
+    txId: 20942,
+  } as { txId: number; result: Record<string, unknown>; })
+  sinon.stub(ListingService.prototype, 'populateAsset').resolves(true)
+  sinon.stub(ListingService.prototype, 'normalizeAsset').resolves(
     {
       arc69: {
         description: 'dafd',

@@ -6,6 +6,8 @@ import config from '../config/default'
 import { OpenAPI } from 'routing-controllers-openapi'
 import ListingService from 'src/services/ListingService'
 import { AssetNote } from '@common/lib/AssetNote'
+import CustomLogger from 'src/infrastructure/CustomLogger'
+import ServiceException from 'src/infrastructure/errors/ServiceException'
 
 // ONLY DEV - Prints swagger json
 // import { getMetadataArgsStorage } from 'routing-controllers'
@@ -24,6 +26,9 @@ export default class MintController {
   @Inject()
   readonly listingService: ListingService
 
+  @Inject()
+  private readonly logger!: CustomLogger
+
   @OpenAPI({
     description:
       'Creates a new assets (opts-in the asset) in the marketplace account.',
@@ -35,12 +40,19 @@ export default class MintController {
   })
   @Post(`/${config.version}/opt-in`)
   async optIn(@Body() body: any) {
-    const assetId = body.assetId
-    await this.optInService.optInAssetByID(assetId)
-    const populatedAsset = await this.listingService.populateAsset(assetId)
-    const asset: AssetNote = this.listingService.normalizeAsset(populatedAsset)
-    const response = await this.auctionService.execute(assetId, asset?.arc69?.properties?.price)
-    return response
+    try {
+      const assetId = body.assetId
+      await this.optInService.optInAssetByID(assetId)
+      const populatedAsset = await this.listingService.populateAsset(assetId)
+      const asset: AssetNote = this.listingService.normalizeAsset(populatedAsset)
+      const response = await this.auctionService.execute(assetId, asset?.arc69?.properties?.price)
+      return response
+    } catch (error) {
+      console.log(error.message, error.stack)
+      const message = `Opt in error: ${error.message}`
+      this.logger.error(message, { stack: error.stack })
+      throw new ServiceException(message)
+    }
   }
 }
 

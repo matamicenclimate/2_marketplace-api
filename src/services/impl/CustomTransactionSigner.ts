@@ -1,14 +1,11 @@
-import TransactionSigner, {
-  TransactionSignerDecorators,
-} from '@common/services/TransactionSigner'
-import { WalletAccountProviderDecorators } from '@common/services/WalletAccountProvider'
+import * as TransactionSigner from '@common/services/TransactionSigner'
+import * as WalletAccountProvider from '@common/services/WalletAccountProvider'
 import { Account, Transaction } from 'algosdk'
-import WalletAccountProvider from './DefaultWalletProvider'
 
-@TransactionSignerDecorators.Service()
-export default class CustomTransactionSigner implements TransactionSigner {
-  @WalletAccountProviderDecorators.Inject()
-  readonly wallets: WalletAccountProvider
+@TransactionSigner.declare()
+export default class CustomTransactionSigner implements TransactionSigner.type {
+  @WalletAccountProvider.inject()
+  readonly wallets: WalletAccountProvider.type
 
   async signTransaction(transaction: Transaction): Promise<Uint8Array> {
     const account = this.wallets.account

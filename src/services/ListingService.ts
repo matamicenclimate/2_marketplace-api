@@ -12,8 +12,7 @@ export default class ListingService {
     const assets = await this.getAssets()
     const assetsPopulated = await this.getPopulatedAssets(assets)
     const assetsNormalized = this.getNormalizedAssets(assetsPopulated)
-    const asset = await this.populateAsset(80741879)
-    console.log(this.normalizeAsset(asset))
+
     return assetsNormalized
   }
 

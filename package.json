@@ -30,7 +30,7 @@
   "dependencies": {
     "@octantis/option": "^1.2.0",
     "@types/koa": "^2.13.4",
-    "algosdk": "^1.14.0",
+    "algosdk": "^1.15.0",
     "axios": "^0.26.1",
     "body-parser": "^1.19.1",
     "class-transformer": "^0.5.1",

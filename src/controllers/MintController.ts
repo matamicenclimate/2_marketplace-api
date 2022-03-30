@@ -44,8 +44,12 @@ export default class MintController {
       const assetId = body.assetId
       await this.optInService.optInAssetByID(assetId)
       const populatedAsset = await this.listingService.populateAsset(assetId)
-      const asset: AssetNote = this.listingService.normalizeAsset(populatedAsset)
-      const response = await this.auctionService.execute(assetId, asset?.arc69?.properties?.price)
+      const asset: AssetNote =
+        this.listingService.normalizeAsset(populatedAsset)
+      const response = await this.auctionService.execute(
+        assetId,
+        asset?.arc69?.properties?.price
+      )
       return response
     } catch (error) {
       console.log(error.message, error.stack)

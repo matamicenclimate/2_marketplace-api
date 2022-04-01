@@ -19,7 +19,8 @@ export default class ListingService {
   async getPopulatedAssets(assets: any) {
     let counter = 0
     let promises = []
-    const assetsPopulated = []
+    const assetsPopulated: any = []
+    if (!Array.isArray(assets)) return assetsPopulated
     while (counter < assets.length) {
       promises.push(this.populateAsset(assets[counter]['asset-id']))
       if (counter === assets.length - 1 || promises.length > 9) {

@@ -58,12 +58,10 @@ export default class ListingService {
         },
       }
     )
-
     return response.data.account.assets
   }
 
   async populateAsset(asset: number) {
-    const { address } = config.defaultWallet
     const response = await axios.get(
       `${config.algoIndexerApi}/assets/${asset}/transactions`,
       {
@@ -73,7 +71,6 @@ export default class ListingService {
         },
       }
     )
-
     return response.data
   }
 

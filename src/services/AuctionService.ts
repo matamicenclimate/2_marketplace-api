@@ -2,11 +2,12 @@ import AlgodClientProvider from '@common/services/AlgodClientProvider'
 import { AuctionLogic } from '@common/services/AuctionLogic'
 import OptInService from '@common/services/OptInService'
 import config from 'src/config/default'
-import Container, { Service } from 'typedi'
+import Container, { Inject, Service } from 'typedi'
 import algosdk from 'algosdk'
 import { appendFileSync } from 'fs'
 import * as WalletAccountProvider from '@common/services/WalletAccountProvider'
 import { TransactionOperation } from '@common/services/TransactionOperation'
+import CustomLogger from 'src/infrastructure/CustomLogger'
 
 @Service()
 export default class AuctionService {
@@ -15,6 +16,8 @@ export default class AuctionService {
   readonly client: AlgodClientProvider
   readonly account: WalletAccountProvider.type
   readonly op: TransactionOperation
+  @Inject()
+  private readonly logger!: CustomLogger
 
   constructor() {
     this.optInService = Container.get(OptInService)
@@ -25,36 +28,27 @@ export default class AuctionService {
   }
 
   async execute(assetId: number, reserve: number) {
-    const temp = algosdk.generateAccount()
-    appendFileSync(
-      '.temp.accounts',
-      `${temp.addr} ${algosdk.secretKeyToMnemonic(temp.sk)}\n`
-    )
-    console.log(`Dumping temporary account information:`, temp.addr)
-    const suggestedParams = await this.client.client.getTransactionParams().do()
-    console.log(`Paying fees for temp ${temp.addr}...`)
-    await this.op.pay(this.account.account, temp.addr, 1000000)
-    console.log(`Rekeying temporary account...`)
-    const r = await algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-      from: temp.addr,
-      to: temp.addr,
-      suggestedParams,
-      amount: 0,
-      rekeyTo: this.account.account.addr,
-    })
-    await this.op.signAndConfirm(r, undefined, temp)
+    this.logger.info('Creating auction')
+    const rekeyAccount = await this.generateRekeyAccount()
+    const appIndex = await this.createAuction(assetId, reserve, rekeyAccount)
+    return {
+      appIndex,
+    }
+  }
+
+  async createAuction(assetId: number, reserve: number, rekeyAccount: algosdk.Account): Promise<number> {
     console.log(`Creating auction`)
     const auction = await this.auctionLogic.createAuction(
       assetId,
       reserve,
       parseInt(config.bid.increment),
-      temp
+      rekeyAccount
     )
     const appIndex = auction['application-index']
     console.log(
-      `Auction created by ${temp.addr} is ${appIndex} https://testnet.algoexplorer.io/application/${appIndex}`
+      `Auction created by ${rekeyAccount.addr} is ${appIndex} ${config.algoExplorerApi}/application/${appIndex}`
     )
-    const appAddr = algosdk.getApplicationAddress(appIndex)
+    const appAddr = this._getApplicationAddressFromAppIndex(appIndex)
     console.log(`App wallet is ${appAddr}`)
     // const appAddr = algosdk.getApplicationAddress(appIndex)
     // console.log(
@@ -76,8 +70,50 @@ export default class AuctionService {
     console.log(`Asset opted in!`)
     await this.auctionLogic.makeTransferToApp(appIndex, assetId)
     console.log(`Asset ${assetId} transferred to ${appIndex}`)
-    return {
-      appIndex,
-    }
+
+    return appIndex
+  }
+
+  async generateRekeyAccount() {
+    const rekeyAccount = this._generateRekeyAccount()
+    appendFileSync(
+      '.temp.accounts',
+      `${rekeyAccount.addr} ${algosdk.secretKeyToMnemonic(rekeyAccount.sk)}\n`
+    )
+    console.log(`Dumping temporary account information:`, rekeyAccount.addr)
+    console.log(`Paying fees for temp ${rekeyAccount.addr}...`)
+    this._payMinimumTransactionFeesToRekeyAccount(rekeyAccount)
+    console.log(`Rekeying temporary account...`)
+    const rekeyTransaction = await this._rekeyingTemporaryAccount(rekeyAccount)
+    await this.op.signAndConfirm(rekeyTransaction, undefined, rekeyAccount)
+
+    return rekeyAccount
+  }
+
+  private _getApplicationAddressFromAppIndex(appIndex: number) {
+    return algosdk.getApplicationAddress(appIndex)
+  }
+
+  private async _rekeyingTemporaryAccount(rekeyAccount: algosdk.Account) {
+    const suggestedParams: algosdk.SuggestedParams = await this._getSuggestedParams()
+
+    return await algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+      from: rekeyAccount.addr,
+      to: rekeyAccount.addr,
+      suggestedParams,
+      amount: 0,
+      rekeyTo: this.account.account.addr,
+    })
+  }
+
+  private async _payMinimumTransactionFeesToRekeyAccount(rekeyAccount: algosdk.Account) {
+    const microAlgosForFees = 1000000
+    await this.op.pay(this.account.account, rekeyAccount.addr, microAlgosForFees)
+  }
+  private _generateRekeyAccount() {
+    return algosdk.generateAccount()
+  }
+  private async _getSuggestedParams() {
+    return await this.client.client.getTransactionParams().do()
   }
 }

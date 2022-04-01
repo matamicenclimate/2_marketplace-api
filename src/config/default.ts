@@ -48,5 +48,8 @@ const config = {
   algoIndexerApi:
     process.env.ALGO_INDEXER_API ??
     die(`Environment variable "ALGO_INDEXER_API" wasn't defined!`),
+  algoExplorerApi:
+    process.env.ALGO_EXPLORER_API ??
+    die(`Environment variable "ALGO_EXPLORER_API" wasn't defined!`),
 }
 export default config

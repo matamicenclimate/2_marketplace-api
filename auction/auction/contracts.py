@@ -133,9 +133,12 @@ def approval_program():
                         App.globalGet(lead_bid_amount_key),
                     )
                 ),
-                App.globalPut(lead_bid_amount_key, Gtxn[on_bid_txn_index].amount()),
-                App.globalPut(lead_bid_account_key, Gtxn[on_bid_txn_index].sender()),
-                App.globalPut(num_bids_key, App.globalGet(num_bids_key) + Int(1)),
+                App.globalPut(lead_bid_amount_key,
+                              Gtxn[on_bid_txn_index].amount()),
+                App.globalPut(lead_bid_account_key,
+                              Gtxn[on_bid_txn_index].sender()),
+                App.globalPut(num_bids_key, App.globalGet(
+                    num_bids_key) + Int(1)),
                 Approve(),
             )
         ),
@@ -160,7 +163,8 @@ def approval_program():
                     )
                 ),
                 # if the auction contract account has opted into the nft, close it out
-                closeNFTTo(App.globalGet(nft_id_key), App.globalGet(seller_key)),
+                closeNFTTo(App.globalGet(nft_id_key),
+                           App.globalGet(seller_key)),
                 # if the auction contract still has funds, send them all to the seller
                 closeAccountTo(App.globalGet(seller_key)),
                 Approve(),
@@ -187,7 +191,8 @@ def approval_program():
                             # the auction was not successful because the reserve was not met: return
                             # the nft to the seller and repay the lead bidder
                             closeNFTTo(
-                                App.globalGet(nft_id_key), App.globalGet(seller_key)
+                                App.globalGet(nft_id_key), App.globalGet(
+                                    seller_key)
                             ),
                             repayPreviousLeadBidder(
                                 App.globalGet(lead_bid_account_key),
@@ -198,7 +203,8 @@ def approval_program():
                 )
                 .Else(
                     # the auction was not successful because no bids were placed: return the nft to the seller
-                    closeNFTTo(App.globalGet(nft_id_key), App.globalGet(seller_key))
+                    closeNFTTo(App.globalGet(nft_id_key),
+                               App.globalGet(seller_key))
                 ),
                 # send remaining funds to the seller
                 closeAccountTo(App.globalGet(seller_key)),
@@ -233,10 +239,12 @@ def clear_state_program():
 
 
 if __name__ == "__main__":
-    with open("auction_approval.teal", "w") as f:
-        compiled = compileTeal(approval_program(), mode=Mode.Application, version=5)
+    with open("../contracts/auction_approval.teal", "w") as f:
+        compiled = compileTeal(
+            approval_program(), mode=Mode.Application, version=5)
         f.write(compiled)
 
-    with open("auction_clear_state.teal", "w") as f:
-        compiled = compileTeal(clear_state_program(), mode=Mode.Application, version=5)
+    with open("../contracts/auction_clear_state.teal", "w") as f:
+        compiled = compileTeal(clear_state_program(),
+                               mode=Mode.Application, version=5)
         f.write(compiled)

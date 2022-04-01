@@ -50,11 +50,11 @@ byte "nft_id"
 app_global_get
 byte "seller"
 app_global_get
-callsub closeNFTTo_0
+callsub sub0
 main_l11:
 byte "seller"
 app_global_get
-callsub closeAccountTo_2
+callsub sub2
 int 1
 return
 main_l12:
@@ -68,19 +68,19 @@ byte "nft_id"
 app_global_get
 byte "seller"
 app_global_get
-callsub closeNFTTo_0
+callsub sub0
 byte "bid_account"
 app_global_get
 byte "bid_amount"
 app_global_get
-callsub repayPreviousLeadBidder_1
+callsub sub1
 b main_l11
 main_l14:
 byte "nft_id"
 app_global_get
 byte "bid_account"
 app_global_get
-callsub closeNFTTo_0
+callsub sub0
 b main_l11
 main_l15:
 txn Sender
@@ -96,10 +96,10 @@ byte "nft_id"
 app_global_get
 byte "seller"
 app_global_get
-callsub closeNFTTo_0
+callsub sub0
 byte "seller"
 app_global_get
-callsub closeAccountTo_2
+callsub sub2
 int 1
 return
 main_l16:
@@ -117,10 +117,10 @@ global CurrentApplicationAddress
 byte "nft_id"
 app_global_get
 asset_holding_get AssetBalance
-store 1
 store 0
-load 1
+store 1
 load 0
+load 1
 int 0
 >
 &&
@@ -161,6 +161,8 @@ int 1
 gtxns Amount
 global MinTxnFee
 >=
+int 1
+&&
 &&
 assert
 txn GroupIndex
@@ -208,7 +210,7 @@ byte "bid_account"
 app_global_get
 byte "bid_amount"
 app_global_get
-callsub repayPreviousLeadBidder_1
+callsub sub1
 b main_l22
 main_l24:
 global LatestTimestamp
@@ -267,18 +269,16 @@ btoi
 assert
 int 1
 return
-
-// closeNFTTo
-closeNFTTo_0:
+sub0: // closeNFTTo
 store 3
 store 2
 global CurrentApplicationAddress
 load 2
 asset_holding_get AssetBalance
-store 5
 store 4
-load 5
-bz closeNFTTo_0_l2
+store 5
+load 4
+bz sub0_l2
 itxn_begin
 int axfer
 itxn_field TypeEnum
@@ -287,11 +287,9 @@ itxn_field XferAsset
 load 3
 itxn_field AssetCloseTo
 itxn_submit
-closeNFTTo_0_l2:
+sub0_l2:
 retsub
-
-// repayPreviousLeadBidder
-repayPreviousLeadBidder_1:
+sub1: // repayPreviousLeadBidder
 store 7
 store 6
 itxn_begin
@@ -305,20 +303,18 @@ load 6
 itxn_field Receiver
 itxn_submit
 retsub
-
-// closeAccountTo
-closeAccountTo_2:
+sub2: // closeAccountTo
 store 8
 global CurrentApplicationAddress
 balance
 int 0
 !=
-bz closeAccountTo_2_l2
+bz sub2_l2
 itxn_begin
 int pay
 itxn_field TypeEnum
 load 8
 itxn_field CloseRemainderTo
 itxn_submit
-closeAccountTo_2_l2:
+sub2_l2:
 retsub

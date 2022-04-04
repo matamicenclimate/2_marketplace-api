@@ -26,7 +26,7 @@ describe('Listing', () => {
   })
   it('handles 404 status when assets not found', async () => {
     sinon.stub(axios, 'get').callsFake((url: string): Promise<unknown> => {
-      if (url.includes('https://testnet-algorand.api.purestake.io/idx2/v2/accounts')) return Promise.resolve({ status: 404, ...assets })
+      if (url.includes('https://testnet-algorand.api.purestake.io/idx2/v2/accounts')) return Promise.reject({ response: { status: 404 } })
       return Promise.resolve({})
     })
     const listingResponse = await request(server).get(

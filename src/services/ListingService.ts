@@ -51,18 +51,22 @@ export default class ListingService {
   }
 
   async getAssets() {
-    const { address } = config.defaultWallet
-    const response: AxiosResponse = await axios.get(
-      `${config.algoIndexerApi}/accounts/${address}`,
-      {
-        headers: {
-          accept: 'application/json',
-          'x-api-key': config.algoClientApiKey,
-        },
-      }
-    )
-    if (response.status === 404) return []
-    return response.data.account.assets
+    try {
+      const { address } = config.defaultWallet
+      const response: AxiosResponse = await axios.get(
+        `${config.algoIndexerApi}/accounts/${address}`,
+        {
+          headers: {
+            accept: 'application/json',
+            'x-api-key': config.algoClientApiKey,
+          },
+        }
+      )
+      return response.data.account.assets
+    } catch (error) {
+      if (error.response.status === 404) return []
+      throw error
+    }
   }
 
   async populateAsset(asset: number) {

@@ -24,4 +24,15 @@ describe('Listing', () => {
     expect(listingResponse.body[0].title).to.eq('dafdf')
 
   })
+  it('handles 404 status when assets not found', async () => {
+    sinon.stub(axios, 'get').callsFake((url: string): Promise<unknown> => {
+      if (url.includes('https://testnet-algorand.api.purestake.io/idx2/v2/accounts')) return Promise.resolve({ status: 404, ...assets })
+      return Promise.resolve({})
+    })
+    const listingResponse = await request(server).get(
+      `/api/${process.env.RESTAPI_VERSION}/nfts`
+    )
+    expect(listingResponse.statusCode).to.eq(SUCCESS)
+    expect(listingResponse.body.length).to.eq(0)
+  })
 })

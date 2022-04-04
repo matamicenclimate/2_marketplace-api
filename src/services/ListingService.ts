@@ -5,6 +5,7 @@ import algosdk from 'algosdk'
 import CustomLogger from '../infrastructure/CustomLogger'
 import { Asset, AssetNormalized, PopulatedAsset, Transaction } from 'src/interfaces'
 import { none, some, option } from '@octantis/option'
+import { AxiosResponse } from 'axios'
 
 @Service()
 export default class ListingService {
@@ -51,7 +52,7 @@ export default class ListingService {
 
   async getAssets() {
     const { address } = config.defaultWallet
-    const response = await axios.get(
+    const response: AxiosResponse = await axios.get(
       `${config.algoIndexerApi}/accounts/${address}`,
       {
         headers: {
@@ -60,6 +61,7 @@ export default class ListingService {
         },
       }
     )
+    if (response.status === 404) return []
     return response.data.account.assets
   }
 

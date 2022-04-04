@@ -12,7 +12,7 @@ export default class FSAVMProgramProvider implements AVMProgramProvider.type {
       .readFile('./contracts/auction_approval.teal')
       .then(async buffer => {
         const program: { result: string } = await this.algoClientProvider.client
-          .compile(buffer.toString())
+          .compile(this.toUTF8Bytes(buffer.toString()))
           .do()
         return new Uint8Array(Buffer.from(program.result, 'base64'))
       })
@@ -22,9 +22,14 @@ export default class FSAVMProgramProvider implements AVMProgramProvider.type {
       .readFile('./contracts/auction_clear_state.teal')
       .then(async buffer => {
         const program: { result: string } = await this.algoClientProvider.client
-          .compile(buffer.toString())
+          .compile(this.toUTF8Bytes(buffer.toString()))
           .do()
         return new Uint8Array(Buffer.from(program.result, 'base64'))
       })
+  }
+
+  toUTF8Bytes(bufferString: string) {
+    let encoder = new TextEncoder();
+    return encoder.encode(bufferString);
   }
 }

@@ -3,6 +3,8 @@ const axios = require('axios').default
 import config from '../config/default'
 import algosdk from 'algosdk'
 import CustomLogger from '../infrastructure/CustomLogger'
+import { Asset, AssetNormalized, PopulatedAsset, Transaction } from 'src/interfaces'
+import { none, some, option } from '@octantis/option'
 
 @Service()
 export default class ListingService {
@@ -16,10 +18,10 @@ export default class ListingService {
     return assetsNormalized
   }
 
-  async getPopulatedAssets(assets: any) {
+  async getPopulatedAssets(assets: Asset[]) {
     let counter = 0
     let promises = []
-    const assetsPopulated: any = []
+    const assetsPopulated: PopulatedAsset[] = []
     if (!Array.isArray(assets)) return assetsPopulated
     while (counter < assets.length) {
       promises.push(this.populateAsset(assets[counter]['asset-id']))
@@ -35,12 +37,12 @@ export default class ListingService {
     return assetsPopulated
   }
 
-  getNormalizedAssets(assetsPopulated: any) {
+  getNormalizedAssets(assetsPopulated: PopulatedAsset[]) {
     const assetsNormalized = []
     for (const asset of assetsPopulated) {
-      const assetNormalized = this.normalizeAsset(asset)
-      if (assetNormalized) {
-        assetsNormalized.push(assetNormalized)
+      const assetNormalized: option<AssetNormalized> = this.normalizeAsset(asset)
+      if (assetNormalized.isDefined()) {
+        assetsNormalized.push(assetNormalized.value)
       }
     }
 
@@ -74,17 +76,17 @@ export default class ListingService {
     return response.data
   }
 
-  normalizeAsset(asset: any) {
-    const txn = asset.transactions.find((x: any) => x.note != null)
-    if (txn) {
+  normalizeAsset(asset: PopulatedAsset): option<AssetNormalized> {
+    const txn = asset.transactions.find((x: Transaction) => x.note != null)
+    if (txn && txn.note) {
       try {
-        const metadata: any = algosdk.decodeObj(Buffer.from(txn.note, 'base64'))
-        return metadata
+        const metadata: AssetNormalized = algosdk.decodeObj(Buffer.from(txn.note, 'base64')) as AssetNormalized
+        return some(metadata)
       } catch (error) {
         this.logger.error(error.message)
       }
     }
 
-    return null
+    return none()
   }
 }

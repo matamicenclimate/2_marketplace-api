@@ -5,13 +5,14 @@ import AuctionService from '../services/AuctionService'
 import config from '../config/default'
 import { OpenAPI } from 'routing-controllers-openapi'
 import ListingService from 'src/services/ListingService'
-import { AssetNote } from '@common/lib/AssetNote'
 import CustomLogger from 'src/infrastructure/CustomLogger'
 import ServiceException from 'src/infrastructure/errors/ServiceException'
 import AlgodClientProvider from '@common/services/AlgodClientProvider'
 import algosdk from 'algosdk'
 import * as WalletAccountProvider from '@common/services/WalletAccountProvider'
 import { TransactionOperation } from '@common/services/TransactionOperation'
+import { AssetNormalized } from 'src/interfaces'
+import { option } from '@octantis/option'
 
 // ONLY DEV - Prints swagger json
 // import { getMetadataArgsStorage } from 'routing-controllers'
@@ -39,13 +40,15 @@ export default class MintController {
   @Post(`/${config.version}/create-auction`)
   async createAuction(@Body() { assetId }: { assetId: number }) {
     const populatedAsset = await this.listingService.populateAsset(assetId)
-    const asset: AssetNote = this.listingService.normalizeAsset(populatedAsset)
-    const response = await this.auctionService.execute(
-      assetId,
-      asset?.arc69?.properties?.price
-    )
-    console.log(`DONE: Sending back the asset ${assetId} to wallet owner.`)
-    return response
+    const asset: option<AssetNormalized> = this.listingService.normalizeAsset(populatedAsset)
+    if (asset.isDefined()) {
+      const response = await this.auctionService.execute(
+        assetId,
+        asset.value?.arc69?.properties?.price
+      )
+      console.log(`DONE: Sending back the asset ${assetId} to wallet owner.`)
+      return response
+    }
   }
 
   @OpenAPI({
@@ -89,9 +92,9 @@ export default class MintController {
       const assetId = body.assetId
       await this.optInService.optInAssetByID(assetId)
       const populatedAsset = await this.listingService.populateAsset(assetId)
-      const asset: AssetNote =
+      const asset: option<AssetNormalized> =
         this.listingService.normalizeAsset(populatedAsset)
-      console.log('Opt in result=', asset)
+      console.log('Opt in result=', asset.isDefined() ? asset.value : undefined)
       return {
         targetAccount: this.wallet.account.addr,
       }

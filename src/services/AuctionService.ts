@@ -36,7 +36,11 @@ export default class AuctionService {
     }
   }
 
-  async createAuction(assetId: number, reserve: number, rekeyAccount: algosdk.Account): Promise<number> {
+  async createAuction(
+    assetId: number,
+    reserve: number,
+    rekeyAccount: algosdk.Account
+  ): Promise<number> {
     console.log(`Creating auction`)
     const auction = await this.auctionLogic.createAuction(
       assetId,
@@ -82,7 +86,7 @@ export default class AuctionService {
     )
     console.log(`Dumping temporary account information:`, rekeyAccount.addr)
     console.log(`Paying fees for temp ${rekeyAccount.addr}...`)
-    this._payMinimumTransactionFeesToRekeyAccount(rekeyAccount)
+    await this._payMinimumTransactionFeesToRekeyAccount(rekeyAccount)
     console.log(`Rekeying temporary account...`)
     const rekeyTransaction = await this._rekeyingTemporaryAccount(rekeyAccount)
     await this.op.signAndConfirm(rekeyTransaction, undefined, rekeyAccount)
@@ -95,7 +99,8 @@ export default class AuctionService {
   }
 
   private async _rekeyingTemporaryAccount(rekeyAccount: algosdk.Account) {
-    const suggestedParams: algosdk.SuggestedParams = await this._getSuggestedParams()
+    const suggestedParams: algosdk.SuggestedParams =
+      await this._getSuggestedParams()
 
     return await algosdk.makePaymentTxnWithSuggestedParamsFromObject({
       from: rekeyAccount.addr,
@@ -106,9 +111,15 @@ export default class AuctionService {
     })
   }
 
-  private async _payMinimumTransactionFeesToRekeyAccount(rekeyAccount: algosdk.Account) {
+  private async _payMinimumTransactionFeesToRekeyAccount(
+    rekeyAccount: algosdk.Account
+  ) {
     const microAlgosForFees = 1000000
-    await this.op.pay(this.account.account, rekeyAccount.addr, microAlgosForFees)
+    await this.op.pay(
+      this.account.account,
+      rekeyAccount.addr,
+      microAlgosForFees
+    )
   }
   private _generateRekeyAccount() {
     return algosdk.generateAccount()

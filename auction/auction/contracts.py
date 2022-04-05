@@ -105,23 +105,19 @@ def approval_program():
     )
     on_bid = Seq(
         on_bid_nft_holding,
-        Assert(
-            And(
-                # the auction has been set up
-                on_bid_nft_holding.hasValue(),
-                on_bid_nft_holding.value() > Int(0),
-                # the auction has started
-                App.globalGet(start_time_key) <= Global.latest_timestamp(),
-                # the auction has not ended
-                Global.latest_timestamp() < App.globalGet(end_time_key),
-                # the actual bid payment is before the app call
-                Gtxn[on_bid_txn_index].type_enum() == TxnType.Payment,
-                Gtxn[on_bid_txn_index].sender() == Txn.sender(),
-                Gtxn[on_bid_txn_index].receiver()
-                == Global.current_application_address(),
-                Gtxn[on_bid_txn_index].amount() >= Global.min_txn_fee(),
-            )
-        ),
+        # the auction has been set up
+        Assert(on_bid_nft_holding.hasValue()),
+        Assert(on_bid_nft_holding.value() > Int(0)),
+        # the auction has started
+        # Assert(App.globalGet(start_time_key) <= Global.latest_timestamp()),
+        # the auction has not ended
+        # Assert(Global.latest_timestamp() < App.globalGet(end_time_key)),
+        # the actual bid payment is before the app call
+        Assert(Gtxn[on_bid_txn_index].type_enum() == TxnType.Payment),
+        Assert(Gtxn[on_bid_txn_index].sender() == Txn.sender()),
+        Assert(Gtxn[on_bid_txn_index].receiver() ==
+               Global.current_application_address()),
+        Assert(Gtxn[on_bid_txn_index].amount() >= Global.min_txn_fee()),
         If(
             Gtxn[on_bid_txn_index].amount()
             >= App.globalGet(lead_bid_amount_key) + App.globalGet(min_bid_increment_key)

@@ -120,50 +120,38 @@ asset_holding_get AssetBalance
 store 0
 store 1
 load 0
+assert
 load 1
 int 0
 >
-&&
-byte "start"
-app_global_get
-global LatestTimestamp
-<=
-&&
-global LatestTimestamp
-byte "end"
-app_global_get
-<
-&&
+assert
 txn GroupIndex
 int 1
 -
 gtxns TypeEnum
 int pay
 ==
-&&
+assert
 txn GroupIndex
 int 1
 -
 gtxns Sender
 txn Sender
 ==
-&&
+assert
 txn GroupIndex
 int 1
 -
 gtxns Receiver
 global CurrentApplicationAddress
 ==
-&&
+assert
 txn GroupIndex
 int 1
 -
 gtxns Amount
 global MinTxnFee
 >=
-int 1
-&&
-&&
 assert
 txn GroupIndex
 int 1

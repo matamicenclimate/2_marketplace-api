@@ -29,7 +29,7 @@ export default class FSAVMProgramProvider implements AVMProgramProvider.type {
   }
 
   toUTF8Bytes(bufferString: string) {
-    let encoder = new TextEncoder();
-    return encoder.encode(bufferString);
+    let encoder = new TextEncoder()
+    return encoder.encode(bufferString)
   }
 }

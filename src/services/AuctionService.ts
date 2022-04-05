@@ -8,6 +8,7 @@ import { appendFileSync } from 'fs'
 import * as WalletAccountProvider from '@common/services/WalletAccountProvider'
 import { TransactionOperation } from '@common/services/TransactionOperation'
 import CustomLogger from 'src/infrastructure/CustomLogger'
+import { AssetNormalized } from 'src/interfaces'
 
 @Service()
 export default class AuctionService {
@@ -27,10 +28,15 @@ export default class AuctionService {
     this.op = Container.get(TransactionOperation)
   }
 
-  async execute(assetId: number, reserve: number) {
+  async execute(assetId: number, asset: AssetNormalized) {
     this.logger.info('Creating auction')
     const rekeyAccount = await this.generateRekeyAccount()
-    const appIndex = await this.createAuction(assetId, reserve, rekeyAccount)
+    const appIndex = await this.createAuction(
+      assetId,
+      asset.arc69.properties.price,
+      rekeyAccount,
+      asset
+    )
     return {
       appIndex,
     }
@@ -39,7 +45,8 @@ export default class AuctionService {
   async createAuction(
     assetId: number,
     reserve: number,
-    rekeyAccount: algosdk.Account
+    rekeyAccount: algosdk.Account,
+    asset: AssetNormalized
   ): Promise<number> {
     console.log(`Creating auction`)
     const auction = await this.auctionLogic.createAuction(
@@ -72,7 +79,17 @@ export default class AuctionService {
     console.log(`Application funded with ${amount}`)
     await this.auctionLogic.makeAppCallSetupProc(appIndex, assetId)
     console.log(`Asset opted in!`)
-    await this.auctionLogic.makeTransferToApp(appIndex, assetId)
+    const note = algosdk.encodeObj({
+      ...asset,
+      arc69: {
+        ...asset.arc69,
+        properties: {
+          ...asset.arc69.properties,
+          app_id: appIndex,
+        },
+      },
+    })
+    await this.auctionLogic.makeTransferToApp(appIndex, assetId, note)
     console.log(`Asset ${assetId} transferred to ${appIndex}`)
 
     return appIndex

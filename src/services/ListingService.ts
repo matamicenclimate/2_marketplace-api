@@ -3,7 +3,12 @@ const axios = require('axios').default
 import config from '../config/default'
 import algosdk from 'algosdk'
 import CustomLogger from '../infrastructure/CustomLogger'
-import { Asset, AssetNormalized, PopulatedAsset, Transaction } from 'src/interfaces'
+import {
+  Asset,
+  AssetNormalized,
+  PopulatedAsset,
+  Transaction,
+} from 'src/interfaces'
 import { none, some, option } from '@octantis/option'
 import { AxiosResponse } from 'axios'
 
@@ -15,7 +20,7 @@ export default class ListingService {
     const assets = await this.getAssets()
     const assetsPopulated = await this.getPopulatedAssets(assets)
     const assetsNormalized = this.getNormalizedAssets(assetsPopulated)
-
+    console.log(assetsNormalized)
     return assetsNormalized
   }
 
@@ -41,7 +46,8 @@ export default class ListingService {
   getNormalizedAssets(assetsPopulated: PopulatedAsset[]) {
     const assetsNormalized = []
     for (const asset of assetsPopulated) {
-      const assetNormalized: option<AssetNormalized> = this.normalizeAsset(asset)
+      const assetNormalized: option<AssetNormalized> =
+        this.normalizeAsset(asset)
       if (assetNormalized.isDefined()) {
         assetsNormalized.push(assetNormalized.value)
       }
@@ -79,15 +85,27 @@ export default class ListingService {
         },
       }
     )
-    return response.data
+    return { ...response.data, id: asset }
   }
 
   normalizeAsset(asset: PopulatedAsset): option<AssetNormalized> {
-    const txn = asset.transactions.find((x: Transaction) => x.note != null)
+    const txn = [...asset.transactions]
+      .reverse()
+      .find((x: Transaction) => x.note != null)
+    // console.log(
+    //   'NOTES:',
+    //   txns.map(
+    //     s =>
+    //       (algosdk.decodeObj(Buffer.from(s.note ?? '', 'base64')) as any).arc69
+    //         .properties
+    //   )
+    // )
     if (txn && txn.note) {
       try {
-        const metadata: AssetNormalized = algosdk.decodeObj(Buffer.from(txn.note, 'base64')) as AssetNormalized
-        return some(metadata)
+        const metadata: AssetNormalized = algosdk.decodeObj(
+          Buffer.from(txn.note, 'base64')
+        ) as AssetNormalized
+        return some({ ...metadata, id: (asset as any).id })
       } catch (error) {
         this.logger.error(error.message)
       }

@@ -40,12 +40,10 @@ export default class MintController {
   @Post(`/${config.version}/create-auction`)
   async createAuction(@Body() { assetId }: { assetId: number }) {
     const populatedAsset = await this.listingService.populateAsset(assetId)
-    const asset: option<AssetNormalized> = this.listingService.normalizeAsset(populatedAsset)
+    const asset: option<AssetNormalized> =
+      this.listingService.normalizeAsset(populatedAsset)
     if (asset.isDefined()) {
-      const response = await this.auctionService.execute(
-        assetId,
-        asset.value?.arc69?.properties?.price
-      )
+      const response = await this.auctionService.execute(assetId, asset.value)
       console.log(`DONE: Sending back the asset ${assetId} to wallet owner.`)
       return response
     }

@@ -89,7 +89,7 @@ export default class AuctionService {
         },
       },
     })
-    await this.auctionLogic.makeTransferToApp(appIndex, assetId, note)
+    await this.auctionLogic.makeTransferToApp(appIndex, assetId)
     console.log(`Asset ${assetId} transferred to ${appIndex}`)
 
     return appIndex

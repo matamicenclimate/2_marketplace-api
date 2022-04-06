@@ -16,11 +16,11 @@ import { AxiosResponse } from 'axios'
 export default class ListingService {
   @Inject()
   private readonly logger!: CustomLogger
+
   async listing() {
     const assets = await this.getAssets()
     const assetsPopulated = await this.getPopulatedAssets(assets)
-    const assetsNormalized = this.getNormalizedAssets(assetsPopulated)
-    return assetsNormalized
+    return this.getNormalizedAssets(assetsPopulated)
   }
 
   async getPopulatedAssets(assets: Asset[]) {
@@ -35,10 +35,8 @@ export default class ListingService {
         assetsPopulated.push(...result)
         promises = []
       }
-
       counter++
     }
-
     return assetsPopulated
   }
 

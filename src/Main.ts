@@ -29,8 +29,11 @@ export default class Main {
   }
 
   static setup() {
-    const swaggerDocument: any = swagger.loadDocumentSync('./src/public/api.yaml');
+    const swaggerDocument: any = swagger.loadDocumentSync(
+      './src/public/api.yaml'
+    )
     const app = new Application()
+    app.use(require('koa-morgan')('combined'))
     app.use(handleErrors)
     app.use(cors)
     app.use(ui(swaggerDocument, '/api/v1/docs'))

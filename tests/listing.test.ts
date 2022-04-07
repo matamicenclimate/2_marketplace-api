@@ -37,4 +37,20 @@ describe('Listing', () => {
     expect(listingResponse.statusCode).to.eq(SUCCESS)
     expect(listingResponse.body.length).to.eq(0)
   })
+
+  it('can get one asset', async () => {
+    sinon.stub(axios, 'get').callsFake((url: string): Promise<unknown> => {
+      if (url === `https://testnet-algorand.api.purestake.io/idx2/v2/assets/${assetId}/transactions`) return Promise.resolve(populatedAsset)
+      return Promise.resolve({})
+    })
+    const getAssetResponse = await request(server).get(
+      `/api/${process.env.RESTAPI_VERSION}/asset/${assetId}`
+    )
+
+    expect(getAssetResponse.statusCode).to.eq(SUCCESS)
+    expect(Boolean(getAssetResponse.body.value.arc69)).to.be.true
+    expect(getAssetResponse.body.value.image_url).to.eq('https://cloudflare-ipfs.com/ipfs/bafybeihhargel6lngmkyhuhdfxfsyq5c2krs442f5ujit2vkfymjgebvpe/1641997247445.jpg')
+    expect(getAssetResponse.body.value.title).to.eq('dafdf')
+
+  })
 })

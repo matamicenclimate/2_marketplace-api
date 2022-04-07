@@ -28,6 +28,17 @@ export default class ListingsController {
       throw new ServiceException(message)
     }
   }
+
+  @Get(`/${config.version}/asset/:id`)
+  async getAsset(@Param('id') id: number) {
+    try {
+      return await this.ListingService.getAsset(id)
+    } catch (error) {
+      const message = `Get asset error: ${error.message}`
+      this.logger.error(message, { stack: error.stack })
+      throw new ServiceException(message)
+    }
+  }
 }
 
 // ONLY DEV - Prints swagger json

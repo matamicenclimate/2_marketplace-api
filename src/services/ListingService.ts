@@ -30,7 +30,7 @@ export default class ListingService {
     if (!Array.isArray(assets)) return assetsPopulated
     while (counter < assets.length) {
       promises.push(this.populateAsset(assets[counter]['asset-id']))
-      if (counter === assets.length - 1 || promises.length > 9) {
+      if (counter === assets.length - 1 || promises.length > 5) {
         const result = await Promise.all(promises)
         assetsPopulated.push(...result)
         promises = []

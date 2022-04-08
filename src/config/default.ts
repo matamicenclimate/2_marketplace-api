@@ -51,5 +51,8 @@ const config = {
   algoExplorerApi:
     process.env.ALGO_EXPLORER_API ??
     die(`Environment variable "ALGO_EXPLORER_API" wasn't defined!`),
+  endAuctionSeconds:
+    process.env.END_AUCTION_SECONDS ??
+    die(`Environment variable "END_AUCTION_SECONDS" wasn't defined!`),
 }
 export default config

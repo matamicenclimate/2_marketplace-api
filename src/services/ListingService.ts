@@ -11,6 +11,7 @@ import {
 } from 'src/interfaces'
 import { none, some, option } from '@octantis/option'
 import { AxiosResponse } from 'axios'
+import ServiceException from 'src/infrastructure/errors/ServiceException'
 
 @Service()
 export default class ListingService {
@@ -68,21 +69,27 @@ export default class ListingService {
       return response.data.account.assets
     } catch (error) {
       if (error.response.status === 404) return []
-      throw error
+      throw new ServiceException(error.message, error.response.status)
     }
   }
 
   async populateAsset(asset: number) {
-    const response = await axios.get(
-      `${config.algoIndexerApi}/assets/${asset}/transactions`,
-      {
-        headers: {
-          accept: 'application/json',
-          'x-api-key': config.algoClientApiKey,
-        },
-      }
-    )
-    return { ...response.data, id: asset }
+    try {
+      const response = await axios.get(
+        `${config.algoIndexerApi}/assets/${asset}/transactions`,
+        {
+          headers: {
+            accept: 'application/json',
+            'x-api-key': config.algoClientApiKey,
+          },
+        }
+      )
+      return { ...response.data, id: asset }
+    } catch (error) {
+      const message = 'Error on populate asset: ' + error.message
+      this.logger.error(message)
+      throw new ServiceException(message, error.response.status)
+    }
   }
 
   normalizeAsset(asset: PopulatedAsset): option<AssetNormalized> {

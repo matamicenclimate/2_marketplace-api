@@ -22,6 +22,8 @@ describe('Listing', () => {
     expect(Boolean(listingResponse.body[0].arc69)).to.be.true
     expect(listingResponse.body[0].image_url).to.eq('https://cloudflare-ipfs.com/ipfs/bafybeihhargel6lngmkyhuhdfxfsyq5c2krs442f5ujit2vkfymjgebvpe/1641997247445.jpg')
     expect(listingResponse.body[0].title).to.eq('dafdf')
+    expect(listingResponse.body[0].id).to.eq(69586371)
+    expect(listingResponse.body[0].creator).to.eq('PJNO5SJHQNHNXXSC3OX6M6UG5P6QPP6PHG6YXRU5UNYSQCX7L5XKL7KC6M')
 
   })
   it('handles 404 status when assets not found', async () => {

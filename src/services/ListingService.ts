@@ -97,12 +97,18 @@ export default class ListingService {
     //         .properties
     //   )
     // )
+    const creator = asset.transactions.find((i: Transaction) => Boolean(i['asset-config-transaction']?.params?.creator)) as Transaction
+
     if (txn && txn.note) {
       try {
         const metadata: AssetNormalized = algosdk.decodeObj(
           Buffer.from(txn.note, 'base64')
         ) as AssetNormalized
-        return some({ ...metadata, id: (asset as any).id })
+        return some({
+          ...metadata,
+          ...{ creator: creator['asset-config-transaction']?.params?.creator },
+          id: (asset as any).id
+        })
       } catch (error) {
         this.logger.error(error.message)
       }

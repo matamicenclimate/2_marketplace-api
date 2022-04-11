@@ -3,6 +3,7 @@ import request from 'supertest'
 import server from './testSupport/server'
 import axios from 'axios'
 import sinon from 'sinon'
+import config from 'src/config/default'
 import { assets, populatedAsset } from './testSupport/mocks'
 
 const SUCCESS = 200
@@ -54,5 +55,36 @@ describe('Listing', () => {
     expect(getAssetResponse.body.value.image_url).to.eq('https://cloudflare-ipfs.com/ipfs/bafybeihhargel6lngmkyhuhdfxfsyq5c2krs442f5ujit2vkfymjgebvpe/1641997247445.jpg')
     expect(getAssetResponse.body.value.title).to.eq('dafdf')
 
+  })
+
+  it('can get assets list sending wallet', async () => {
+    const body = { wallet: config.defaultWallet.address }
+    sinon.stub(axios, 'get').callsFake((url: string): Promise<unknown> => {
+      if (url === `https://testnet-algorand.api.purestake.io/idx2/v2/accounts/${body.wallet}/assets`) return Promise.resolve(assets)
+      return Promise.resolve({})
+    })
+
+    const getAssetResponse = await request(server)
+      .get(`/api/${process.env.RESTAPI_VERSION}/assets`)
+      .query(body)
+
+    expect(getAssetResponse.statusCode).to.eq(SUCCESS)
+    expect(getAssetResponse.body.account.assets[0]['asset-id']).to.eq(assets.data.account.assets[0]['asset-id'])
+    expect(getAssetResponse.body).to.deep.eq(assets.data)
+  })
+
+  it('can get assets list without sending wallet', async () => {
+    const body = { wallet: config.defaultWallet.address }
+    sinon.stub(axios, 'get').callsFake((url: string): Promise<unknown> => {
+      if (url === `https://testnet-algorand.api.purestake.io/idx2/v2/accounts/${body.wallet}/assets`) return Promise.resolve(assets)
+      return Promise.resolve({})
+    })
+
+    const getAssetResponse = await request(server)
+      .get(`/api/${process.env.RESTAPI_VERSION}/assets`)
+
+    expect(getAssetResponse.statusCode).to.eq(SUCCESS)
+    expect(getAssetResponse.body.account.assets[0]['asset-id']).to.eq(assets.data.account.assets[0]['asset-id'])
+    expect(getAssetResponse.body).to.deep.eq(assets.data)
   })
 })

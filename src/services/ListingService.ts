@@ -23,6 +23,12 @@ export default class ListingService {
     return this.getNormalizedAssets(assetsPopulated)
   }
 
+  async getAsset(assetId: number){
+    const assetPopulated = await this.populateAsset(assetId)
+    return this.normalizeAsset(assetPopulated)
+
+  }
+
   async getPopulatedAssets(assets: Asset[]) {
     let counter = 0
     let promises = []

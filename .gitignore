@@ -14,5 +14,7 @@
 .env
 
 # Editors
-
 .vscode
+
+# Temporary assets
+.temp.accounts

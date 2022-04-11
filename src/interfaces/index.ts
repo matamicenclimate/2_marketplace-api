@@ -96,7 +96,7 @@ export interface Arc69 {
 }
 
 export interface Properties {
-  app_id: number;
+  app_id?: number;
   artist: string;
   cause: string;
   causePercentage: number;

@@ -109,9 +109,9 @@ def approval_program():
         Assert(on_bid_nft_holding.hasValue()),
         Assert(on_bid_nft_holding.value() > Int(0)),
         # the auction has started
-        # Assert(App.globalGet(start_time_key) <= Global.latest_timestamp()),
+        Assert(App.globalGet(start_time_key) <= Global.latest_timestamp()),
         # the auction has not ended
-        # Assert(Global.latest_timestamp() < App.globalGet(end_time_key)),
+        Assert(Global.latest_timestamp() < App.globalGet(end_time_key)),
         # the actual bid payment is before the app call
         Assert(Gtxn[on_bid_txn_index].type_enum() == TxnType.Payment),
         Assert(Gtxn[on_bid_txn_index].sender() == Txn.sender()),

@@ -5,13 +5,16 @@ import { useKoaServer } from 'routing-controllers'
 import { handleErrors } from './middlewares/handleErrors'
 import config from './config/default'
 import { cors } from './middlewares/cors'
-import { ui, validate } from 'swagger2-koa'
+import { ui } from 'swagger2-koa'
 import * as swagger from 'swagger2'
 import CustomLogger from './infrastructure/CustomLogger'
 import HealthzController from './controllers/HealthzController'
 import IpfsController from './controllers/IpfsController'
 import ListingsController from './controllers/ListingsController'
 import MintController from './controllers/MintController'
+import CloseAuction from './services/CloseAuction'
+import ListingService from './services/ListingService'
+import { AssetNormalized } from './interfaces'
 
 @Entry
 export default class Main {
@@ -37,7 +40,6 @@ export default class Main {
     app.use(handleErrors)
     app.use(cors)
     app.use(ui(swaggerDocument, '/api/v1/docs'))
-    // app.use(validate(swaggerDocument))
 
     useKoaServer(app, {
       cors: true,
@@ -49,6 +51,19 @@ export default class Main {
         MintController,
       ],
     })
+
+    setInterval(() => {
+      const logger = new CustomLogger()
+      try {
+        logger.info('close auctions')
+        new ListingService().listing().then(async (nfts: AssetNormalized[]) => {
+          logger.info(`Close auctions detect ${nfts.length} nfts`)
+          await new CloseAuction().execute(nfts)
+        })
+      } catch (error) {
+        logger.error('Error in app interval closing auctions: ' + error.message, { stack: error.stack })
+      }
+    }, parseInt(config.closeAuctionIntervalMiliseconds))
     return { app }
   }
 }

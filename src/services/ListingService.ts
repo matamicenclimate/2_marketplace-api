@@ -10,7 +10,7 @@ import {
   Transaction,
 } from 'src/interfaces'
 import { none, some, option } from '@octantis/option'
-import { AxiosResponse } from 'axios'
+import { AxiosError, AxiosPromise, AxiosResponse } from 'axios'
 import ServiceException from 'src/infrastructure/errors/ServiceException'
 
 @Service()
@@ -57,7 +57,7 @@ export default class ListingService {
   async getAssets() {
     try {
       const { address } = config.defaultWallet
-      const response: AxiosResponse = await axios.get(
+      const addressAssetsRequest = axios.get(
         `${config.algoIndexerApi}/accounts/${address}`,
         {
           headers: {
@@ -66,6 +66,7 @@ export default class ListingService {
           },
         }
       )
+      const response = await this.retryAxiosRequest(addressAssetsRequest, 5, 10000)
       return response.data.account.assets
     } catch (error) {
       if (error.response.status === 404) return []
@@ -75,7 +76,7 @@ export default class ListingService {
 
   async populateAsset(asset: number) {
     try {
-      const response = await axios.get(
+      const getTransactionsRequest = axios.get(
         `${config.algoIndexerApi}/assets/${asset}/transactions`,
         {
           headers: {
@@ -84,11 +85,33 @@ export default class ListingService {
           },
         }
       )
+      const response = await this.retryAxiosRequest(getTransactionsRequest, 5, 10000)
+
       return { ...response.data, id: asset }
     } catch (error) {
       const message = 'Error on populate asset: ' + error.message
       this.logger.error(message)
       throw new ServiceException(message, error.response.status)
+    }
+  }
+
+  async retryAxiosRequest(promise: AxiosPromise, retryCount: number, timeout: number): Promise<AxiosResponse> {
+    try {
+      return await new Promise(async (resolve, reject) => {
+        setTimeout(async () => {
+          reject('Timeout is reached!')
+        }, timeout)
+        try {
+          resolve(await promise)
+        } catch (e) {
+          reject(e)
+        }
+      })
+    } catch (err) {
+      if (retryCount < 1) {
+        throw err
+      }
+      return await this.retryAxiosRequest(promise, retryCount - 1, timeout)
     }
   }
 

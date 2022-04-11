@@ -53,7 +53,8 @@ export default class AuctionService {
       assetId,
       reserve,
       parseInt(config.bid.increment),
-      rekeyAccount
+      rekeyAccount,
+      parseInt(config.endAuctionSeconds)
     )
     const appIndex = auction['application-index']
     console.log(

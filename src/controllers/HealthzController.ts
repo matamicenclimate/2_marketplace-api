@@ -1,4 +1,4 @@
-import { Get, JsonController, Param } from 'routing-controllers'
+import { Get, JsonController } from 'routing-controllers'
 import { Inject, Service } from 'typedi'
 import HealthzService from '../services/HealthzService'
 

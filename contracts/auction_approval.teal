@@ -125,6 +125,16 @@ load 0
 int 0
 >
 assert
+byte "start"
+app_global_get
+global LatestTimestamp
+<=
+assert
+global LatestTimestamp
+byte "end"
+app_global_get
+<
+assert
 txn GroupIndex
 int 1
 -

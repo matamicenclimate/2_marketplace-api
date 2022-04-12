@@ -1,4 +1,4 @@
-import { Get, JsonController, Param, Post } from 'routing-controllers'
+import { Get, JsonController, Param, QueryParam } from 'routing-controllers'
 import { Inject, Service } from 'typedi'
 import ListingService from '../services/ListingService'
 import ServiceException from '../infrastructure/errors/ServiceException'
@@ -35,6 +35,17 @@ export default class ListingsController {
       return await this.ListingService.getAsset(id)
     } catch (error) {
       const message = `Get asset error: ${error.message}`
+      this.logger.error(message, { stack: error.stack })
+      throw new ServiceException(message)
+    }
+  }
+
+  @Get(`/${config.version}/assets`)
+  async getAssetsFromWallet(@QueryParam('wallet') wallet?: string) {
+    try {
+      return await this.ListingService.getAssetsFromWallet(wallet)
+    } catch (error) {
+      const message = `Get assets from wallet error: ${error.message}`
       this.logger.error(message, { stack: error.stack })
       throw new ServiceException(message)
     }

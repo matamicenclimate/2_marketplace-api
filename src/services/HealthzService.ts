@@ -4,7 +4,7 @@ import { Service } from 'typedi'
 export default class HealthzService {
   async execute() {
     return {
-      status: 'ok'
-    }
+      status: 'ok',
+    } as const
   }
 }

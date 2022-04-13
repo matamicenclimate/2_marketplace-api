@@ -3,6 +3,7 @@ import { AuctionLogic } from '@common/services/AuctionLogic'
 import OptInService from '@common/services/OptInService'
 import config from 'src/config/default'
 import Container, { Inject, Service } from 'typedi'
+import axios from 'axios'
 import algosdk from 'algosdk'
 import { appendFileSync } from 'fs'
 import * as WalletAccountProvider from '@common/services/WalletAccountProvider'
@@ -28,14 +29,30 @@ export default class AuctionService {
     this.op = Container.get(TransactionOperation)
   }
 
-  async execute(assetId: number, asset: AssetNormalized) {
+  async execute(
+    assetId: number,
+    asset: AssetNormalized,
+    creatorWallet: string,
+    cp: string,
+  ) {
     this.logger.info('Creating auction')
     const rekeyAccount = await this.generateRekeyAccount()
+    let causePercentaje = parseInt(cp)
+    let { cause, percentages } = await this._getCauseInfo(asset.arc69.properties.cause)
+    const causeP = parseInt(percentages.data.percentages.cause)
+    if (causeP < causePercentaje) {
+      causePercentaje = causeP
+    }
+    const creatorPercentaje = 100 - causePercentaje - parseInt(percentages.data.percentages.marketplace)
     const appIndex = await this.createAuction(
       assetId,
       asset.arc69.properties.price,
       rekeyAccount,
-      asset
+      asset,
+      cause.data.wallet,
+      creatorWallet,
+      causePercentaje,
+      creatorPercentaje
     )
     return {
       appIndex,
@@ -46,7 +63,11 @@ export default class AuctionService {
     assetId: number,
     reserve: number,
     rekeyAccount: algosdk.Account,
-    asset: AssetNormalized
+    asset: AssetNormalized,
+    causeWallet: string,
+    creatorWallet: string,
+    causePercentaje: number,
+    creatorPercentaje: number
   ): Promise<number> {
     console.log(`Creating auction`)
     const auction = await this.auctionLogic.createAuction(
@@ -54,7 +75,11 @@ export default class AuctionService {
       reserve,
       parseInt(config.bid.increment),
       rekeyAccount,
-      parseInt(config.endAuctionSeconds)
+      parseInt(config.endAuctionSeconds),
+      causeWallet,
+      creatorWallet,
+      causePercentaje,
+      creatorPercentaje
     )
     const appIndex = auction['application-index']
     console.log(
@@ -144,5 +169,30 @@ export default class AuctionService {
   }
   private async _getSuggestedParams() {
     return await this.client.client.getTransactionParams().do()
+  }
+
+  private async _getCauseInfo(causeId: string) {
+    console.log('getting causes info....', causeId, `${config.apiUrlCauses}causes/${causeId}`)
+    const cause = await axios.get(
+      `${config.apiUrlCauses}/causes/${causeId}`,
+      {
+        headers: {
+          accept: 'application/json',
+        },
+      }
+    )
+    console.log('getting causes percentajes....')
+    const percentages = await axios.get(
+      `${config.apiUrlCauses}/causes/config`,
+      {
+        headers: {
+          accept: 'application/json',
+        },
+      }
+    )
+
+    return {
+      cause, percentages
+    }
   }
 }

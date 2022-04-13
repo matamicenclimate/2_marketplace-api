@@ -48,6 +48,10 @@ def createAuctionApp(
     endTime: int,
     reserve: int,
     minBidIncrement: int,
+    nftCreatorAddress: str,
+    nftCauseAddress: str,
+    creatorPercentaje: int,
+    causePercentaje: int,
 ) -> int:
     """Create a new auction.
 
@@ -73,7 +77,7 @@ def createAuctionApp(
     """
     approval, clear = getContracts(client)
 
-    globalSchema = transaction.StateSchema(num_uints=7, num_byte_slices=2)
+    globalSchema = transaction.StateSchema(num_uints=9, num_byte_slices=4)
     localSchema = transaction.StateSchema(num_uints=0, num_byte_slices=0)
 
     app_args = [
@@ -83,6 +87,10 @@ def createAuctionApp(
         endTime.to_bytes(8, "big"),
         reserve.to_bytes(8, "big"),
         minBidIncrement.to_bytes(8, "big"),
+        encoding.decode_address(nftCreatorAddress),
+        encoding.decode_address(nftCauseAddress),
+        creatorPercentaje.to_bytes(8, "big"),
+        causePercentaje.to_bytes(8, "big"),
     ]
 
     txn = transaction.ApplicationCreateTxn(

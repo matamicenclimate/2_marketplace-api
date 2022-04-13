@@ -52,16 +52,15 @@ export default class Main {
       ],
     })
 
-    setInterval(() => {
-      const logger = new CustomLogger()
+    const logger = new CustomLogger()
+    setInterval(async () => {
       try {
         logger.info('close auctions')
-        new ListingService().listing().then(async (nfts: AssetNormalized[]) => {
-          logger.info(`Close auctions detect ${nfts.length} nfts`)
-          await new CloseAuction().execute(nfts)
-        })
+        const nfts = await new ListingService().listing()
+        logger.info(`Close auctions detect ${nfts.length} nfts`)
+        await new CloseAuction().execute(nfts)
       } catch (error) {
-        logger.error('Error in app interval closing auctions: ' + error.message, { stack: error.stack })
+        logger.error('Error in app interval closing auctions: ' + error.message, { stack: error.stack, errors: error.errors })
       }
     }, parseInt(config.closeAuctionIntervalMiliseconds))
     return { app }

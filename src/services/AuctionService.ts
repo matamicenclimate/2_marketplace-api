@@ -40,7 +40,7 @@ export default class AuctionService {
     let causePercentaje = parseInt(cp)
     let { cause, percentages } = await this._getCauseInfo(asset.arc69.properties.cause)
     const causeP = parseInt(percentages.data.percentages.cause)
-    if (causeP < causePercentaje) {
+    if (causeP > causePercentaje) {
       causePercentaje = causeP
     }
     const creatorPercentaje = 100 - causePercentaje - parseInt(percentages.data.percentages.marketplace)

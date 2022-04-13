@@ -76,6 +76,20 @@ app_global_get
 callsub sub1
 b main_l11
 main_l14:
+byte "bid_amount"
+app_global_get
+byte "creator"
+app_global_get
+byte "creator_percentaje"
+app_global_get
+callsub sub4
+byte "bid_amount"
+app_global_get
+byte "cause"
+app_global_get
+byte "cause_percentaje"
+app_global_get
+callsub sub3
 byte "nft_id"
 app_global_get
 byte "bid_account"
@@ -124,6 +138,16 @@ assert
 load 1
 int 0
 >
+assert
+byte "start"
+app_global_get
+global LatestTimestamp
+<=
+assert
+global LatestTimestamp
+byte "end"
+app_global_get
+<
 assert
 txn GroupIndex
 int 1
@@ -241,6 +265,20 @@ byte "min_bid_inc"
 txna ApplicationArgs 5
 btoi
 app_global_put
+byte "creator"
+txna ApplicationArgs 6
+app_global_put
+byte "cause"
+txna ApplicationArgs 7
+app_global_put
+byte "creator_percentaje"
+txna ApplicationArgs 8
+btoi
+app_global_put
+byte "cause_percentaje"
+txna ApplicationArgs 9
+btoi
+app_global_put
 byte "bid_account"
 global ZeroAddress
 app_global_put
@@ -305,4 +343,54 @@ load 8
 itxn_field CloseRemainderTo
 itxn_submit
 sub2_l2:
+retsub
+sub3: // payAmountToCause
+store 11
+store 10
+store 9
+global CurrentApplicationAddress
+balance
+int 0
+!=
+bz sub3_l2
+itxn_begin
+int pay
+itxn_field TypeEnum
+load 11
+load 9
+*
+int 100
+/
+global MinTxnFee
+-
+itxn_field Amount
+load 10
+itxn_field Receiver
+itxn_submit
+sub3_l2:
+retsub
+sub4: // payAmountToCreator
+store 14
+store 13
+store 12
+global CurrentApplicationAddress
+balance
+int 0
+!=
+bz sub4_l2
+itxn_begin
+int pay
+itxn_field TypeEnum
+load 14
+load 12
+*
+int 100
+/
+global MinTxnFee
+-
+itxn_field Amount
+load 13
+itxn_field Receiver
+itxn_submit
+sub4_l2:
 retsub

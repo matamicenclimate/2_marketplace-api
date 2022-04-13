@@ -38,12 +38,16 @@ export default class MintController {
   private readonly wallet!: WalletAccountProvider.type
 
   @Post(`/${config.version}/create-auction`)
-  async createAuction(@Body() { assetId }: { assetId: number }) {
+  async createAuction(@Body() {
+    assetId,
+    creatorWallet,
+    causePercentaje,
+  }: { assetId: number, creatorWallet: string, causePercentaje: string }) {
     const populatedAsset = await this.listingService.populateAsset(assetId)
     const asset: option<AssetNormalized> =
       this.listingService.normalizeAsset(populatedAsset)
     if (asset.isDefined()) {
-      const response = await this.auctionService.execute(assetId, asset.value)
+      const response = await this.auctionService.execute(assetId, asset.value, creatorWallet, causePercentaje)
       console.log(`DONE: Sending back the asset ${assetId} to wallet owner.`)
       return response
     }
@@ -60,32 +64,6 @@ export default class MintController {
   })
   @Post(`/${config.version}/opt-in`)
   async optIn(@Body() body: any) {
-    // const op = Container.get(TransactionOperation)
-    // const wallet = WalletAccountProvider.get()
-    // const temp = algosdk.mnemonicToSecretKey(
-    //   'various wild kitten cabbage fall myth write practice acid hockey stomach host argue planet plunge bread thank vocal equip verify right drastic crisp abstract top'
-    // )
-    // const suggestedParams = await Container.get(AlgodClientProvider)
-    //   .client.getTransactionParams()
-    //   .do()
-    // {
-    //   const tx = await algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    //     from: wallet.account.addr,
-    //     to: temp.addr,
-    //     amount: 1000000,
-    //     suggestedParams,
-    //   })
-    //   await op.signAndConfirm(tx, undefined, temp)
-    // }
-    // const r = await algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    //   from: temp.addr,
-    //   to: temp.addr,
-    //   suggestedParams,
-    //   amount: 0,
-    //   rekeyTo: wallet.account.addr,
-    // })
-    // await op.signAndConfirm(r, undefined, temp)
-    // throw new ServiceException('YOLO')
     try {
       const assetId = body.assetId
       await this.optInService.optInAssetByID(assetId)

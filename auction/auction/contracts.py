@@ -11,6 +11,10 @@ def approval_program():
     num_bids_key = Bytes("num_bids")
     lead_bid_amount_key = Bytes("bid_amount")
     lead_bid_account_key = Bytes("bid_account")
+    nft_creator_key = Bytes("creator")
+    nft_cause_key = Bytes("cause")
+    creator_percentaje = Bytes("creator_percentaje")
+    cause_percentaje = Bytes("cause_percentaje")
 
     @Subroutine(TealType.none)
     def closeNFTTo(assetID: Expr, account: Expr) -> Expr:
@@ -62,6 +66,39 @@ def approval_program():
                 InnerTxnBuilder.Submit(),
             )
         )
+    
+    @Subroutine(TealType.none)
+    def payAmountToCause(bid_amount: Expr, nft_cause_key: Expr, cause_percentaje: Expr) -> Expr:
+        cause_amount = (((cause_percentaje * bid_amount) / Int(100)) - Global.min_txn_fee())
+        return If(Balance(Global.current_application_address()) != Int(0)).Then(
+            Seq(
+                InnerTxnBuilder.Begin(),
+                InnerTxnBuilder.SetFields(
+                    {
+                        TxnField.type_enum: TxnType.Payment,
+                        TxnField.amount: cause_amount,
+                        TxnField.receiver: nft_cause_key,
+                    }
+                ),
+                InnerTxnBuilder.Submit(),
+            ),
+        )
+    @Subroutine(TealType.none)
+    def payAmountToCreator(bid_amount: Expr, nft_creator_key: Expr, creator_percentaje: Expr) -> Expr:
+        creator_amount = (((creator_percentaje * bid_amount) / Int(100)) - Global.min_txn_fee())
+        return If(Balance(Global.current_application_address()) != Int(0)).Then(
+            Seq(
+                InnerTxnBuilder.Begin(),
+                InnerTxnBuilder.SetFields(
+                    {
+                        TxnField.type_enum: TxnType.Payment,
+                        TxnField.amount: creator_amount,
+                        TxnField.receiver: nft_creator_key,
+                    }
+                ),
+                InnerTxnBuilder.Submit(),
+            ),
+        )
 
     on_create_start_time = Btoi(Txn.application_args[2])
     on_create_end_time = Btoi(Txn.application_args[3])
@@ -72,6 +109,10 @@ def approval_program():
         App.globalPut(end_time_key, on_create_end_time),
         App.globalPut(reserve_amount_key, Btoi(Txn.application_args[4])),
         App.globalPut(min_bid_increment_key, Btoi(Txn.application_args[5])),
+        App.globalPut(nft_creator_key, Txn.application_args[6]),
+        App.globalPut(nft_cause_key, Txn.application_args[7]),
+        App.globalPut(creator_percentaje, Btoi(Txn.application_args[8])),
+        App.globalPut(cause_percentaje, Btoi(Txn.application_args[9])),
         App.globalPut(lead_bid_account_key, Global.zero_address()),
         Assert(
             And(
@@ -109,9 +150,9 @@ def approval_program():
         Assert(on_bid_nft_holding.hasValue()),
         Assert(on_bid_nft_holding.value() > Int(0)),
         # the auction has started
-        # Assert(App.globalGet(start_time_key) <= Global.latest_timestamp()),
+        Assert(App.globalGet(start_time_key) <= Global.latest_timestamp()),
         # the auction has not ended
-        # Assert(Global.latest_timestamp() < App.globalGet(end_time_key)),
+        Assert(Global.latest_timestamp() < App.globalGet(end_time_key)),
         # the actual bid payment is before the app call
         Assert(Gtxn[on_bid_txn_index].type_enum() == TxnType.Payment),
         Assert(Gtxn[on_bid_txn_index].sender() == Txn.sender()),
@@ -129,12 +170,9 @@ def approval_program():
                         App.globalGet(lead_bid_amount_key),
                     )
                 ),
-                App.globalPut(lead_bid_amount_key,
-                              Gtxn[on_bid_txn_index].amount()),
-                App.globalPut(lead_bid_account_key,
-                              Gtxn[on_bid_txn_index].sender()),
-                App.globalPut(num_bids_key, App.globalGet(
-                    num_bids_key) + Int(1)),
+                App.globalPut(lead_bid_amount_key, Gtxn[on_bid_txn_index].amount()),
+                App.globalPut(lead_bid_account_key, Gtxn[on_bid_txn_index].sender()),
+                App.globalPut(num_bids_key, App.globalGet(num_bids_key) + Int(1)),
                 Approve(),
             )
         ),
@@ -159,8 +197,7 @@ def approval_program():
                     )
                 ),
                 # if the auction contract account has opted into the nft, close it out
-                closeNFTTo(App.globalGet(nft_id_key),
-                           App.globalGet(seller_key)),
+                closeNFTTo(App.globalGet(nft_id_key), App.globalGet(seller_key)),
                 # if the auction contract still has funds, send them all to the seller
                 closeAccountTo(App.globalGet(seller_key)),
                 Approve(),
@@ -177,9 +214,21 @@ def approval_program():
                     )
                     .Then(
                         # the auction was successful: send lead bid account the nft
-                        closeNFTTo(
-                            App.globalGet(nft_id_key),
-                            App.globalGet(lead_bid_account_key),
+                        Seq(
+                            payAmountToCreator(
+                                App.globalGet(lead_bid_amount_key),
+                                App.globalGet(nft_creator_key),
+                                App.globalGet(creator_percentaje),
+                            ),
+                            payAmountToCause(
+                                App.globalGet(lead_bid_amount_key),
+                                App.globalGet(nft_cause_key),
+                                App.globalGet(cause_percentaje),
+                            ),
+                            closeNFTTo(
+                                App.globalGet(nft_id_key),
+                                App.globalGet(lead_bid_account_key),
+                            ),
                         )
                     )
                     .Else(
@@ -187,8 +236,8 @@ def approval_program():
                             # the auction was not successful because the reserve was not met: return
                             # the nft to the seller and repay the lead bidder
                             closeNFTTo(
-                                App.globalGet(nft_id_key), App.globalGet(
-                                    seller_key)
+                                App.globalGet(nft_id_key),
+                                App.globalGet(seller_key),
                             ),
                             repayPreviousLeadBidder(
                                 App.globalGet(lead_bid_account_key),
@@ -199,8 +248,7 @@ def approval_program():
                 )
                 .Else(
                     # the auction was not successful because no bids were placed: return the nft to the seller
-                    closeNFTTo(App.globalGet(nft_id_key),
-                               App.globalGet(seller_key))
+                    closeNFTTo(App.globalGet(nft_id_key), App.globalGet(seller_key))
                 ),
                 # send remaining funds to the seller
                 closeAccountTo(App.globalGet(seller_key)),

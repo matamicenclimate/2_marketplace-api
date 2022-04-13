@@ -10,7 +10,8 @@ import {
   Transaction,
 } from 'src/interfaces'
 import { none, some, option } from '@octantis/option'
-import { AxiosResponse } from 'axios'
+import { AxiosError, AxiosPromise, AxiosResponse } from 'axios'
+import ServiceException from 'src/infrastructure/errors/ServiceException'
 
 @Service()
 export default class ListingService {
@@ -75,7 +76,7 @@ export default class ListingService {
   async getAssets() {
     try {
       const { address } = config.defaultWallet
-      const response: AxiosResponse = await axios.get(
+      const addressAssetsRequest = axios.get(
         `${config.algoIndexerApi}/accounts/${address}`,
         {
           headers: {
@@ -84,24 +85,53 @@ export default class ListingService {
           },
         }
       )
+      const response = await this.retryAxiosRequest(addressAssetsRequest, 5, 1000)
       return response.data.account.assets
     } catch (error) {
       if (error.response.status === 404) return []
-      throw error
+      throw new ServiceException(error.message, error.response.status)
     }
   }
 
   async populateAsset(asset: number) {
-    const response = await axios.get(
-      `${config.algoIndexerApi}/assets/${asset}/transactions`,
-      {
-        headers: {
-          accept: 'application/json',
-          'x-api-key': config.algoClientApiKey,
-        },
+    try {
+      const getTransactionsRequest = axios.get(
+        `${config.algoIndexerApi}/assets/${asset}/transactions`,
+        {
+          headers: {
+            accept: 'application/json',
+            'x-api-key': config.algoClientApiKey,
+          },
+        }
+      )
+      const response = await this.retryAxiosRequest(getTransactionsRequest, 5, 1000)
+
+      return { ...response.data, id: asset }
+    } catch (error) {
+      const message = 'Error on populate asset: ' + error.message
+      this.logger.error(message)
+      throw new ServiceException(message, error.response.status)
+    }
+  }
+
+  async retryAxiosRequest(promise: AxiosPromise, retryCount: number, timeout: number): Promise<AxiosResponse> {
+    try {
+      return await new Promise(async (resolve, reject) => {
+        setTimeout(async () => {
+          reject('Timeout is reached!')
+        }, timeout)
+        try {
+          resolve(await promise)
+        } catch (e) {
+          reject(e)
+        }
+      })
+    } catch (err) {
+      if (retryCount < 1) {
+        throw err
       }
-    )
-    return { ...response.data, id: asset }
+      return await this.retryAxiosRequest(promise, retryCount - 1, timeout)
+    }
   }
 
   normalizeAsset(asset: PopulatedAsset): option<AssetNormalized> {

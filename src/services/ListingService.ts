@@ -72,7 +72,7 @@ export default class ListingService {
           },
         }
       )
-      const response = await this.retryAxiosRequest(addressAssetsRequest, 5, 10000)
+      const response = await this.retryAxiosRequest(addressAssetsRequest, 5, 1000)
       return response.data.account.assets
     } catch (error) {
       if (error.response.status === 404) return []
@@ -91,7 +91,7 @@ export default class ListingService {
           },
         }
       )
-      const response = await this.retryAxiosRequest(getTransactionsRequest, 5, 10000)
+      const response = await this.retryAxiosRequest(getTransactionsRequest, 5, 1000)
 
       return { ...response.data, id: asset }
     } catch (error) {

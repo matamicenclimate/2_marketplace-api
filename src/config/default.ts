@@ -60,5 +60,8 @@ const config = {
   closeAuctionIntervalMiliseconds:
     process.env.CLOSE_AUCTION_INTERVAL_MILISECONDS ??
     die(`Environment variable "CLOSE_AUCTION_INTERVAL_MILISECONDS" wasn't defined!`),
+  apiUrlCauses:
+    process.env.API_URL_CAUSES ??
+    die(`Environment variable "API_URL_CAUSES" wasn't defined!`),
 }
 export default config

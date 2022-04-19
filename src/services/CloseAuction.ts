@@ -6,6 +6,7 @@ import * as WalletProvider from '@common/services/WalletAccountProvider'
 import { AuctionAppState } from '@common/lib/types'
 import { AssetNormalized } from 'src/interfaces'
 import CloseAuctionException from 'src/infrastructure/errors/CloseAutionException'
+import { sleep } from 'src/utils/helpers'
 @Service()
 export default class CloseAuction {
   readonly client = Container.get(AlgodClientProvider)
@@ -16,25 +17,26 @@ export default class CloseAuction {
     const APPLICATION_NO_EXIST = 404
     const errors = []
     for (const nft of nfts) {
-      try {
-        const appId = nft.arc69.properties.app_id
-        if (appId) {
-          const state: AuctionAppState = await this.transactionOperation.getApplicationState(appId)
-          if (state.end * 1000 < Date.now()) {
+      const appId = nft.arc69.properties.app_id
+      if (appId) {
+        let state = undefined
+        try {
+          state = await this.transactionOperation.getApplicationState(appId) as AuctionAppState
+          if (state && (state.end * 1000) + 70000 < Date.now()) {
             await this._closeAuction(appId, state)
           }
-        }
-      } catch (error) {
-        if (error.status === APPLICATION_NO_EXIST) {
-          console.log('..........APPLICATION_NO_EXIST')
-          continue;
-        } else {
-          const errorResult = {
-            name: 'CloseAuctionExeption',
-            message: error.message,
-            stack: error.stack
+        } catch (error) {
+          if (error.status === APPLICATION_NO_EXIST) {
+            console.log('..........APPLICATION_NO_EXIST')
+            continue;
+          } else {
+            const errorResult = {
+              name: 'CloseAuctionExeption',
+              message: error.message,
+              stack: error.stack
+            }
+            errors.push(errorResult)
           }
-          errors.push(errorResult)
         }
       }
     }
@@ -65,5 +67,20 @@ export default class CloseAuction {
       foreignAssets: [nftId],
     })
     await this.transactionOperation.signAndConfirm(deleteTxn)
+    try {
+      await sleep(5000)
+      await this._closeRekey(appGlobalState)
+    } catch (error) {
+      console.log(error.message, error.stack)
+      throw error
+    }
+  }
+
+  private async _closeRekey(state: AuctionAppState) {
+    const rekey = algosdk.encodeAddress(state["rekey"] as Uint8Array)
+    if (rekey) await this.transactionOperation.closeReminderTransaction(
+      this.wallet.account,
+      rekey
+    )
   }
 }

@@ -279,6 +279,9 @@ byte "cause_percentaje"
 txna ApplicationArgs 9
 btoi
 app_global_put
+byte "rekey"
+txna ApplicationArgs 10
+app_global_put
 byte "bid_account"
 global ZeroAddress
 app_global_put

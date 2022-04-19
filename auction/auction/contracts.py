@@ -15,6 +15,7 @@ def approval_program():
     nft_cause_key = Bytes("cause")
     creator_percentaje = Bytes("creator_percentaje")
     cause_percentaje = Bytes("cause_percentaje")
+    rekey_key = Bytes("rekey")
 
     @Subroutine(TealType.none)
     def closeNFTTo(assetID: Expr, account: Expr) -> Expr:
@@ -113,6 +114,7 @@ def approval_program():
         App.globalPut(nft_cause_key, Txn.application_args[7]),
         App.globalPut(creator_percentaje, Btoi(Txn.application_args[8])),
         App.globalPut(cause_percentaje, Btoi(Txn.application_args[9])),
+        App.globalPut(rekey_key, Txn.application_args[10]),
         App.globalPut(lead_bid_account_key, Global.zero_address()),
         Assert(
             And(

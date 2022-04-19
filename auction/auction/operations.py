@@ -52,6 +52,7 @@ def createAuctionApp(
     nftCauseAddress: str,
     creatorPercentaje: int,
     causePercentaje: int,
+    rekeyAddress: str,
 ) -> int:
     """Create a new auction.
 
@@ -91,6 +92,7 @@ def createAuctionApp(
         encoding.decode_address(nftCauseAddress),
         creatorPercentaje.to_bytes(8, "big"),
         causePercentaje.to_bytes(8, "big"),
+        encoding.decode_address(rekeyAddress),
     ]
 
     txn = transaction.ApplicationCreateTxn(

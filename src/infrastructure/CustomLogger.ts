@@ -22,4 +22,9 @@ export default class CustomLogger implements LoggerInterface {
     const child = this.logger.child(data)
     if(process.env.NODE_ENV !== 'testing') child.error(message)
   }
+
+  warn (message: string, data: any = {}) {
+    const child = this.logger.child(data)
+    if(process.env.NODE_ENV !== 'testing') child.warn(message)
+  }
 }

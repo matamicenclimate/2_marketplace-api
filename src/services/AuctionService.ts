@@ -69,7 +69,7 @@ export default class AuctionService {
     causePercentaje: number,
     creatorPercentaje: number
   ): Promise<number> {
-    console.log(`Creating auction`)
+    this.logger.info(`Creating auction`)
     const auction = await this.auctionLogic.createAuction(
       assetId,
       reserve,
@@ -82,11 +82,11 @@ export default class AuctionService {
       creatorPercentaje
     )
     const appIndex = auction['application-index']
-    console.log(
+    this.logger.info(
       `Auction created by ${rekeyAccount.addr} is ${appIndex} ${config.algoExplorerApi}/application/${appIndex}`
     )
     const appAddr = this._getApplicationAddressFromAppIndex(appIndex)
-    console.log(`App wallet is ${appAddr}`)
+    this.logger.info(`App wallet is ${appAddr}`)
     // const appAddr = algosdk.getApplicationAddress(appIndex)
     // console.log(
     //   `Opting in asset ${assetId} for account ${appAddr} (Signed by ${this.account.account.addr})`
@@ -102,9 +102,9 @@ export default class AuctionService {
     //   result
     // )
     const { amount } = await this.auctionLogic.fundAuction(appIndex)
-    console.log(`Application funded with ${amount}`)
+    this.logger.info(`Application funded with ${amount}`)
     await this.auctionLogic.makeAppCallSetupProc(appIndex, assetId)
-    console.log(`Asset opted in!`)
+    this.logger.info(`Asset opted in!`)
     const note = algosdk.encodeObj({
       ...asset,
       arc69: {
@@ -116,7 +116,7 @@ export default class AuctionService {
       },
     })
     await this.auctionLogic.makeTransferToApp(appIndex, assetId, note)
-    console.log(`Asset ${assetId} transferred to ${appIndex}`)
+    this.logger.info(`Asset ${assetId} transferred to ${appIndex}`)
 
     return appIndex
   }
@@ -127,10 +127,10 @@ export default class AuctionService {
       '.temp.accounts',
       `${rekeyAccount.addr} ${algosdk.secretKeyToMnemonic(rekeyAccount.sk)}\n`
     )
-    console.log(`Dumping temporary account information:`, rekeyAccount.addr)
-    console.log(`Paying fees for temp ${rekeyAccount.addr}...`)
+    this.logger.info(`Dumping temporary account information:`, rekeyAccount.addr)
+    this.logger.info(`Paying fees for temp ${rekeyAccount.addr}...`)
     await this._payMinimumTransactionFeesToRekeyAccount(rekeyAccount)
-    console.log(`Rekeying temporary account...`)
+    this.logger.info(`Rekeying temporary account...`)
     const rekeyTransaction = await this._rekeyingTemporaryAccount(rekeyAccount)
     await this.op.signAndConfirm(rekeyTransaction, undefined, rekeyAccount)
 
@@ -172,7 +172,7 @@ export default class AuctionService {
   }
 
   private async _getCauseInfo(causeId: string) {
-    console.log('getting causes info....', causeId, `${config.apiUrlCauses}causes/${causeId}`)
+    this.logger.info(`getting causes info.... causeId ${config.apiUrlCauses}causes/${causeId}`)
     const cause = await axios.get(
       `${config.apiUrlCauses}/causes/${causeId}`,
       {
@@ -181,7 +181,7 @@ export default class AuctionService {
         },
       }
     )
-    console.log('getting causes percentajes....')
+    this.logger.info('getting causes percentajes....')
     const percentages = await axios.get(
       `${config.apiUrlCauses}/causes/config`,
       {

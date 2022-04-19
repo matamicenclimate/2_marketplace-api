@@ -48,7 +48,7 @@ export default class MintController {
       this.listingService.normalizeAsset(populatedAsset)
     if (asset.isDefined()) {
       const response = await this.auctionService.execute(assetId, asset.value, creatorWallet, causePercentaje)
-      console.log(`DONE: Sending back the asset ${assetId} to wallet owner.`)
+      this.logger.info(`DONE: Sending back the asset ${assetId} to wallet owner.`)
       return response
     }
   }
@@ -70,12 +70,12 @@ export default class MintController {
       const populatedAsset = await this.listingService.populateAsset(assetId)
       const asset: option<AssetNormalized> =
         this.listingService.normalizeAsset(populatedAsset)
-      console.log('Opt in result=', asset.isDefined() ? asset.value : undefined)
+      this.logger.info('Opt in result=', asset.isDefined() ? asset.value : undefined)
       return {
         targetAccount: this.wallet.account.addr,
       }
     } catch (error) {
-      console.log(error.message, error.stack)
+      this.logger.error(error.message, error.stack)
       const message = `Opt in error: ${error.message}`
       this.logger.error(message, { stack: error.stack })
       throw new ServiceException(message)

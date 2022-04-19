@@ -24,12 +24,12 @@ export default class ListingService {
     return this.getNormalizedAssets(assetsPopulated)
   }
 
-  async getAsset(assetId: number){
+  async getAsset(assetId: number) {
     const assetPopulated = await this.populateAsset(assetId)
     return this.normalizeAsset(assetPopulated)
   }
 
-  async getAssetsFromWallet(wallet: string = config.defaultWallet.address){
+  async getAssetsFromWallet(wallet: string = config.defaultWallet.address) {
     const response = await axios.get(
       `${config.algoIndexerApi}/accounts/${wallet}/assets`,
       {
@@ -40,7 +40,7 @@ export default class ListingService {
       }
     )
 
-    return { ...response.data}
+    return { ...response.data }
   }
 
   async getPopulatedAssets(assets: Asset[]) {
@@ -109,7 +109,7 @@ export default class ListingService {
       return { ...response.data, id: asset }
     } catch (error) {
       const message = 'Error on populate asset: ' + error.message
-      this.logger.error(message)
+      this.logger.error(message, { stack: error.stack })
       throw new ServiceException(message, error.response.status)
     }
   }
@@ -159,7 +159,7 @@ export default class ListingService {
           id: (asset as any).id
         })
       } catch (error) {
-        this.logger.error(error.message)
+        this.logger.error(error.message, { stack: error.stack })
       }
     }
 

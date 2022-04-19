@@ -14,7 +14,7 @@ import ListingsController from './controllers/ListingsController'
 import MintController from './controllers/MintController'
 import CloseAuction from './services/CloseAuction'
 import ListingService from './services/ListingService'
-import { AssetNormalized } from './interfaces'
+import Container from 'typedi'
 
 @Entry
 export default class Main {
@@ -55,10 +55,12 @@ export default class Main {
     const logger = new CustomLogger()
     setInterval(async () => {
       try {
+        const listingService = Container.get(ListingService)
+        const closeAuction = Container.get(CloseAuction)
         logger.info('close auctions')
-        const nfts = await new ListingService().listing()
+        const nfts = await listingService.listing()
         logger.info(`Close auctions detect ${nfts.length} nfts`)
-        await new CloseAuction().execute(nfts)
+        await closeAuction.execute(nfts)
       } catch (error) {
         logger.error('Error in app interval closing auctions: ' + error.message, { stack: error.stack, errors: error.errors })
       }

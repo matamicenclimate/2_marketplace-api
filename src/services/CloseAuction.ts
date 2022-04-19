@@ -73,7 +73,7 @@ export default class CloseAuction {
       await sleep(5000)
       await this._closeRekey(appGlobalState)
     } catch (error) {
-      this.logger.error(error.message, error.stack)
+      this.logger.error(error.message, { stack: error.stack })
       throw error
     }
   }

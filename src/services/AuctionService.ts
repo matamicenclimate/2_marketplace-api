@@ -127,7 +127,7 @@ export default class AuctionService {
       '.temp.accounts',
       `${rekeyAccount.addr} ${algosdk.secretKeyToMnemonic(rekeyAccount.sk)}\n`
     )
-    this.logger.info(`Dumping temporary account information:`, rekeyAccount.addr)
+    this.logger.info(`Dumping temporary account information:`, { rekeyAccountAddress: rekeyAccount.addr })
     this.logger.info(`Paying fees for temp ${rekeyAccount.addr}...`)
     await this._payMinimumTransactionFeesToRekeyAccount(rekeyAccount)
     this.logger.info(`Rekeying temporary account...`)

@@ -70,7 +70,7 @@ export default class MintController {
       const populatedAsset = await this.listingService.populateAsset(assetId)
       const asset: option<AssetNormalized> =
         this.listingService.normalizeAsset(populatedAsset)
-      this.logger.info('Opt in result=', asset.isDefined() ? asset.value : undefined)
+      this.logger.info('Opt in result=', { asset: asset.isDefined() ? asset.value : undefined })
       return {
         targetAccount: this.wallet.account.addr,
       }

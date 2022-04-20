@@ -15,6 +15,7 @@ import MintController from './controllers/MintController'
 import CloseAuction from './services/CloseAuction'
 import ListingService from './services/ListingService'
 import Container from 'typedi'
+import RekeyService from './services/RekeyService'
 
 @Entry
 export default class Main {
@@ -31,7 +32,7 @@ export default class Main {
     logger.info(`Listening on port ${Main.port}!`)
   }
 
-  static setup() {
+  static async setup() {
     const swaggerDocument: any = swagger.loadDocumentSync(
       './src/public/api.yaml'
     )
@@ -40,6 +41,9 @@ export default class Main {
     app.use(handleErrors)
     app.use(cors)
     app.use(ui(swaggerDocument, '/api/v1/docs'))
+
+    // Initialize databases
+    Container.set(RekeyService, await RekeyService.create())
 
     useKoaServer(app, {
       cors: true,
@@ -62,7 +66,10 @@ export default class Main {
         logger.info(`Close auctions detect ${nfts.length} nfts`)
         await closeAuction.execute(nfts)
       } catch (error) {
-        logger.error('Error in app interval closing auctions: ' + error.message, { stack: error.stack, errors: error.errors })
+        logger.error(
+          'Error in app interval closing auctions: ' + error.message,
+          { stack: error.stack, errors: error.errors }
+        )
       }
     }, parseInt(config.closeAuctionIntervalMiliseconds))
     return { app }

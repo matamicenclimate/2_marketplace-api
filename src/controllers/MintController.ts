@@ -7,17 +7,9 @@ import { OpenAPI } from 'routing-controllers-openapi'
 import ListingService from 'src/services/ListingService'
 import CustomLogger from 'src/infrastructure/CustomLogger'
 import ServiceException from 'src/infrastructure/errors/ServiceException'
-import AlgodClientProvider from '@common/services/AlgodClientProvider'
-import algosdk from 'algosdk'
 import * as WalletAccountProvider from '@common/services/WalletAccountProvider'
-import { TransactionOperation } from '@common/services/TransactionOperation'
 import { AssetNormalized } from 'src/interfaces'
 import { option } from '@octantis/option'
-
-// ONLY DEV - Prints swagger json
-// import { getMetadataArgsStorage } from 'routing-controllers'
-// import { routingControllersToSpec } from 'routing-controllers-openapi'
-// import util from 'util'
 
 @Service()
 @JsonController('/api')
@@ -69,13 +61,12 @@ export default class MintController {
       await this.optInService.optInAssetByID(assetId)
       const populatedAsset = await this.listingService.populateAsset(assetId)
       const asset: option<AssetNormalized> =
-        this.listingService.normalizeAsset(populatedAsset)
+        await this.listingService.normalizeAsset(populatedAsset)
       this.logger.info('Opt in result=', { asset: asset.isDefined() ? asset.value : undefined })
       return {
-        targetAccount: this.wallet.account.addr,
+        targetAccount: (await this.wallet.account).addr,
       }
     } catch (error) {
-      this.logger.error(error.message, error.stack)
       const message = `Opt in error: ${error.message}`
       this.logger.error(message, { stack: error.stack })
       throw new ServiceException(message)
@@ -83,7 +74,3 @@ export default class MintController {
   }
 }
 
-// ONLY DEV - Prints swagger json
-// const storage = getMetadataArgsStorage()
-// const spec = routingControllersToSpec(storage)
-// console.log(util.inspect(spec, false, null, true /* enable colors */))

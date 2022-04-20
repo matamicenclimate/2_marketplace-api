@@ -5,7 +5,7 @@ import LoggerInterface from './LoggerInterface'
 @Service()
 export default class CustomLogger implements LoggerInterface {
   private logger: Logger
-  constructor () {
+  constructor() {
     this.logger = logger({
       transport: {
         target: 'pino-pretty'
@@ -13,18 +13,18 @@ export default class CustomLogger implements LoggerInterface {
     })
   }
 
-  info (message: string, data: any = {}) {
+  info(message: string, data: any = {}) {
     const child = this.logger.child(data)
-    if(process.env.NODE_ENV !== 'testing') child.info(message)
+    if (process.env.NODE_ENV !== 'testing') child.info(message)
   }
 
-  error (message: string, data: any = {}) {
+  error(message: string, data: any = {}) {
     const child = this.logger.child(data)
-    if(process.env.NODE_ENV !== 'testing') child.error(message)
+    if (process.env.NODE_ENV !== 'testing') child.error(message)
   }
 
-  warn (message: string, data: any = {}) {
+  warn(message: string, data: any = {}) {
     const child = this.logger.child(data)
-    if(process.env.NODE_ENV !== 'testing') child.warn(message)
+    if (process.env.NODE_ENV !== 'testing') child.warn(message)
   }
 }

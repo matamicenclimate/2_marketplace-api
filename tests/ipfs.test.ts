@@ -28,10 +28,10 @@ beforeEach(() => {
 describe('IPFS', () => {
   it('Can be upload', (done) => {
     sinon.stub(NFTStorage.prototype, 'store').callsFake(() => {
-			return new Promise((resolve, reject) => {
-				resolve(nftStorageResponse as any)
-			})
-		});
+      return new Promise((resolve, reject) => {
+        resolve(nftStorageResponse as any)
+      })
+    });
 
     request(server)
       .post(`/api/${process.env.RESTAPI_VERSION}/ipfs`)
@@ -79,7 +79,7 @@ describe('IPFS', () => {
           }
         }).then(done).catch(done)
     })
-  
+
     it('on invalid reques params', (done) => {
       const wrongBody = {
         title: 'Title - Upload File',

@@ -35,13 +35,19 @@ export default class MintController {
     creatorWallet,
     causePercentaje,
   }: { assetId: number, creatorWallet: string, causePercentaje: string }) {
-    const populatedAsset = await this.listingService.populateAsset(assetId)
-    const asset: option<AssetNormalized> =
-      this.listingService.normalizeAsset(populatedAsset)
-    if (asset.isDefined()) {
-      const response = await this.auctionService.execute(assetId, asset.value, creatorWallet, causePercentaje)
-      this.logger.info(`DONE: Sending back the asset ${assetId} to wallet owner.`)
-      return response
+    try {
+      const populatedAsset = await this.listingService.populateAsset(assetId)
+      const asset: option<AssetNormalized> =
+        await this.listingService.normalizeAsset(populatedAsset)
+      if (asset.isDefined()) {
+        const response = await this.auctionService.execute(assetId, asset.value, creatorWallet, causePercentaje)
+        this.logger.info(`DONE: Sending back the asset ${assetId} to wallet owner.`)
+        return response
+      }
+    } catch (error) {
+      const message = `Create auction error: ${error.message}`
+      this.logger.error(message, { stack: error.stack })
+      throw new ServiceException(message)
     }
   }
 

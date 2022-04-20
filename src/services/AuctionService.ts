@@ -87,20 +87,7 @@ export default class AuctionService {
     )
     const appAddr = this._getApplicationAddressFromAppIndex(appIndex)
     this.logger.info(`App wallet is ${appAddr}`)
-    // const appAddr = algosdk.getApplicationAddress(appIndex)
-    // console.log(
-    //   `Opting in asset ${assetId} for account ${appAddr} (Signed by ${this.account.account.addr})`
-    // )
-    // const result = await this.optInService.optInAssetByID(
-    //   assetId,
-    //   appAddr,
-    //   undefined,
-    //   this.account.account
-    // )
-    // console.log(
-    //   `Asset ${assetId} opted in into ${appAddr}[appIndex:${appIndex}]:`,
-    //   result
-    // )
+
     const { amount } = await this.auctionLogic.fundAuction(appIndex)
     this.logger.info(`Application funded with ${amount}`)
     await this.auctionLogic.makeAppCallSetupProc(appIndex, assetId)
@@ -141,7 +128,7 @@ export default class AuctionService {
     return algosdk.getApplicationAddress(appIndex)
   }
 
-  private async _rekeyingTemporaryAccount(rekeyAccount: algosdk.Account) {
+  async _rekeyingTemporaryAccount(rekeyAccount: algosdk.Account) {
     const suggestedParams: algosdk.SuggestedParams =
       await this._getSuggestedParams()
 
@@ -171,7 +158,7 @@ export default class AuctionService {
     return await this.client.client.getTransactionParams().do()
   }
 
-  private async _getCauseInfo(causeId: string) {
+  async _getCauseInfo(causeId: string) {
     this.logger.info(`getting causes info.... causeId ${config.apiUrlCauses}causes/${causeId}`)
     const cause = await axios.get(
       `${config.apiUrlCauses}/causes/${causeId}`,

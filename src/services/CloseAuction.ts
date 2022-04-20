@@ -62,7 +62,7 @@ export default class CloseAuction {
     const client = this.client.client
     const suggestedParams = await client.getTransactionParams().do()
     const deleteTxn = await algosdk.makeApplicationDeleteTxnFromObject({
-      from: this.wallet.account.addr,
+      from: await (this.wallet.account).addr,
       suggestedParams,
       appIndex: appId,
       accounts: accounts,
@@ -81,7 +81,7 @@ export default class CloseAuction {
   private async _closeRekey(state: AuctionAppState) {
     const rekey = algosdk.encodeAddress(state["rekey"] as Uint8Array)
     if (rekey) await this.transactionOperation.closeReminderTransaction(
-      this.wallet.account,
+      await this.wallet.account,
       rekey
     )
   }

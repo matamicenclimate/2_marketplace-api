@@ -33,17 +33,15 @@ export default class AuctionService {
     assetId: number,
     asset: AssetNormalized,
     creatorWallet: string,
-    cp: string,
+    inputCausePercentage: string,
   ) {
     this.logger.info('Creating auction')
     const rekeyAccount = await this.generateRekeyAccount()
-    let causePercentaje = parseInt(cp)
-    let { cause, percentages } = await this._getCauseInfo(asset.arc69.properties.cause)
-    const causeP = parseInt(percentages.data.percentages.cause)
-    if (causeP > causePercentaje) {
-      causePercentaje = causeP
-    }
-    const creatorPercentaje = 100 - causePercentaje - parseInt(percentages.data.percentages.marketplace)
+    const cause = await this._getCauseInfo(asset.arc69.properties.cause)
+    const {
+      causePercentage,
+      creatorPercentage
+    } = await this._calculatePercentages(inputCausePercentage)
     const appIndex = await this.createAuction(
       assetId,
       asset.arc69.properties.price,
@@ -51,8 +49,8 @@ export default class AuctionService {
       asset,
       cause.data.wallet,
       creatorWallet,
-      causePercentaje,
-      creatorPercentaje
+      causePercentage,
+      creatorPercentage
     )
     return {
       appIndex,
@@ -106,6 +104,21 @@ export default class AuctionService {
     this.logger.info(`Asset ${assetId} transferred to ${appIndex}`)
 
     return appIndex
+  }
+
+  private async _calculatePercentages(inputCausePercentage: string) {
+    let causePercentage = parseInt(inputCausePercentage)
+    const percentages = await this._getCausesPercentages()
+    const causeP = parseInt(percentages.data.percentages.cause)
+    if (causeP > causePercentage) {
+      causePercentage = causeP
+    }
+    const creatorPercentage = 100 - causePercentage - parseInt(percentages.data.percentages.marketplace)
+
+    return {
+      causePercentage,
+      creatorPercentage
+    }
   }
 
   async generateRekeyAccount() {
@@ -168,6 +181,11 @@ export default class AuctionService {
         },
       }
     )
+
+    return cause
+  }
+
+  async _getCausesPercentages() {
     this.logger.info('getting causes percentajes....')
     const percentages = await axios.get(
       `${config.apiUrlCauses}/causes/config`,
@@ -178,8 +196,6 @@ export default class AuctionService {
       }
     )
 
-    return {
-      cause, percentages
-    }
+    return percentages
   }
 }

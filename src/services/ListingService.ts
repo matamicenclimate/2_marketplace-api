@@ -19,8 +19,10 @@ export default class ListingService {
   private readonly logger!: CustomLogger
 
   async listing() {
+    this.logger.info('We are listing assets in marketplace')
     const assets = await this.getAssets()
     const assetsPopulated = await this.getPopulatedAssets(assets)
+    this.logger.info(`Listed ${assetsPopulated.length} assets`)
     return this.getNormalizedAssets(assetsPopulated)
   }
 
@@ -44,13 +46,14 @@ export default class ListingService {
   }
 
   async getPopulatedAssets(assets: Asset[]) {
+    const PROMISES_CHUNK_SIZE = 5
     let counter = 0
     let promises = []
     const assetsPopulated: PopulatedAsset[] = []
     if (!Array.isArray(assets)) return assetsPopulated
     while (counter < assets.length) {
       promises.push(this.populateAsset(assets[counter]['asset-id']))
-      if (counter === assets.length - 1 || promises.length > 5) {
+      if (counter === assets.length - 1 || promises.length > PROMISES_CHUNK_SIZE) {
         const result = await Promise.all(promises)
         assetsPopulated.push(...result)
         promises = []
@@ -138,14 +141,7 @@ export default class ListingService {
     const txn = [...asset.transactions]
       .reverse()
       .find((x: Transaction) => x.note != null)
-    // console.log(
-    //   'NOTES:',
-    //   txns.map(
-    //     s =>
-    //       (algosdk.decodeObj(Buffer.from(s.note ?? '', 'base64')) as any).arc69
-    //         .properties
-    //   )
-    // )
+
     const creator = asset.transactions.find((i: Transaction) => Boolean(i['asset-config-transaction']?.params?.creator)) as Transaction
 
     if (txn && txn.note) {

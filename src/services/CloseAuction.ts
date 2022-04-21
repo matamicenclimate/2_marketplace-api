@@ -39,7 +39,7 @@ export default class CloseAuction {
       }
     } catch (error) {
       if (error.status === APPLICATION_NO_EXIST) {
-        this.logger.warn(`Application ${appId} allready closed, it not exist`)
+        this.logger.warn(`Application ${appId} already closed, it not exist`)
       } else {
         const errorResult = {
           name: 'CloseAuctionException',

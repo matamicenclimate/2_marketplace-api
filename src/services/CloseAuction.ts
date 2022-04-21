@@ -17,48 +17,55 @@ export default class CloseAuction {
   private readonly logger!: CustomLogger
 
   async execute(nfts: AssetNormalized[]) {
-    const APPLICATION_NO_EXIST = 404
-    const errors = []
+    let errors: any[] = []
     for (const nft of nfts) {
       const appId = nft.arc69.properties.app_id
       if (appId) {
-        let state = undefined
-        try {
-          state = await this.transactionOperation.getApplicationState(appId) as AuctionAppState
-          if (state && (state.end * 1000) + 70000 < Date.now()) {
-            await this._closeAuction(appId, state)
-          }
-        } catch (error) {
-          if (error.status === APPLICATION_NO_EXIST) {
-            this.logger.error('..........APPLICATION_NO_EXIST')
-            continue;
-          } else {
-            const errorResult = {
-              name: 'CloseAuctionExeption',
-              message: error.message,
-              stack: error.stack
-            }
-            errors.push(errorResult)
-          }
-        }
+        errors = await this._closeNFTAuction(appId)
       }
     }
     if (errors.length) throw new CloseAuctionException('Error closing auctions', errors)
   }
+
+  private async _closeNFTAuction(appId: number) {
+    const APPLICATION_NO_EXIST = 404
+    const errors = []
+    try {
+      const state = await this.transactionOperation.getApplicationState(appId) as AuctionAppState
+      const EXTRA_MS_TO_CLOSE_AUCTION = 70000
+      const closeAuctionDate = (state.end * 1000) + EXTRA_MS_TO_CLOSE_AUCTION
+      if (state && closeAuctionDate < Date.now()) {
+        await this._closeAuction(appId, state)
+      }
+    } catch (error) {
+      if (error.status === APPLICATION_NO_EXIST) {
+        this.logger.warn(`Application ${appId} allready closed, it not exist`)
+      } else {
+        const errorResult = {
+          name: 'CloseAuctionException',
+          message: error.message,
+          stack: error.stack
+        }
+        errors.push(errorResult)
+      }
+    }
+    return errors
+  }
   private async _closeAuction(appId: number, appGlobalState: AuctionAppState) {
     const nftId = appGlobalState["nft_id"] as number
-    this.logger.warn(`Seller account: ${algosdk.encodeAddress(appGlobalState["seller"] as Uint8Array)}`)
-    this.logger.warn(`Cause account: ${algosdk.encodeAddress(appGlobalState["cause"] as Uint8Array)}`)
-    this.logger.warn(`Creator account: ${algosdk.encodeAddress(appGlobalState["creator"] as Uint8Array)}`)
-
-    const accounts = [
-      algosdk.encodeAddress(appGlobalState["seller"] as Uint8Array),
-      algosdk.encodeAddress(appGlobalState["cause"] as Uint8Array),
-      algosdk.encodeAddress(appGlobalState["creator"] as Uint8Array)
-    ]
-    if (appGlobalState["bid_account"]) {
-      accounts.push(algosdk.encodeAddress(appGlobalState["bid_account"] as Uint8Array))
+    let accounts = this._getInitialAccountsToSplitAlgos(appGlobalState)
+    accounts = this._addMaxBidAccount(accounts, appGlobalState)
+    await this._deleteTransactionToCloseAuction(appId, accounts, nftId)
+    try {
+      await sleep(5000)
+      await this._closeRekey(appGlobalState)
+    } catch (error) {
+      this.logger.error(`Error closing rekey account: ${error.message}`, { stack: error.stack })
+      throw error
     }
+  }
+
+  private async _deleteTransactionToCloseAuction(appId: number, accounts: string[], nftId: number) {
     const client = this.client.client
     const suggestedParams = await client.getTransactionParams().do()
     const deleteTxn = await algosdk.makeApplicationDeleteTxnFromObject({
@@ -68,14 +75,7 @@ export default class CloseAuction {
       accounts: accounts,
       foreignAssets: [nftId],
     })
-    await this.transactionOperation.signAndConfirm(deleteTxn)
-    try {
-      await sleep(5000)
-      await this._closeRekey(appGlobalState)
-    } catch (error) {
-      this.logger.error(error.message, { stack: error.stack })
-      throw error
-    }
+    return await this.transactionOperation.signAndConfirm(deleteTxn)
   }
 
   private async _closeRekey(state: AuctionAppState) {
@@ -84,5 +84,27 @@ export default class CloseAuction {
       await this.wallet.account,
       rekey
     )
+  }
+
+  private _getInitialAccountsToSplitAlgos(appGlobalState: AuctionAppState) {
+    const seller = algosdk.encodeAddress(appGlobalState["seller"] as Uint8Array)
+    const cause = algosdk.encodeAddress(appGlobalState["cause"] as Uint8Array)
+    const creator = algosdk.encodeAddress(appGlobalState["creator"] as Uint8Array)
+    this.logger.info(`Closing auction with this accounts`)
+    this.logger.info(`Seller account: ${seller}`)
+    this.logger.info(`Cause account: ${cause}`)
+    this.logger.info(`Creator account: ${creator}`)
+
+    return [seller, cause, creator]
+  }
+
+  private _addMaxBidAccount(accounts: string[], appGlobalState: AuctionAppState) {
+    const result = accounts
+    const maxBidAccount = algosdk.encodeAddress(appGlobalState["bid_account"] as Uint8Array)
+    this.logger.info(`Max bid account: ${maxBidAccount}`)
+    if (maxBidAccount) {
+      result.push(maxBidAccount)
+    }
+    return result
   }
 }

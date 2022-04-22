@@ -9,8 +9,8 @@ import {
   PopulatedAsset,
   Transaction,
 } from 'src/interfaces'
-import { none, some, option } from '@octantis/option'
-import { AxiosError, AxiosPromise, AxiosResponse } from 'axios'
+import { some, option } from '@octantis/option'
+import { AxiosPromise, AxiosResponse } from 'axios'
 import ServiceException from 'src/infrastructure/errors/ServiceException'
 
 @Service()
@@ -149,16 +149,20 @@ export default class ListingService {
         const metadata: AssetNormalized = algosdk.decodeObj(
           Buffer.from(txn.note, 'base64')
         ) as AssetNormalized
+        const assetCreator = creator['asset-config-transaction']?.params?.creator
+        metadata.creator = assetCreator ?  assetCreator : metadata.creator
+        
         return some({
           ...metadata,
-          ...{ creator: creator['asset-config-transaction']?.params?.creator },
           id: (asset as any).id
         })
       } catch (error) {
-        this.logger.error(error.message, { stack: error.stack })
+        const message = 'Error on normalize asset: ' + error.message
+        this.logger.error(message, { stack: error.stack })
+        throw new ServiceException(message, error.response.status)
       }
     }
 
-    return none()
+    throw new ServiceException('Asset note not found')
   }
 }

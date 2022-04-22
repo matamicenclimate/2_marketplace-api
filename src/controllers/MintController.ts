@@ -33,14 +33,14 @@ export default class MintController {
   async createAuction(@Body() {
     assetId,
     creatorWallet,
-    causePercentaje,
-  }: { assetId: number, creatorWallet: string, causePercentaje: string }) {
+    causePercentage,
+  }: { assetId: number, creatorWallet: string, causePercentage: number }) {
     try {
       const populatedAsset = await this.listingService.populateAsset(assetId)
       const asset: option<AssetNormalized> =
         await this.listingService.normalizeAsset(populatedAsset)
       if (asset.isDefined()) {
-        const response = await this.auctionService.execute(assetId, asset.value, creatorWallet, causePercentaje)
+        const response = await this.auctionService.execute(assetId, asset.value, creatorWallet, causePercentage)
         this.logger.info(`DONE: Sending back the asset ${assetId} to wallet owner.`)
         return response
       }

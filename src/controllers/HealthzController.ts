@@ -11,7 +11,7 @@ export default class HealthzController {
   private readonly service!: HealthzService
 
   @Get('/v1/healthz')
-  async invoke(): Promise<Response<core['api']['v1']['get_healthz']>> {
+  async invoke(): Promise<Response<core['get']['healthz']>> {
     return this.service.execute()
   }
 }

@@ -10,6 +10,8 @@ import ServiceException from 'src/infrastructure/errors/ServiceException'
 import * as WalletAccountProvider from '@common/services/WalletAccountProvider'
 import { AssetNormalized } from 'src/interfaces'
 import { option } from '@octantis/option'
+import { Response } from '@common/lib/api'
+import { core } from '@common/lib/api/endpoints'
 
 @Service()
 @JsonController('/api')
@@ -34,7 +36,7 @@ export default class MintController {
     assetId,
     creatorWallet,
     causePercentaje,
-  }: { assetId: number, creatorWallet: string, causePercentaje: string }) {
+  }: { assetId: number, creatorWallet: string, causePercentaje: string }): Promise<Response<core['post']['create-auction']>> {
     try {
       const populatedAsset = await this.listingService.populateAsset(assetId)
       const asset: option<AssetNormalized> =
@@ -44,6 +46,8 @@ export default class MintController {
         this.logger.info(`DONE: Sending back the asset ${assetId} to wallet owner.`)
         return response
       }
+
+      throw new ServiceException(`Create auction error: Asset ${assetId} not found`)
     } catch (error) {
       const message = `Create auction error: ${error.message}`
       this.logger.error(message, { stack: error.stack })
@@ -61,7 +65,7 @@ export default class MintController {
     },
   })
   @Post(`/${config.version}/opt-in`)
-  async optIn(@Body() body: any) {
+  async optIn(@Body() body: any): Promise<Response<core['post']['opt-in']>> {
     try {
       const assetId = body.assetId
       await this.optInService.optInAssetByID(assetId)

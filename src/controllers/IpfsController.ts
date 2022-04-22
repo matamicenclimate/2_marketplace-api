@@ -6,6 +6,8 @@ import { IpfsStorageInterface } from '../interfaces'
 import {
   IpfsStorage
 } from '../infrastructure/IpfsStorage'
+import { Response } from '@common/lib/api'
+import { core } from '@common/lib/api/endpoints'
 
 @Service()
 @Controller('/api')
@@ -19,7 +21,7 @@ export default class IpfsController {
   async invoke(
     @BodyParam('data') data: any,
     @UploadedFile('file') file: any
-  ) {
+  ): Promise<Response<core['post']['ipfs']>> {
     if (typeof data === 'string') data = JSON.parse(data)
     const adapters: {
       storage: IpfsStorageInterface,

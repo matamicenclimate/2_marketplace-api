@@ -9,7 +9,7 @@ import {
   PopulatedAsset,
   Transaction,
 } from 'src/interfaces'
-import { some, option } from '@octantis/option'
+import { some, option, none } from '@octantis/option'
 import { AxiosPromise, AxiosResponse } from 'axios'
 import ServiceException from 'src/infrastructure/errors/ServiceException'
 
@@ -157,12 +157,10 @@ export default class ListingService {
           id: (asset as any).id
         })
       } catch (error) {
-        const message = 'Error on normalize asset: ' + error.message
-        this.logger.error(message, { stack: error.stack })
-        throw new ServiceException(message, error.response.status)
+        this.logger.error(error.message, { stack: error.stack })
       }
     }
 
-    throw new ServiceException('Asset note not found')
+    return none()
   }
 }

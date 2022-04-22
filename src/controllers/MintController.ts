@@ -10,7 +10,7 @@ import ServiceException from 'src/infrastructure/errors/ServiceException'
 import * as WalletAccountProvider from '@common/services/WalletAccountProvider'
 import { AssetNormalized } from 'src/interfaces'
 import { option } from '@octantis/option'
-import { Response } from '@common/lib/api'
+import { Response, Body as BodyCommon } from '@common/lib/api'
 import { core } from '@common/lib/api/endpoints'
 
 @Service()
@@ -32,22 +32,34 @@ export default class MintController {
   private readonly wallet!: WalletAccountProvider.type
 
   @Post(`/${config.version}/create-auction`)
-  async createAuction(@Body() {
-    assetId,
-    creatorWallet,
-    causePercentaje,
-  }: { assetId: number, creatorWallet: string, causePercentaje: string }): Promise<Response<core['post']['create-auction']>> {
+  async createAuction(
+    @Body()
+    {
+      assetId,
+      creatorWallet,
+      causePercentage,
+    }: BodyCommon<core['post']['create-auction']>
+  ): Promise<Response<core['post']['create-auction']>> {
     try {
       const populatedAsset = await this.listingService.populateAsset(assetId)
       const asset: option<AssetNormalized> =
         await this.listingService.normalizeAsset(populatedAsset)
       if (asset.isDefined()) {
-        const response = await this.auctionService.execute(assetId, asset.value, creatorWallet, causePercentaje)
-        this.logger.info(`DONE: Sending back the asset ${assetId} to wallet owner.`)
+        const response = await this.auctionService.execute(
+          assetId,
+          asset.value,
+          creatorWallet,
+          causePercentage
+        )
+        this.logger.info(
+          `DONE: Sending back the asset ${assetId} to wallet owner.`
+        )
         return response
       }
 
-      throw new ServiceException(`Create auction error: Asset ${assetId} not found`)
+      throw new ServiceException(
+        `Create auction error: Asset ${assetId} not found`
+      )
     } catch (error) {
       const message = `Create auction error: ${error.message}`
       this.logger.error(message, { stack: error.stack })
@@ -65,14 +77,18 @@ export default class MintController {
     },
   })
   @Post(`/${config.version}/opt-in`)
-  async optIn(@Body() body: any): Promise<Response<core['post']['opt-in']>> {
+  async optIn(
+    @Body() body: BodyCommon<core['post']['opt-in']>
+  ): Promise<Response<core['post']['opt-in']>> {
     try {
       const assetId = body.assetId
       await this.optInService.optInAssetByID(assetId)
       const populatedAsset = await this.listingService.populateAsset(assetId)
       const asset: option<AssetNormalized> =
         await this.listingService.normalizeAsset(populatedAsset)
-      this.logger.info('Opt in result=', { asset: asset.isDefined() ? asset.value : undefined })
+      this.logger.info('Opt in result=', {
+        asset: asset.isDefined() ? asset.value : undefined,
+      })
       return {
         targetAccount: (await this.wallet.account).addr,
       }
@@ -83,4 +99,3 @@ export default class MintController {
     }
   }
 }
-

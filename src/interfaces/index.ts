@@ -85,6 +85,8 @@ export interface AssetNormalized {
   ipnft: string;
   title: string;
   url: string;
+  id: number;
+  creator: string;
 }
 
 export interface Arc69 {
@@ -96,12 +98,16 @@ export interface Arc69 {
 }
 
 export interface Properties {
-  app_id?: number;
-  artist: string;
-  cause: string;
-  causePercentage: number;
-  date: Date;
-  file: null[];
-  price: number;
+  app_id?: number
+  artist: string
+  cause: string
+  causePercentage: number
+  file: {
+    name: string
+    type: string
+    size: number
+  }
+  date: Date
+  price: number
 }
 

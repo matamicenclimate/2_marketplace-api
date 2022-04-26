@@ -34,6 +34,8 @@ export default class AuctionService {
     asset: AssetNormalized,
     creatorWallet: string,
     inputCausePercentage: number,
+    startDate: string,
+    endDate: string
   ) {
     this.logger.info('Creating auction')
     const rekeyAccount = await this.generateRekeyAccount()
@@ -50,7 +52,9 @@ export default class AuctionService {
       cause.data.wallet,
       creatorWallet,
       causePercentage,
-      creatorPercentage
+      creatorPercentage,
+      startDate,
+      endDate
     )
     return {
       appIndex,
@@ -65,7 +69,9 @@ export default class AuctionService {
     causeWallet: string,
     creatorWallet: string,
     causePercentage: number,
-    creatorPercentage: number
+    creatorPercentage: number,
+    startDate: string,
+    endDate: string
   ): Promise<number> {
     this.logger.info(`Creating auction`)
     const auction = await this.auctionLogic.createAuction(
@@ -73,11 +79,12 @@ export default class AuctionService {
       reserve,
       parseInt(config.bid.increment),
       rekeyAccount,
-      parseInt(config.endAuctionSeconds),
       causeWallet,
       creatorWallet,
       causePercentage,
-      creatorPercentage
+      creatorPercentage,
+      startDate,
+      endDate
     )
     const appIndex = auction['application-index']
     this.logger.info(

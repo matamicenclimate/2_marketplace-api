@@ -38,6 +38,8 @@ export default class MintController {
       assetId,
       creatorWallet,
       causePercentage,
+      startDate,
+      endDate
     }: BodyCommon<core['post']['create-auction']>
   ): Promise<Response<core['post']['create-auction']>> {
     try {
@@ -49,7 +51,9 @@ export default class MintController {
           assetId,
           asset.value,
           creatorWallet,
-          causePercentage
+          causePercentage,
+          startDate,
+          endDate
         )
         this.logger.info(
           `DONE: Sending back the asset ${assetId} to wallet owner.`

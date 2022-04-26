@@ -39,7 +39,9 @@ describe('Mint', () => {
             .send({
                 assetId,
                 creatorWallet: 'creator-wallet',
-                causePercentage: '50'
+                causePercentage: '50',
+                startDate: new Date().toISOString(),
+                endDate: new Date('2023-04-26T08:40:58.338Z').toISOString()
             })
         expect(response.statusCode).to.eq(SUCCESS)
         expect(response.body.appIndex).to.eq(23409723)

@@ -15,10 +15,13 @@ import MintController from './controllers/MintController'
 import CloseAuction from './services/CloseAuction'
 import ListingService from './services/ListingService'
 import Container from 'typedi'
+import RekeyRepository from './infrastructure/repositories/RekeyRepository'
 
 @Entry
 export default class Main {
   static async main(args: string[]) {
+    // Initialize databases
+    Container.set(RekeyRepository, await RekeyRepository.create())
     const { app } = await this.setup()
     app.listen(this.port, this.done)
     return app

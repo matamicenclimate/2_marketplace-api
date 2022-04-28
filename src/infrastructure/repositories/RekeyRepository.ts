@@ -8,7 +8,7 @@ export default class RekeyRepository {
   static async create() {
     const db = await new DataSource({
       type: 'sqlite',
-      database: config.dbName,
+      database: `./databases/${process.env.NODE_ENV}-${process.env.SQLITE_DATABASE}`,
       synchronize: true,
       entities: [RekeyAccountRecord],
     }).initialize()

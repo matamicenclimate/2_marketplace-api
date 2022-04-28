@@ -20,7 +20,9 @@ import Container from 'typedi'
 export default class Main {
   static async main(args: string[]) {
     const { app } = await this.setup()
-    app.listen(this.port, this.done)
+    const server = app.listen(this.port, this.done)
+    const HUNDRED_SECONDS = 100000
+    server.setTimeout(HUNDRED_SECONDS)
     return app
   }
 

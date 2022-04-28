@@ -59,11 +59,11 @@ export default class MintController {
           `DONE: Sending back the asset ${assetId} to wallet owner.`
         )
         return response
+      } else {
+        throw new ServiceException(
+          `Create auction error: Asset ${assetId} not found`
+        )
       }
-
-      throw new ServiceException(
-        `Create auction error: Asset ${assetId} not found`
-      )
     } catch (error) {
       const message = `Create auction error: ${error.message}`
       this.logger.error(message, { stack: error.stack })

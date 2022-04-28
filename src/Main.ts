@@ -23,7 +23,9 @@ export default class Main {
     // Initialize databases
     Container.set(RekeyRepository, await RekeyRepository.create())
     const { app } = await this.setup()
-    app.listen(this.port, this.done)
+    const server = app.listen(this.port, this.done)
+    const HUNDRED_SECONDS = 100000
+    server.setTimeout(HUNDRED_SECONDS)
     return app
   }
 

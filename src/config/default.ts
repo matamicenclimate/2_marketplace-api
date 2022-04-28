@@ -51,12 +51,6 @@ const config = {
   algoExplorerApi:
     process.env.ALGO_EXPLORER_API ??
     die(`Environment variable "ALGO_EXPLORER_API" wasn't defined!`),
-  endAuctionSeconds:
-    process.env.END_AUCTION_SECONDS ??
-    die(`Environment variable "END_AUCTION_SECONDS" wasn't defined!`),
-  endAuctionDateInSeconds:
-    process.env.END_AUCTION_DATE_IN_SECONDS ??
-    die(`Environment variable "END_AUCTION_DATE_IN_SECONDS" wasn't defined!`),
   closeAuctionIntervalMiliseconds:
     process.env.CLOSE_AUCTION_INTERVAL_MILISECONDS ??
     die(`Environment variable "CLOSE_AUCTION_INTERVAL_MILISECONDS" wasn't defined!`),

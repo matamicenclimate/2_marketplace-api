@@ -1,9 +1,12 @@
 version: "3.3"
 
+volumes:
+  climate_causes_database: {}
+
 services:
   climate-frontend:
     image: registry.dekaside.com/climatenft/climate-nft-marketplace-app:latest
-    command: sh -c "npm run build && npm start"
+    command: sh -c "serve -s ./build"
     env_file:
       - ./.env.frontend
     networks:
@@ -14,7 +17,7 @@ services:
     environment:
       - NGINX_UPSTREAM_APP=app
       - NGINX_UPSTREAM_SERVER=climate-frontend
-      - NGINX_UPSTREAM_PORT=8081
+      - NGINX_UPSTREAM_PORT=3000
       - NGINX_PORT=80
       - NGINX_HOST=climate-nft-marketplace.staging.dekaside.com
       - NGINX_MAX_BODY_SIZE=500M
@@ -75,11 +78,17 @@ services:
 
   climate-nft-causes-backend:
     image: registry.dekaside.com/climatenft/climate-nft-causes-api:latest
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == node03.staging.dekaside.com
     command: yarn start
     env_file:
       - ./.env.causesBackend
     networks:
       - climate-nft-marketplace
+    volumes:
+      - climate_causes_database:/app/databases
 
   climate-nft-causes-backend-proxy:
     image: registry.dekaside.com/library/nginx:latest

@@ -1,5 +1,6 @@
 import AlgodClientProvider from '@common/services/AlgodClientProvider'
 import { TransactionOperation } from '@common/services/TransactionOperation'
+import OptInService from '@common/services/OptInService'
 import algosdk from 'algosdk'
 import Container, { Inject, Service } from 'typedi'
 import * as WalletProvider from '@common/services/WalletAccountProvider'
@@ -8,11 +9,14 @@ import { AssetNormalized } from 'src/interfaces'
 import CloseAuctionException from 'src/infrastructure/errors/CloseAutionException'
 import { sleep } from 'src/utils/helpers'
 import CustomLogger from 'src/infrastructure/CustomLogger'
+
 @Service()
 export default class CloseAuction {
   readonly client = Container.get(AlgodClientProvider)
   readonly transactionOperation = Container.get(TransactionOperation)
   readonly wallet = WalletProvider.get()
+  @Inject()
+  readonly optInService: OptInService
   @Inject()
   private readonly logger!: CustomLogger
 
@@ -36,6 +40,14 @@ export default class CloseAuction {
       const closeAuctionDate = (state.end * 1000) + EXTRA_MS_TO_CLOSE_AUCTION
       if (state && closeAuctionDate < Date.now()) {
         await this._closeAuction(appId, state)
+        const numBids = state["num_bids"] as number
+        this.logger.info(`Auction has ${numBids} bids`)
+        if (!numBids) {
+          const creator = algosdk.encodeAddress(state["creator"] as Uint8Array)
+          const nftId = state["nft_id"] as number
+          this.optInService.optInAssetByID(nftId, this.wallet.account.addr, creator, this.wallet.account, 1)
+          this.logger.info(`Asset ${nftId} is returned to creator`)
+        }
       }
     } catch (error) {
       if (error.status === APPLICATION_NO_EXIST) {

@@ -202,6 +202,10 @@ txn GroupIndex
 int 1
 -
 gtxns Amount
+int 9
+global MinTxnFee
+*
+-
 app_global_put
 byte "bid_account"
 txn GroupIndex
@@ -364,8 +368,6 @@ load 9
 *
 int 100
 /
-global MinTxnFee
--
 itxn_field Amount
 load 10
 itxn_field Receiver
@@ -389,8 +391,6 @@ load 12
 *
 int 100
 /
-global MinTxnFee
--
 itxn_field Amount
 load 13
 itxn_field Receiver

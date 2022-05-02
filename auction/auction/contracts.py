@@ -16,6 +16,8 @@ def approval_program():
     creator_percentaje = Bytes("creator_percentaje")
     cause_percentaje = Bytes("cause_percentaje")
     rekey_key = Bytes("rekey")
+    bid_fee_transactions = 2
+    bid_deposit_transactions = 7
 
     @Subroutine(TealType.none)
     def closeNFTTo(assetID: Expr, account: Expr) -> Expr:
@@ -70,7 +72,7 @@ def approval_program():
     
     @Subroutine(TealType.none)
     def payAmountToCause(bid_amount: Expr, nft_cause_key: Expr, cause_percentaje: Expr) -> Expr:
-        cause_amount = (((cause_percentaje * bid_amount) / Int(100)) - Global.min_txn_fee())
+        cause_amount = ((cause_percentaje * bid_amount) / Int(100))
         return If(Balance(Global.current_application_address()) != Int(0)).Then(
             Seq(
                 InnerTxnBuilder.Begin(),
@@ -86,7 +88,7 @@ def approval_program():
         )
     @Subroutine(TealType.none)
     def payAmountToCreator(bid_amount: Expr, nft_creator_key: Expr, creator_percentaje: Expr) -> Expr:
-        creator_amount = (((creator_percentaje * bid_amount) / Int(100)) - Global.min_txn_fee())
+        creator_amount = ((creator_percentaje * bid_amount) / Int(100))
         return If(Balance(Global.current_application_address()) != Int(0)).Then(
             Seq(
                 InnerTxnBuilder.Begin(),
@@ -172,7 +174,7 @@ def approval_program():
                         App.globalGet(lead_bid_amount_key),
                     )
                 ),
-                App.globalPut(lead_bid_amount_key, Gtxn[on_bid_txn_index].amount()),
+                App.globalPut(lead_bid_amount_key, (Gtxn[on_bid_txn_index].amount() - (Int(bid_fee_transactions + bid_deposit_transactions) * Global.min_txn_fee()))),
                 App.globalPut(lead_bid_account_key, Gtxn[on_bid_txn_index].sender()),
                 App.globalPut(num_bids_key, App.globalGet(num_bids_key) + Int(1)),
                 Approve(),

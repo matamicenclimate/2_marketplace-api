@@ -40,7 +40,6 @@ def approval_program():
                 )
             ),
         )
-
     @Subroutine(TealType.none)
     def repayPreviousLeadBidder(prevLeadBidder: Expr, prevLeadBidAmount: Expr) -> Expr:
         return Seq(
@@ -48,7 +47,7 @@ def approval_program():
             InnerTxnBuilder.SetFields(
                 {
                     TxnField.type_enum: TxnType.Payment,
-                    TxnField.amount: prevLeadBidAmount - Global.min_txn_fee(),
+                    TxnField.amount: prevLeadBidAmount + (Int(bid_deposit_transactions) * Global.min_txn_fee()) - Global.min_txn_fee(),
                     TxnField.receiver: prevLeadBidder,
                 }
             ),

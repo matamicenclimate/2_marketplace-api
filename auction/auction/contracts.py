@@ -16,7 +16,7 @@ def approval_program():
     creator_percentaje = Bytes("creator_percentaje")
     cause_percentaje = Bytes("cause_percentaje")
     rekey_key = Bytes("rekey")
-    bid_fee_transactions = 2
+    bid_fee_transactions = 0
     bid_deposit_transactions = 7
 
     @Subroutine(TealType.none)

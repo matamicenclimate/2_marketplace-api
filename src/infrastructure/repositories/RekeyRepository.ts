@@ -1,20 +1,9 @@
-import { DataSource, Repository } from 'typeorm'
+import { Repository } from 'typeorm'
 import RekeyAccountRecord from '../../domain/model/RekeyAccount'
-import config from '../../config/default'
 import { Service } from 'typedi'
 
 @Service()
 export default class RekeyRepository {
-  static async create() {
-    const db = await new DataSource({
-      type: 'sqlite',
-      database: `./databases/${process.env.NODE_ENV}-${process.env.SQLITE_DATABASE}`,
-      synchronize: true,
-      entities: [RekeyAccountRecord],
-    }).initialize()
-    const repo = db.getRepository(RekeyAccountRecord)
-    return new RekeyRepository(repo)
-  }
   constructor(private repo: Repository<RekeyAccountRecord>) {}
 
   /**

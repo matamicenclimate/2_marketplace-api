@@ -6,6 +6,7 @@ import CustomLogger from '../infrastructure/CustomLogger'
 import config from '../config/default'
 import { Response } from '@common/lib/api'
 import { core } from '@common/lib/api/endpoints'
+import { AssetNormalized } from 'src/interfaces'
 
 // ONLY DEV - Prints swagger json
 // import { getMetadataArgsStorage } from 'routing-controllers'
@@ -23,7 +24,13 @@ export default class ListingsController {
   @Get(`/${config.version}/nfts`)
   async listing(): Promise<Response<core['get']['nfts']>> {
     try {
-      return await this.ListingService.listing()
+      const assets: AssetNormalized[] = []
+      for await (const result of this.ListingService.list()) {
+        for (const asset of result) {
+          assets.push(asset)
+        }
+      }
+      return assets
     } catch (error) {
       const message = `Listing error: ${error.message}`
       this.logger.error(message, { stack: error.stack })
@@ -32,7 +39,9 @@ export default class ListingsController {
   }
 
   @Get(`/${config.version}/asset/:id`)
-  async getAsset(@Param('id') id: number): Promise<Response<core['get']['asset/:id']>> {
+  async getAsset(
+    @Param('id') id: number
+  ): Promise<Response<core['get']['asset/:id']>> {
     try {
       const result = await this.ListingService.getAsset(id)
       if (result.isDefined()) {
@@ -48,7 +57,9 @@ export default class ListingsController {
   }
 
   @Get(`/${config.version}/assets`)
-  async getAssetsFromWallet(@QueryParam('wallet') wallet?: string): Promise<Response<core['get']['assets']>> {
+  async getAssetsFromWallet(
+    @QueryParam('wallet') wallet?: string
+  ): Promise<Response<core['get']['assets']>> {
     try {
       return await this.ListingService.getAssetsFromWallet(wallet)
     } catch (error) {

@@ -9,6 +9,7 @@ import { AssetNormalized } from 'src/interfaces'
 import CloseAuctionException from 'src/infrastructure/errors/CloseAutionException'
 import { sleep } from 'src/utils/helpers'
 import CustomLogger from 'src/infrastructure/CustomLogger'
+import UpdateRekeyService from './UpdateRekeyService'
 
 @Service()
 export default class CloseAuction {
@@ -18,6 +19,8 @@ export default class CloseAuction {
   @Inject()
   readonly optInService: OptInService
   @Inject()
+  readonly updateRekeyService: UpdateRekeyService
+  @Inject()
   private readonly logger!: CustomLogger
 
   async execute(nfts: AssetNormalized[]) {
@@ -25,7 +28,13 @@ export default class CloseAuction {
     for (const nft of nfts) {
       const appId = nft.arc69.properties.app_id
       if (appId) {
-        errors = await this._closeNFTAuction(appId)
+        const resultErrors = await this._closeNFTAuction(appId)
+        if (resultErrors.length) {
+          errors.push(...resultErrors)
+        } else {
+          const isClosedAuction = true
+          await this.updateRekeyService.execute(appId, isClosedAuction)
+        }
       }
     }
     if (errors.length) throw new CloseAuctionException('Error closing auctions', errors)
@@ -77,7 +86,7 @@ export default class CloseAuction {
     }
   }
 
-  private async _deleteTransactionToCloseAuction(appId: number, accounts: string[], nftId: number) {
+  async _deleteTransactionToCloseAuction(appId: number, accounts: string[], nftId: number) {
     const client = this.client.client
     const suggestedParams = await client.getTransactionParams().do()
     const deleteTxn = await algosdk.makeApplicationDeleteTxnFromObject({

@@ -12,6 +12,12 @@ export default class RekeyAccountRecord {
   assetId: number
 
   @Column()
+  applicationId: number
+
+  @Column()
+  isClosedAuction: boolean
+
+  @Column()
   auctionStartDate: string
 
   @Column()

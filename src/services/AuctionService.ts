@@ -13,6 +13,7 @@ import { AssetNormalized } from 'src/interfaces'
 import { RekeyData } from 'src/interfaces'
 import RekeyAccountRecord from '../domain/model/RekeyAccount'
 import RekeyRepository from 'src/infrastructure/repositories/RekeyRepository'
+import { DataSource } from 'typeorm'
 
 @Service()
 export default class AuctionService {
@@ -23,8 +24,6 @@ export default class AuctionService {
   readonly op: TransactionOperation
   @Inject()
   private readonly logger!: CustomLogger
-  @Inject()
-  private readonly repo!: RekeyRepository
 
   constructor() {
     this.optInService = Container.get(OptInService)
@@ -40,7 +39,8 @@ export default class AuctionService {
     creatorWallet: string,
     inputCausePercentage: number,
     startDate: string,
-    endDate: string
+    endDate: string,
+    db: DataSource,
   ) {
     this.logger.info('Creating auction')
     const rekeyAccount = await this.generateRekeyAccount()
@@ -59,7 +59,7 @@ export default class AuctionService {
       causePercentage,
       creatorPercentage,
       startDate,
-      endDate
+      endDate,
     )
 
     const data: RekeyData = {
@@ -70,7 +70,9 @@ export default class AuctionService {
     }
 
     const rekey = await this._insertRekey(data)
-    await this.repo.insert(rekey).catch((error) => {
+    const repo = db.getRepository(RekeyAccountRecord)
+    const query =  new RekeyRepository(repo)
+    await query.insert(rekey).catch((error) => {
         this.logger.error(`Insert rekey error: ${error.message}`, error.stack)
         throw error
     })

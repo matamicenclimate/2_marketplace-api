@@ -1,14 +1,15 @@
 import { Inject, Service } from 'typedi'
 import RekeyRepository from '../infrastructure/repositories/RekeyRepository'
 import RekeyAccountRecord from '../domain/model/RekeyAccount'
+import DbConnectionService from './DbConnectionService'
 
 @Service()
 export default class FindRekey {
-  @Inject()
-  private readonly repo!: RekeyRepository
-
   async execute(): Promise<any> {
-    const result: RekeyAccountRecord[] = await this.repo.find()
+    const db = await DbConnectionService.create()
+    const repo = db.getRepository(RekeyAccountRecord)
+    const query =  new RekeyRepository(repo)
+    const result: RekeyAccountRecord[] = await query.find()
     return result
   }
 }

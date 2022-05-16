@@ -57,5 +57,8 @@ const config = {
   apiUrlCauses:
     process.env.API_URL_CAUSES ??
     die(`Environment variable "API_URL_CAUSES" wasn't defined!`),
+  dbName:
+    process.env.SQLITE_DATABASE ??
+    die(`Database name "SQLITE_DATABASE" wasn't defined!`)
 }
 export default config

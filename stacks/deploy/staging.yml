@@ -2,6 +2,7 @@ version: "3.3"
 
 volumes:
   climate_causes_database: {}
+  climate_marketplace_database: {}
 
 services:
   climate-frontend:
@@ -42,11 +43,17 @@ services:
 
   climate-backend:
     image: registry.dekaside.com/climatenft/climate-nft-marketplace-api:latest
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == node03.staging.dekaside.com
     command: yarn start
     env_file:
       - ./.env.backend
     networks:
       - climate-nft-marketplace
+    volumes:
+      - climate_marketplace_database:/app/databases
 
   climate-backend-proxy:
     image: registry.dekaside.com/library/nginx:latest

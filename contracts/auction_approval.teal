@@ -202,6 +202,10 @@ txn GroupIndex
 int 1
 -
 gtxns Amount
+int 7
+global MinTxnFee
+*
+-
 app_global_put
 byte "bid_account"
 txn GroupIndex
@@ -325,6 +329,10 @@ itxn_begin
 int pay
 itxn_field TypeEnum
 load 7
+int 7
+global MinTxnFee
+*
++
 global MinTxnFee
 -
 itxn_field Amount
@@ -364,8 +372,6 @@ load 9
 *
 int 100
 /
-global MinTxnFee
--
 itxn_field Amount
 load 10
 itxn_field Receiver
@@ -389,8 +395,6 @@ load 12
 *
 int 100
 /
-global MinTxnFee
--
 itxn_field Amount
 load 13
 itxn_field Receiver

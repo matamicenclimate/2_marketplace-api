@@ -8,6 +8,7 @@ import {
 } from '../infrastructure/IpfsStorage'
 import { Response } from '@common/lib/api'
 import { core } from '@common/lib/api/endpoints'
+import ServiceException from 'src/infrastructure/errors/ServiceException'
 
 @Service()
 @Controller('/api')
@@ -22,14 +23,20 @@ export default class IpfsController {
     @BodyParam('data') data: any,
     @UploadedFile('file') file: any
   ): Promise<Response<core['post']['ipfs']>> {
-    if (typeof data === 'string') data = JSON.parse(data)
-    const adapters: {
-      storage: IpfsStorageInterface,
-      logger: CustomLogger
-    } = {
-      storage: new IpfsStorage(this.logger),
-      logger: this.logger
+    try {
+      if (typeof data === 'string') data = JSON.parse(data)
+      const adapters: {
+        storage: IpfsStorageInterface,
+        logger: CustomLogger
+      } = {
+        storage: new IpfsStorage(this.logger),
+        logger: this.logger
+      }
+      return this.service.execute(adapters, data, file)
+    } catch (error) {
+      const message = `Upload IPFS error: ${error.message}`
+      this.logger.error(message, { stack: error.stack })
+      throw new ServiceException(message)
     }
-    return this.service.execute(adapters, data, file)
   }
 }

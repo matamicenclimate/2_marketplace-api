@@ -13,6 +13,7 @@ RUN yarn
 RUN mkdir -p ./node_modules
 RUN mkdir -p ./src/public
 RUN mkdir -p ./contracts
+RUN mkdir -p ./databases
 COPY ./dist/ ./dist/
 COPY ./node_modules/ ./node_modules/
 COPY ./contracts/ ./contracts/

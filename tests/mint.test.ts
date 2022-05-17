@@ -13,10 +13,17 @@ import AuctionService from 'src/services/AuctionService'
 import { AuctionCreationResult } from '@common/lib/AuctionCreationResult'
 import { TransactionOperation } from '@common/services/TransactionOperation'
 import { Axios, AxiosResponse } from 'axios'
+import FindRekey from 'src/services/FindRekeyService'
+import DbConnectionService from 'src/services/DbConnectionService'
+import RekeyAccountRecord from 'src/domain/model/RekeyAccount'
 
 const SUCCESS = 200
 beforeEach(() => {
     sinon.restore()
+})
+afterEach(async () => {
+  const connection = await DbConnectionService.create()
+  connection.createQueryBuilder().delete().from(RekeyAccountRecord).execute()
 })
 describe('Mint', () => {
     it('opt-in assets by assetId', async () => {
@@ -45,6 +52,9 @@ describe('Mint', () => {
             })
         expect(response.statusCode).to.eq(SUCCESS)
         expect(response.body.appIndex).to.eq(23409723)
+        const findRekey = new FindRekey()
+        const rekey = await findRekey.execute()
+        expect(rekey.length).to.eq(1)
     })
 })
 

@@ -110,3 +110,10 @@ export interface Properties {
   date: Date
   price: number
 }
+
+export interface RekeyData {
+  wallet: string
+  assetId: number
+  startDate: string
+  endDate: string
+}

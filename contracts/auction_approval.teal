@@ -202,7 +202,7 @@ txn GroupIndex
 int 1
 -
 gtxns Amount
-int 9
+int 7
 global MinTxnFee
 *
 -

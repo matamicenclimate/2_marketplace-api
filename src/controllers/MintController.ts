@@ -1,13 +1,14 @@
 import { Body, JsonController, Param, Post } from 'routing-controllers'
 import Container, { Inject, Service } from 'typedi'
 import OptInService from '@common/services/OptInService'
+import * as WalletAccountProvider from '@common/services/WalletAccountProvider'
 import AuctionService from '../services/AuctionService'
+import ListingService from 'src/services/ListingService'
+import DbConnectionService from 'src/services/DbConnectionService'
 import config from '../config/default'
 import { OpenAPI } from 'routing-controllers-openapi'
-import ListingService from 'src/services/ListingService'
 import CustomLogger from 'src/infrastructure/CustomLogger'
 import ServiceException from 'src/infrastructure/errors/ServiceException'
-import * as WalletAccountProvider from '@common/services/WalletAccountProvider'
 import { AssetNormalized } from 'src/interfaces'
 import { option } from '@octantis/option'
 import { Response, Body as BodyCommon } from '@common/lib/api'
@@ -47,13 +48,15 @@ export default class MintController {
       const asset: option<AssetNormalized> =
         await this.listingService.normalizeAsset(populatedAsset)
       if (asset.isDefined()) {
+        const db = await DbConnectionService.create()
         const response = await this.auctionService.execute(
           assetId,
           asset.value,
           creatorWallet,
           causePercentage,
           startDate,
-          endDate
+          endDate,
+          db
         )
         this.logger.info(
           `DONE: Sending back the asset ${assetId} to wallet owner.`

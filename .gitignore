@@ -5,6 +5,7 @@
 /dist/
 
 # Database stubs
+/databases/*.db
 /*.db
 
 # Logging artifacts

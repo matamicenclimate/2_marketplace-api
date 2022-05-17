@@ -10,6 +10,10 @@ import * as WalletAccountProvider from '@common/services/WalletAccountProvider'
 import { TransactionOperation } from '@common/services/TransactionOperation'
 import CustomLogger from 'src/infrastructure/CustomLogger'
 import { AssetNormalized } from 'src/interfaces'
+import { RekeyData } from 'src/interfaces'
+import RekeyAccountRecord from '../domain/model/RekeyAccount'
+import RekeyRepository from 'src/infrastructure/repositories/RekeyRepository'
+import { DataSource } from 'typeorm'
 
 @Service()
 export default class AuctionService {
@@ -35,7 +39,8 @@ export default class AuctionService {
     creatorWallet: string,
     inputCausePercentage: number,
     startDate: string,
-    endDate: string
+    endDate: string,
+    db: DataSource,
   ) {
     this.logger.info('Creating auction')
     const rekeyAccount = await this.generateRekeyAccount()
@@ -54,11 +59,36 @@ export default class AuctionService {
       causePercentage,
       creatorPercentage,
       startDate,
-      endDate
+      endDate,
     )
+
+    const data: RekeyData = {
+      assetId,
+      wallet: rekeyAccount.addr,
+      startDate,
+      endDate,
+    }
+
+    const rekey = await this._insertRekey(data)
+    const repo = db.getRepository(RekeyAccountRecord)
+    const query =  new RekeyRepository(repo)
+    await query.insert(rekey).catch((error) => {
+        this.logger.error(`Insert rekey error: ${error.message}`, error.stack)
+        throw error
+    })
+
     return {
       appIndex,
     }
+  }
+
+  _insertRekey(data: RekeyData) {
+    const rekey = new RekeyAccountRecord()
+    rekey.assetId = data.assetId
+    rekey.wallet = data.wallet
+    rekey.auctionStartDate = data.startDate
+    rekey.auctionEndDate = data.endDate
+    return rekey
   }
 
   async createAuction(

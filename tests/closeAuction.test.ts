@@ -35,6 +35,7 @@ const prepareCloseAuctionStub = async () => {
   const assetId = responseOptInService.txn.txn.xaid
     stubCreateAuction(assetId)
     sinon.stub(TransactionOperation.prototype, 'getApplicationState').resolves(auctionAppState)
+    sinon.stub(algosdk, 'mnemonicToSecretKey').resolves(true)
     sinon.stub(algosdk.Algodv2.prototype, 'getTransactionParams').returns({
       do: () => { }
     } as any)

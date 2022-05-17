@@ -109,8 +109,12 @@ export default class ListingService {
       const response = await retrying(req)
       yield* response.data.account.assets
     } catch (error) {
-      if (error.response.status === 404) return []
-      throw new ServiceException(error.message, error.response.status)
+      if (
+        error.errors?.find((s: any) => s.response?.status === 404) ||
+        error.response?.status === 404
+      )
+        return []
+      throw new ServiceException(error.message, error.response?.status)
     }
   }
 

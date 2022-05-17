@@ -21,6 +21,7 @@ export default class ListingsController {
   @Inject()
   private readonly logger!: CustomLogger
 
+  /** @deprecated */
   @Get(`/${config.version}/nfts`)
   async listing(): Promise<Response<core['get']['nfts']>> {
     try {

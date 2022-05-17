@@ -2,9 +2,7 @@ import 'reflect-metadata'
 import { expect } from 'chai'
 import request from 'supertest'
 import server from './testSupport/server'
-import axios from 'axios'
 import sinon from 'sinon'
-import config from 'src/config/default'
 import { assetNormalized, auctionAppState, responseOptInService } from './testSupport/mocks'
 import CloseAuction from 'src/services/CloseAuction'
 import { AssetNormalized } from 'src/interfaces'
@@ -16,8 +14,6 @@ import DbConnectionService from 'src/services/DbConnectionService'
 import RekeyAccountRecord from 'src/domain/model/RekeyAccount'
 import { stubCreateAuction } from './testSupport/stubs'
 
-const SUCCESS = 200
-const assetId = 69586371
 afterEach(async () => {
   const connection = await DbConnectionService.create()
   await connection.createQueryBuilder().delete().from(RekeyAccountRecord).execute()
@@ -27,7 +23,7 @@ describe('Close Auction', () => {
   it('updates isClosedAuction field', async () => {
     const closeAuction = Container.get(CloseAuction)
     await prepareCloseAuctionStub()
-    const result = await closeAuction.execute([assetNormalized as unknown as AssetNormalized])
+    await closeAuction.execute([{applicationId: assetNormalized.arc69.properties.app_id} as RekeyAccountRecord])
     const findRekey = new FindRekey()
     const rekey = await findRekey.execute()
     expect(rekey[0].applicationId).to.equal(assetNormalized.arc69.properties.app_id)

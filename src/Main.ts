@@ -13,7 +13,7 @@ import IpfsController from './controllers/IpfsController'
 import ListingsController from './controllers/ListingsController'
 import MintController from './controllers/MintController'
 import CloseAuction from './services/CloseAuction'
-import ListingService from './services/ListingService'
+import FindByQueryService from './services/FindByQueryService'
 import Container from 'typedi'
 
 @Entry
@@ -57,10 +57,12 @@ export default class Main {
     const logger = new CustomLogger()
     setInterval(async () => {
       try {
-        const listingService = Container.get(ListingService)
+        const findByQueryService = Container.get(FindByQueryService)
         const closeAuction = Container.get(CloseAuction)
         logger.info('close auctions')
-        const nfts = await listingService.listing()
+        const nfts = await findByQueryService.execute({
+          isClosedAuction: false
+        })
         logger.info(`Close auctions detect ${nfts.length} nfts`)
         await closeAuction.execute(nfts)
       } catch (error) {

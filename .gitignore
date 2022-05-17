@@ -19,3 +19,6 @@
 
 # Temporary assets
 .temp.accounts
+
+# Ignored files
+__*

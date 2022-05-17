@@ -112,8 +112,10 @@ export interface Properties {
 }
 
 export interface RekeyData {
-  wallet: string
-  assetId: number
-  startDate: string
-  endDate: string
+  isClosedAuction: boolean
+  appIndex: number
+	wallet: string
+	assetId: number
+	startDate: string
+	endDate: string
 }

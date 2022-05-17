@@ -1,3 +1,44 @@
+export const auctionAppState = {
+  end: 13213,
+  nft_id: 69586371,
+  bid_account: new Uint8Array(Buffer.from('bid_account')),
+  bid_amount: 1000000,
+  num_bids: 1,
+  min_bid_inc: 10,
+  reserve_amount: 1000000,
+  start: 23233,
+  seller: new Uint8Array(Buffer.from('seller')),
+  cause: new Uint8Array(Buffer.from('cause')),
+  creator: new Uint8Array(Buffer.from('creator')),
+  rekey: new Uint8Array(Buffer.from('rekey')),
+}
+export const assetNormalized = {
+	arc69: {
+		description: 'desc',
+		external_url: 'url',
+		mime_type: 'type',
+		properties: {
+			app_id: 23409723,
+			artist: 'string',
+			cause: 'string',
+			causePercentage: 50,
+			file: {
+				name: 'string',
+				type: 'string',
+				size: 4
+			},
+			date: '2022-05-16T09:10:11.500Z',
+			price: 1000000
+		},
+		standard: 'string',
+	},
+	image_url: 'string',
+	ipnft: 'string',
+	title: 'string',
+	url: 'string',
+	id: 78482718,
+	creator: 'string',
+}
 export const nftStorageResponse = {
 	ipnft: 'bafyreie3f76qjzelgeboxr3rikzfi6iabs2xj7nt4qfqmflaauepka7opm',
 	url: 'ipfs://bafyreie3f76qjzelgeboxr3rikzfi6iabs2xj7nt4qfqmflaauepka7opm/metadata.json',
@@ -168,3 +209,4 @@ export const populatedAsset = {
 		]
 	}
 }
+

@@ -63,6 +63,8 @@ export default class AuctionService {
     )
 
     const data: RekeyData = {
+      isClosedAuction: false,
+      appIndex,
       assetId,
       wallet: rekeyAccount.addr,
       startDate,
@@ -84,6 +86,8 @@ export default class AuctionService {
 
   _insertRekey(data: RekeyData) {
     const rekey = new RekeyAccountRecord()
+    rekey.isClosedAuction = data.isClosedAuction
+    rekey.applicationId = data.appIndex | 0
     rekey.assetId = data.assetId
     rekey.wallet = data.wallet
     rekey.auctionStartDate = data.startDate

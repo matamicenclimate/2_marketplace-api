@@ -5,10 +5,11 @@ import algosdk from 'algosdk'
 import Container, { Inject, Service } from 'typedi'
 import * as WalletProvider from '@common/services/WalletAccountProvider'
 import { AuctionAppState } from '@common/lib/types'
-import { AssetNormalized } from 'src/interfaces'
 import CloseAuctionException from 'src/infrastructure/errors/CloseAutionException'
 import { sleep } from 'src/utils/helpers'
 import CustomLogger from 'src/infrastructure/CustomLogger'
+import UpdateRekeyService from './UpdateRekeyService'
+import RekeyAccountRecord from 'src/domain/model/RekeyAccount'
 
 @Service()
 export default class CloseAuction {
@@ -18,14 +19,25 @@ export default class CloseAuction {
   @Inject()
   readonly optInService: OptInService
   @Inject()
+  readonly updateRekeyService: UpdateRekeyService
+  @Inject()
   private readonly logger!: CustomLogger
 
-  async execute(nfts: AssetNormalized[]) {
+  async execute(rekeys: RekeyAccountRecord[]) {
     let errors: any[] = []
-    for (const nft of nfts) {
-      const appId = nft.arc69.properties.app_id
+    for (const rekey of rekeys) {
+      const appId = rekey.applicationId
       if (appId) {
-        errors = await this._closeNFTAuction(appId)
+        const { errors: resultErrors, isClosed } = await this._closeNFTAuction(appId)
+        if (resultErrors.length) {
+          this.logger.error('There are errors closing auction', { errors: resultErrors })
+          errors.push(...resultErrors)
+        } else if(isClosed) {
+          this.logger.info('Updating rekey closed auction')
+          const isClosedAuction = true
+          await this.updateRekeyService.execute(appId, isClosedAuction)
+          this.logger.info('Updated rekey closed auction')
+        }
       }
     }
     if (errors.length) throw new CloseAuctionException('Error closing auctions', errors)
@@ -34,6 +46,7 @@ export default class CloseAuction {
   private async _closeNFTAuction(appId: number) {
     const APPLICATION_NO_EXIST = 404
     const errors = []
+    let isClosed = false
     try {
       const state = await this.transactionOperation.getApplicationState(appId) as AuctionAppState
       const EXTRA_MS_TO_CLOSE_AUCTION = 70000
@@ -48,6 +61,7 @@ export default class CloseAuction {
           this.optInService.optInAssetByID(nftId, this.wallet.account.addr, creator, this.wallet.account, 1)
           this.logger.info(`Asset ${nftId} is returned to creator`)
         }
+        isClosed = true
       }
     } catch (error) {
       if (error.status === APPLICATION_NO_EXIST) {
@@ -61,7 +75,7 @@ export default class CloseAuction {
         errors.push(errorResult)
       }
     }
-    return errors
+    return { errors, isClosed }
   }
   private async _closeAuction(appId: number, appGlobalState: AuctionAppState) {
     const nftId = appGlobalState["nft_id"] as number
@@ -77,7 +91,7 @@ export default class CloseAuction {
     }
   }
 
-  private async _deleteTransactionToCloseAuction(appId: number, accounts: string[], nftId: number) {
+  async _deleteTransactionToCloseAuction(appId: number, accounts: string[], nftId: number) {
     const client = this.client.client
     const suggestedParams = await client.getTransactionParams().do()
     const deleteTxn = await algosdk.makeApplicationDeleteTxnFromObject({

@@ -10,7 +10,9 @@ export default class UpdateRekeyService {
     const db = await DbConnectionService.create()
     const repo = db.getRepository(RekeyAccountRecord)
     const query =  new RekeyRepository(repo)
-    const rekey: option<RekeyAccountRecord> = await query.findOneByAppId(appId)
+    const rekey: option<RekeyAccountRecord> = await query.findOneByQuery({
+      applicationId: appId
+    })
     let result = null
     if(rekey.isDefined()) {
       result = await query.updateOne(rekey.value.assetId, {

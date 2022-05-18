@@ -65,7 +65,7 @@ export default class ListingsController {
         return {assets: assets.value}
       }
 
-      throw new ServiceException('Assets not found')
+      return {assets: []}
     } catch (error) {
       const message = `Get assets from wallet error: ${error.message}`
       this.logger.error(message, { stack: error.stack })

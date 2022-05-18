@@ -63,6 +63,7 @@ export default class AuctionService {
     )
 
     const data: RekeyData = {
+      cause: asset.arc69.properties.cause,
       assetUrl: asset.image_url,
       isClosedAuction: false,
       appIndex,
@@ -88,6 +89,7 @@ export default class AuctionService {
   _insertRekey(data: RekeyData) {
     const rekey = new RekeyAccountRecord()
     rekey.assetUrl = data.assetUrl
+    rekey.cause = data.cause
     rekey.isClosedAuction = data.isClosedAuction
     rekey.applicationId = data.appIndex | 0
     rekey.assetId = data.assetId

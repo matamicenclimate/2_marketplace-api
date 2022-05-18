@@ -7,6 +7,9 @@ export default class RekeyAccountRecord {
 
   @Column()
   assetUrl: string
+  
+  @Column()
+  cause: string
 
   @Column()
   rekeyWallet: string

@@ -112,6 +112,7 @@ export interface Properties {
 }
 
 export interface RekeyData {
+  cause: string
   assetUrl: string
   isClosedAuction: boolean
   appIndex: number

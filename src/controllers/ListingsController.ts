@@ -8,7 +8,6 @@ import config from '../config/default'
 import { Response } from '@common/lib/api'
 import { core } from '@common/lib/api/endpoints'
 import { AssetNormalized } from 'src/interfaces'
-import { none } from '@octantis/option'
 
 @Service()
 @JsonController('/api')

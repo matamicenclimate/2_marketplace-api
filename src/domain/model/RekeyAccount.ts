@@ -6,7 +6,10 @@ export default class RekeyAccountRecord {
   id: string
 
   @Column()
-  wallet: string
+  rekeyWallet: string
+
+  @Column()
+  marketplaceWallet: string
 
   @Column()
   assetId: number

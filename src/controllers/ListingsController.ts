@@ -1,17 +1,13 @@
 import { Get, JsonController, Param, QueryParam } from 'routing-controllers'
 import { Inject, Service } from 'typedi'
 import ListingService from '../services/ListingService'
+import DbConnectionService from 'src/services/DbConnectionService'
 import ServiceException from '../infrastructure/errors/ServiceException'
 import CustomLogger from '../infrastructure/CustomLogger'
 import config from '../config/default'
 import { Response } from '@common/lib/api'
 import { core } from '@common/lib/api/endpoints'
 import { AssetNormalized } from 'src/interfaces'
-
-// ONLY DEV - Prints swagger json
-// import { getMetadataArgsStorage } from 'routing-controllers'
-// import { routingControllersToSpec } from 'routing-controllers-openapi'
-// import util from 'util'
 
 @Service()
 @JsonController('/api')
@@ -62,7 +58,13 @@ export default class ListingsController {
     @QueryParam('wallet') wallet?: string
   ): Promise<Response<core['get']['assets']>> {
     try {
-      return await this.ListingService.getAssetsFromWallet(wallet)
+      const db = await DbConnectionService.create()
+      const assets = await this.ListingService.getAssetsFromWallet(wallet, db)
+      if (assets.isDefined()) {
+        return {assets: assets.value}
+      }
+
+      return {assets: []}
     } catch (error) {
       const message = `Get assets from wallet error: ${error.message}`
       this.logger.error(message, { stack: error.stack })
@@ -70,8 +72,3 @@ export default class ListingsController {
     }
   }
 }
-
-// ONLY DEV - Prints swagger json
-// const storage = getMetadataArgsStorage()
-// const spec = routingControllersToSpec(storage)
-// console.log(util.inspect(spec, false, null, true /* enable colors */))

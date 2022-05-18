@@ -13,6 +13,9 @@ import { some, option, none } from '@octantis/option'
 import { AxiosPromise, AxiosResponse } from 'axios'
 import ServiceException from 'src/infrastructure/errors/ServiceException'
 import { retrying } from '@common/lib/net'
+import RekeyAccountRecord from '../domain/model/RekeyAccount'
+import RekeyRepository from 'src/infrastructure/repositories/RekeyRepository'
+import { DataSource } from 'typeorm'
 
 @Service()
 export default class ListingService {
@@ -46,18 +49,18 @@ export default class ListingService {
     return this.normalizeAsset(assetPopulated)
   }
 
-  async getAssetsFromWallet(wallet: string = config.defaultWallet.address) {
-    const response = await axios.get(
-      `${config.algoIndexerApi}/accounts/${wallet}/assets`,
-      {
-        headers: {
-          accept: 'application/json',
-          'x-api-key': config.algoClientApiKey,
-        },
-      }
-    )
+  async getAssetsFromWallet(
+    wallet: string = config.defaultWallet.address,
+    db: DataSource
+  ) {
+    const repo = db.getRepository(RekeyAccountRecord)
+    const query = new RekeyRepository(repo)
+    const response = await query.findByQuery({
+      marketplaceWallet: wallet,
+      isClosedAuction: false,
+    })
 
-    return { ...response.data }
+    return response
   }
 
   /** @deprecated */

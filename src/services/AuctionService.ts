@@ -89,7 +89,8 @@ export default class AuctionService {
     rekey.isClosedAuction = data.isClosedAuction
     rekey.applicationId = data.appIndex | 0
     rekey.assetId = data.assetId
-    rekey.wallet = data.wallet
+    rekey.rekeyWallet = data.wallet
+    rekey.marketplaceWallet = config.defaultWallet.address
     rekey.auctionStartDate = data.startDate
     rekey.auctionEndDate = data.endDate
     return rekey

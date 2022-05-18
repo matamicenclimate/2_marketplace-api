@@ -1,12 +1,14 @@
 import { Get, JsonController, Param, QueryParam } from 'routing-controllers'
 import { Inject, Service } from 'typedi'
 import ListingService from '../services/ListingService'
+import DbConnectionService from 'src/services/DbConnectionService'
 import ServiceException from '../infrastructure/errors/ServiceException'
 import CustomLogger from '../infrastructure/CustomLogger'
 import config from '../config/default'
 import { Response } from '@common/lib/api'
 import { core } from '@common/lib/api/endpoints'
 import { AssetNormalized } from 'src/interfaces'
+import { none } from '@octantis/option'
 
 @Service()
 @JsonController('/api')
@@ -57,7 +59,13 @@ export default class ListingsController {
     @QueryParam('wallet') wallet?: string
   ): Promise<Response<core['get']['assets']>> {
     try {
-      return await this.ListingService.getAssetsFromWallet(wallet)
+      const db = await DbConnectionService.create()
+      const assets = await this.ListingService.getAssetsFromWallet(wallet, db)
+      if (assets.isDefined()) {
+        return {assets: assets.value}
+      }
+
+      throw new ServiceException('Assets not found')
     } catch (error) {
       const message = `Get assets from wallet error: ${error.message}`
       this.logger.error(message, { stack: error.stack })

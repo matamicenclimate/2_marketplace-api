@@ -220,4 +220,18 @@ export default class ListingService {
 
     return none()
   }
+
+  async getMyAssetsFromWallet(wallet: string = config.defaultWallet.address) {
+    const response = await axios.get(
+      `${config.algoIndexerApi}/accounts/${wallet}/assets`,
+      {
+        headers: {
+          accept: 'application/json',
+          'x-api-key': config.algoClientApiKey,
+        },
+      }
+    )
+
+    return { ...response.data }
+  }
 }

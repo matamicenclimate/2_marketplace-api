@@ -71,4 +71,16 @@ export default class ListingsController {
       throw new ServiceException(message)
     }
   }
+  @Get(`/${config.version}/my-assets`)
+  async getMyAssetsFromWallet(
+    @QueryParam('wallet') wallet?: string
+  ): Promise<Response<core['get']['my-assets']>> {
+    try {
+      return await this.ListingService.getMyAssetsFromWallet(wallet)
+    } catch (error) {
+      const message = `Get assets from wallet error: ${error.message}`
+      this.logger.error(message, { stack: error.stack })
+      throw new ServiceException(message)
+    }
+  }
 }

@@ -7,6 +7,7 @@ import sinon from 'sinon'
 import algosdk from 'algosdk'
 import { populatedAsset } from './mocks'
 import { AuctionCreationResult } from "@common/lib/AuctionCreationResult"
+import { Result } from "@common/lib/Result"
 
 export const stubCreateAuction = (assetId: number) => {
   sinon.stub(ListingService.prototype, 'populateAsset').resolves({ ...populatedAsset.data, id: assetId })
@@ -66,7 +67,7 @@ export const stubCreateAuction = (assetId: number) => {
   )
   sinon.stub(AuctionLogic.prototype, 'makeTransferToAccount').resolves({
       txId: 2924
-  } as { txId: number; result: Record<string, unknown>; })
+  } as any)
   sinon.stub(AuctionLogic.prototype, 'fundAuction').resolves({
       amount: 1000000,
       result: {

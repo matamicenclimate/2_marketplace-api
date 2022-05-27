@@ -38,18 +38,16 @@ export default class AuctionService {
     asset: AssetNormalized,
     creatorWallet: string,
     inputCausePercentage: number,
-    startDate: string,
-    endDate: string,
     db: DataSource,
   ) {
-    this.logger.info('Creating auction')
+    this.logger.info('Creating direct listing')
     const rekeyAccount = await this.generateRekeyAccount()
     const cause = await this._getCauseInfo(asset.arc69.properties.cause)
     const {
       causePercentage,
       creatorPercentage
     } = await this._calculatePercentages(inputCausePercentage)
-    const appIndex = await this.createAuction(
+    const appIndex = await this.createDirectListing(
       assetId,
       asset.arc69.properties.price,
       rekeyAccount,
@@ -58,8 +56,6 @@ export default class AuctionService {
       creatorWallet,
       causePercentage,
       creatorPercentage,
-      startDate,
-      endDate,
     )
 
     const data: RekeyData = {
@@ -69,9 +65,7 @@ export default class AuctionService {
       appIndex,
       assetId,
       wallet: rekeyAccount.addr,
-      startDate,
-      endDate,
-      type: 'create-auction'
+      type: 'direct-listing',
     }
 
     const rekey = await this._insertRekey(data)
@@ -102,7 +96,7 @@ export default class AuctionService {
     return rekey
   }
 
-  async createAuction(
+  async createDirectListing(
     assetId: number,
     reserve: number,
     rekeyAccount: algosdk.Account,
@@ -111,11 +105,9 @@ export default class AuctionService {
     creatorWallet: string,
     causePercentage: number,
     creatorPercentage: number,
-    startDate: string,
-    endDate: string
   ): Promise<number> {
-    this.logger.info(`Creating auction`)
-    const auction = await this.auctionLogic.createAuction(
+    this.logger.info(`Creating directListing`)
+    const auction = await this.auctionLogic.createDirectListing(
       assetId,
       reserve,
       parseInt(config.bid.increment),
@@ -124,8 +116,6 @@ export default class AuctionService {
       creatorWallet,
       causePercentage,
       creatorPercentage,
-      startDate,
-      endDate
     )
     const appIndex = auction['application-index']
     this.logger.info(

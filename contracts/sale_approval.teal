@@ -1,0 +1,295 @@
+#pragma version 5
+txn ApplicationID
+int 0
+==
+bnz main_l19
+txn OnCompletion
+int NoOp
+==
+bnz main_l12
+txn OnCompletion
+int DeleteApplication
+==
+bnz main_l6
+txn OnCompletion
+int OptIn
+==
+txn OnCompletion
+int CloseOut
+==
+||
+txn OnCompletion
+int UpdateApplication
+==
+||
+bnz main_l5
+err
+main_l5:
+int 0
+return
+main_l6:
+byte "bid_account"
+app_global_get
+global ZeroAddress
+!=
+bnz main_l9
+byte "nft_id"
+app_global_get
+byte "seller"
+app_global_get
+callsub sub0
+main_l8:
+byte "seller"
+app_global_get
+callsub sub2
+int 1
+return
+main_l9:
+byte "bid_amount"
+app_global_get
+byte "reserve_amount"
+app_global_get
+>=
+bnz main_l11
+byte "nft_id"
+app_global_get
+byte "seller"
+app_global_get
+callsub sub0
+byte "bid_account"
+app_global_get
+byte "bid_amount"
+app_global_get
+callsub sub1
+b main_l8
+main_l11:
+byte "bid_amount"
+app_global_get
+byte "creator"
+app_global_get
+byte "creator_percentaje"
+app_global_get
+callsub sub4
+byte "bid_amount"
+app_global_get
+byte "cause"
+app_global_get
+byte "cause_percentaje"
+app_global_get
+callsub sub3
+byte "nft_id"
+app_global_get
+byte "bid_account"
+app_global_get
+callsub sub0
+b main_l8
+main_l12:
+txna ApplicationArgs 0
+byte "setup"
+==
+bnz main_l18
+txna ApplicationArgs 0
+byte "bid"
+==
+bnz main_l15
+err
+main_l15:
+txn GroupIndex
+int 1
+-
+gtxns TypeEnum
+int pay
+==
+assert
+txn GroupIndex
+int 1
+-
+gtxns Sender
+txn Sender
+==
+assert
+txn GroupIndex
+int 1
+-
+gtxns Receiver
+global CurrentApplicationAddress
+==
+assert
+txn GroupIndex
+int 1
+-
+gtxns Amount
+global MinTxnFee
+>=
+assert
+txn GroupIndex
+int 1
+-
+gtxns Amount
+byte "reserve_amount"
+app_global_get
+==
+bnz main_l17
+int 0
+return
+main_l17:
+byte "bid_amount"
+txn GroupIndex
+int 1
+-
+gtxns Amount
+int 7
+global MinTxnFee
+*
+-
+app_global_put
+byte "bid_account"
+txn GroupIndex
+int 1
+-
+gtxns Sender
+app_global_put
+int 1
+return
+main_l18:
+itxn_begin
+int axfer
+itxn_field TypeEnum
+byte "nft_id"
+app_global_get
+itxn_field XferAsset
+global CurrentApplicationAddress
+itxn_field AssetReceiver
+itxn_submit
+int 1
+return
+main_l19:
+byte "seller"
+txna ApplicationArgs 0
+app_global_put
+byte "nft_id"
+txna ApplicationArgs 1
+btoi
+app_global_put
+byte "reserve_amount"
+txna ApplicationArgs 2
+btoi
+app_global_put
+byte "creator"
+txna ApplicationArgs 3
+app_global_put
+byte "cause"
+txna ApplicationArgs 4
+app_global_put
+byte "creator_percentaje"
+txna ApplicationArgs 5
+btoi
+app_global_put
+byte "cause_percentaje"
+txna ApplicationArgs 6
+btoi
+app_global_put
+byte "rekey"
+txna ApplicationArgs 7
+app_global_put
+int 1
+return
+sub0: // closeNFTTo
+store 1
+store 0
+global CurrentApplicationAddress
+load 0
+asset_holding_get AssetBalance
+store 2
+store 3
+load 2
+bz sub0_l2
+itxn_begin
+int axfer
+itxn_field TypeEnum
+load 0
+itxn_field XferAsset
+load 1
+itxn_field AssetCloseTo
+itxn_submit
+sub0_l2:
+retsub
+sub1: // repayPreviousLeadBidder
+store 5
+store 4
+itxn_begin
+int pay
+itxn_field TypeEnum
+load 5
+int 7
+global MinTxnFee
+*
++
+global MinTxnFee
+-
+itxn_field Amount
+load 4
+itxn_field Receiver
+itxn_submit
+retsub
+sub2: // closeAccountTo
+store 6
+global CurrentApplicationAddress
+balance
+int 0
+!=
+bz sub2_l2
+itxn_begin
+int pay
+itxn_field TypeEnum
+load 6
+itxn_field CloseRemainderTo
+itxn_submit
+sub2_l2:
+retsub
+sub3: // payAmountToCause
+store 9
+store 8
+store 7
+global CurrentApplicationAddress
+balance
+int 0
+!=
+bz sub3_l2
+itxn_begin
+int pay
+itxn_field TypeEnum
+load 9
+load 7
+*
+int 100
+/
+itxn_field Amount
+load 8
+itxn_field Receiver
+itxn_submit
+sub3_l2:
+retsub
+sub4: // payAmountToCreator
+store 12
+store 11
+store 10
+global CurrentApplicationAddress
+balance
+int 0
+!=
+bz sub4_l2
+itxn_begin
+int pay
+itxn_field TypeEnum
+load 12
+load 10
+*
+int 100
+/
+itxn_field Amount
+load 11
+itxn_field Receiver
+itxn_submit
+sub4_l2:
+retsub

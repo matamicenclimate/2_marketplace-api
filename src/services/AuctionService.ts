@@ -137,7 +137,6 @@ export default class AuctionService {
     const { amount } = await this.auctionLogic.fundListing(appIndex)
     this.logger.info(`Application funded with ${amount}`)
     await this.auctionLogic.makeAppCallSetupProc(appIndex, assetId)
-    this.logger.info(`Asset opted in!`)
     const note = algosdk.encodeObj({
       ...asset,
       arc69: {

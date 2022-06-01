@@ -126,8 +126,11 @@ export default class AuctionService {
 
     const { amount } = await this.auctionLogic.fundListing(appIndex)
     this.logger.info(`Application funded with ${amount}`)
+    this.logger.info('makeAppCallSetupProc intent', {
+      appIndex, assetId
+    })
     await this.auctionLogic.makeAppCallSetupProc(appIndex, assetId)
-    this.logger.info(`Asset opted in!`)
+    this.logger.info('makeAppCallSetupProc done')
     const note = algosdk.encodeObj({
       ...asset,
       arc69: {
@@ -137,6 +140,9 @@ export default class AuctionService {
           app_id: appIndex,
         },
       },
+    })
+    this.logger.info('makeTransferToApp intent', {
+      appIndex, assetId
     })
     await this.auctionLogic.makeTransferToApp(appIndex, assetId, note)
     this.logger.info(`Asset ${assetId} transferred to ${appIndex}`)

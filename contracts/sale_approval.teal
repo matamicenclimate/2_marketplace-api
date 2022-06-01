@@ -2,15 +2,11 @@
 txn ApplicationID
 int 0
 ==
-bnz main_l19
+bnz main_l12
 txn OnCompletion
 int NoOp
 ==
-bnz main_l12
-txn OnCompletion
-int DeleteApplication
-==
-bnz main_l6
+bnz main_l5
 txn OnCompletion
 int OptIn
 ==
@@ -22,78 +18,27 @@ txn OnCompletion
 int UpdateApplication
 ==
 ||
-bnz main_l5
+bnz main_l4
 err
-main_l5:
+main_l4:
 int 0
 return
-main_l6:
-byte "bid_account"
-app_global_get
-global ZeroAddress
-!=
-bnz main_l9
-byte "nft_id"
-app_global_get
-byte "seller"
-app_global_get
-callsub sub0
-main_l8:
-byte "seller"
-app_global_get
-callsub sub2
-int 1
-return
-main_l9:
-byte "bid_amount"
-app_global_get
-byte "reserve_amount"
-app_global_get
->=
-bnz main_l11
-byte "nft_id"
-app_global_get
-byte "seller"
-app_global_get
-callsub sub0
-byte "bid_account"
-app_global_get
-byte "bid_amount"
-app_global_get
-callsub sub1
-b main_l8
-main_l11:
-byte "bid_amount"
-app_global_get
-byte "creator"
-app_global_get
-byte "creator_percentaje"
-app_global_get
-callsub sub4
-byte "bid_amount"
-app_global_get
-byte "cause"
-app_global_get
-byte "cause_percentaje"
-app_global_get
-callsub sub3
-byte "nft_id"
-app_global_get
-byte "bid_account"
-app_global_get
-callsub sub0
-b main_l8
-main_l12:
+main_l5:
 txna ApplicationArgs 0
 byte "setup"
 ==
-bnz main_l18
+bnz main_l11
 txna ApplicationArgs 0
 byte "bid"
 ==
-bnz main_l15
+bnz main_l8
 err
-main_l15:
+main_l8:
+byte "bid_account"
+app_global_get
+int 0
+==
+assert
 txn GroupIndex
 int 1
 -
@@ -128,11 +73,11 @@ int 1
 gtxns Amount
 byte "reserve_amount"
 app_global_get
-==
-bnz main_l17
+>=
+bnz main_l10
 int 0
 return
-main_l17:
+main_l10:
 byte "bid_amount"
 txn GroupIndex
 int 1
@@ -149,9 +94,9 @@ int 1
 -
 gtxns Sender
 app_global_put
-int 1
+callsub sub2
 return
-main_l18:
+main_l11:
 itxn_begin
 int axfer
 itxn_field TypeEnum
@@ -163,7 +108,7 @@ itxn_field AssetReceiver
 itxn_submit
 int 1
 return
-main_l19:
+main_l12:
 byte "seller"
 txna ApplicationArgs 0
 app_global_put
@@ -214,43 +159,76 @@ itxn_field AssetCloseTo
 itxn_submit
 sub0_l2:
 retsub
-sub1: // repayPreviousLeadBidder
-store 5
+sub1: // closeAccountTo
 store 4
-itxn_begin
-int pay
-itxn_field TypeEnum
-load 5
-int 7
-global MinTxnFee
-*
-+
-global MinTxnFee
--
-itxn_field Amount
-load 4
-itxn_field Receiver
-itxn_submit
-retsub
-sub2: // closeAccountTo
-store 6
 global CurrentApplicationAddress
 balance
 int 0
 !=
-bz sub2_l2
+bz sub1_l2
 itxn_begin
 int pay
 itxn_field TypeEnum
-load 6
+load 4
 itxn_field CloseRemainderTo
 itxn_submit
-sub2_l2:
+sub1_l2:
 retsub
+sub2: // onDeleteSubroutine
+byte "bid_account"
+app_global_get
+global ZeroAddress
+!=
+bnz sub2_l2
+byte "nft_id"
+app_global_get
+byte "seller"
+app_global_get
+callsub sub0
+b sub2_l5
+sub2_l2:
+byte "bid_amount"
+app_global_get
+byte "reserve_amount"
+app_global_get
+>=
+bnz sub2_l4
+byte "nft_id"
+app_global_get
+byte "seller"
+app_global_get
+callsub sub0
+b sub2_l5
+sub2_l4:
+byte "bid_amount"
+app_global_get
+byte "creator"
+app_global_get
+byte "creator_percentaje"
+app_global_get
+callsub sub4
+byte "bid_amount"
+app_global_get
+byte "cause"
+app_global_get
+byte "cause_percentaje"
+app_global_get
+callsub sub3
+byte "nft_id"
+app_global_get
+byte "bid_account"
+app_global_get
+callsub sub0
+sub2_l5:
+byte "seller"
+app_global_get
+callsub sub1
+int 1
+return
 sub3: // payAmountToCause
-store 9
-store 8
 store 7
+store 6
+store 5
 global CurrentApplicationAddress
 balance
 int 0
@@ -259,21 +237,21 @@ bz sub3_l2
 itxn_begin
 int pay
 itxn_field TypeEnum
-load 9
 load 7
+load 5
 *
 int 100
 /
 itxn_field Amount
-load 8
+load 6
 itxn_field Receiver
 itxn_submit
 sub3_l2:
 retsub
 sub4: // payAmountToCreator
-store 12
-store 11
 store 10
+store 9
+store 8
 global CurrentApplicationAddress
 balance
 int 0
@@ -282,13 +260,13 @@ bz sub4_l2
 itxn_begin
 int pay
 itxn_field TypeEnum
-load 12
 load 10
+load 8
 *
 int 100
 /
 itxn_field Amount
-load 11
+load 9
 itxn_field Receiver
 itxn_submit
 sub4_l2:

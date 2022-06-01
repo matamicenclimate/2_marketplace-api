@@ -185,6 +185,10 @@ def approval_program():
         [Txn.application_id() == Int(0), on_create],
         [Txn.on_completion() == OnComplete.NoOp, on_call],
         [
+            Txn.on_completion() == OnComplete.DeleteApplication,
+            Seq(Approve()),
+        ],
+        [
             Or(
                 Txn.on_completion() == OnComplete.OptIn,
                 Txn.on_completion() == OnComplete.CloseOut,

@@ -7,7 +7,7 @@ import UpdateRekeyService from 'src/services/UpdateRekeyService'
 
 @Service()
 @JsonController('/api')
-export default class HealthzController {
+export default class ApplicationsController {
   @Inject()
   private readonly deleteApplicationService!: DeleteApplicationService
   @Inject()
@@ -23,6 +23,7 @@ export default class HealthzController {
       )
       if (result) {
         await this.updateRekeyService.execute(appId, result)
+        return {}
       }
     } catch (error) {
       const message = `Delete cause error: ${error.message}`

@@ -1,5 +1,6 @@
 import { Get, JsonController, Param, QueryParam } from 'routing-controllers'
 import { Inject, Service } from 'typedi'
+import FindByQueryService from '../services/FindByQueryService'
 import ListingService from '../services/ListingService'
 import DbConnectionService from 'src/services/DbConnectionService'
 import ServiceException from '../infrastructure/errors/ServiceException'
@@ -8,12 +9,15 @@ import config from '../config/default'
 import { Response } from '@common/lib/api'
 import { core } from '@common/lib/api/endpoints'
 import { AssetNormalized } from 'src/interfaces'
+import RekeyAccountRecord from 'src/domain/model/RekeyAccount'
 
 @Service()
 @JsonController('/api')
 export default class ListingsController {
   @Inject()
   readonly ListingService: ListingService
+  @Inject()
+  readonly findByQueryService: FindByQueryService
   @Inject()
   private readonly logger!: CustomLogger
 
@@ -52,7 +56,20 @@ export default class ListingsController {
       throw new ServiceException(message)
     }
   }
+  @Get(`/${config.version}/asset-info/:id`)
+  async getAssetInfo(
+    @Param('id') id: number
+  ): Promise<Response<core['get']['asset-info/:id']>> {
+    try {
+      const asset = await this.findByQueryService.execute({ assetId: id })
 
+      return asset as unknown as RekeyAccountRecord
+    } catch (error) {
+      const message = `Get asset from database error: ${error.message}`
+      this.logger.error(message, { stack: error.stack })
+      throw new ServiceException(message)
+    }
+  }
   @Get(`/${config.version}/assets`)
   async getAssetsFromWallet(
     @QueryParam('wallet') wallet?: string

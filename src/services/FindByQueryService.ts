@@ -15,6 +15,6 @@ export default class FindByQueryService {
     if(rekeys.isDefined()) {
       return rekeys.value
     }
-    return []
+    return undefined
   }
 }

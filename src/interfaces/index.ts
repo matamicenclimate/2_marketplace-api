@@ -120,5 +120,5 @@ export interface RekeyData {
 	assetId: number
 	startDate?: string
 	endDate?: string
-  type: string
+  type: 'create-auction' | 'direct-listing'
 }

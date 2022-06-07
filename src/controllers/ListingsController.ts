@@ -62,7 +62,7 @@ export default class ListingsController {
   ): Promise<Response<core['get']['asset-info/:id']>> {
     try {
       const asset = await this.findByQueryService.execute({ assetId: id })
-
+      if (Array.isArray(asset) && asset.length) return asset[0]
       return asset as unknown as RekeyAccountRecord
     } catch (error) {
       const message = `Get asset from database error: ${error.message}`

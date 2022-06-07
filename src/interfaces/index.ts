@@ -118,6 +118,7 @@ export interface RekeyData {
   appIndex: number
 	wallet: string
 	assetId: number
-	startDate: string
-	endDate: string
+	startDate?: string
+	endDate?: string
+  type: 'create-auction' | 'direct-listing'
 }

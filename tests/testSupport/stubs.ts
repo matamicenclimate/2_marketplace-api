@@ -68,7 +68,7 @@ export const stubCreateAuction = (assetId: number) => {
   sinon.stub(AuctionLogic.prototype, 'makeTransferToAccount').resolves({
       txId: 2924
   } as any)
-  sinon.stub(AuctionLogic.prototype, 'fundAuction').resolves({
+  sinon.stub(AuctionLogic.prototype, 'fundListing').resolves({
       amount: 1000000,
       result: {
           txId: 2924

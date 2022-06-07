@@ -32,6 +32,9 @@ export default class RekeyAccountRecord {
   @Column()
   auctionEndDate: string
 
+  @Column()
+  type: 'create-auction' | 'direct-listing'
+
   @CreateDateColumn()
   createdAt: Date
 

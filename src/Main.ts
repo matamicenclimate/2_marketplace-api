@@ -11,6 +11,7 @@ import CustomLogger from './infrastructure/CustomLogger'
 import HealthzController from './controllers/HealthzController'
 import IpfsController from './controllers/IpfsController'
 import ListingsController from './controllers/ListingsController'
+import ApplicationsController from './controllers/ApplicationsController'
 import MintController from './controllers/MintController'
 import CloseAuction from './services/CloseAuction'
 import FindByQueryService from './services/FindByQueryService'
@@ -51,6 +52,7 @@ export default class Main {
         IpfsController,
         ListingsController,
         MintController,
+        ApplicationsController,
       ],
     })
 

@@ -3,6 +3,7 @@ import { Inject, Service } from 'typedi'
 import OptInService from '@common/services/OptInService'
 import * as WalletAccountProvider from '@common/services/WalletAccountProvider'
 import AuctionService from '../services/AuctionService'
+import DirectListingService from '../services/DirectListingService'
 import ListingService from 'src/services/ListingService'
 import UnsignedTransactionService from 'src/services/UnsignedTransactionService'
 import TransactionGroupService from 'src/services/TransactionGroupService'
@@ -25,6 +26,9 @@ export default class MintController {
 
   @Inject()
   readonly auctionService: AuctionService
+
+  @Inject()
+  readonly directListingService: DirectListingService
 
   @Inject()
   readonly unsignedtransactionService: UnsignedTransactionService 
@@ -56,6 +60,40 @@ export default class MintController {
     while(true) {
       try {
         return await this.tryCreateAuction(assetId, creatorWallet, causePercentage, startDate, endDate)
+      } catch (error) {
+        const message = `Create auction error: ${error.message}`
+        this.logger.error(message, { stack: error.stack })
+        if (attemps >= 3) {
+          const optOutTxUnsigned = await this.optInService.createOptInRequest(
+            assetId,
+            this.wallet.account.addr,
+            creatorWallet,
+            1)
+          const depositTxUnsigned = await this.unsignedtransactionService.execute(this.wallet.account.addr, creatorWallet, this._getDepositAmount())
+          
+          const txId = await this.transactionGroupService.execute([optOutTxUnsigned, depositTxUnsigned])
+          this.logger.info(`Asset ${assetId} is returned to creator and deposit too with transaction ${txId}`)
+  
+          throw new ServiceException(message)
+        }
+        attemps++
+      }
+    }
+  }
+
+  @Post(`/${config.version}/direct-listing`)
+  async createListing(
+    @Body()
+    {
+      assetId,
+      creatorWallet,
+      causePercentage,
+    }: BodyCommon<core['post']['direct-listing']>
+  ): Promise<Response<core['post']['direct-listing']>> {
+    let attemps = 0
+    while(true) {
+      try {
+        return await this.tryCreateListing(assetId, creatorWallet, causePercentage)
       } catch (error) {
         const message = `Create auction error: ${error.message}`
         this.logger.error(message, { stack: error.stack })
@@ -134,6 +172,31 @@ export default class MintController {
       return response
     } else {
       throw new ServiceException(`Create auction error: Asset ${assetId} not found`)
+    }
+  }
+
+  async tryCreateListing (
+    assetId: number,
+    creatorWallet: string,
+    causePercentage: number
+  ) {
+    const populatedAsset = await this.listingService.populateAsset(assetId)
+    const asset: option<AssetNormalized> = await this.listingService.normalizeAsset(populatedAsset)
+    if (asset.isDefined()) {
+      const db = await DbConnectionService.create()
+      const response = await this.directListingService.execute(
+        assetId,
+        asset.value,
+        creatorWallet,
+        causePercentage,
+        db
+      )
+      this.logger.info(
+        `DONE: Sending back the asset ${assetId} to wallet owner.`
+      )
+      return response
+    } else {
+      throw new ServiceException(`Create direct listing error: Asset ${assetId} not found`)
     }
   }
 

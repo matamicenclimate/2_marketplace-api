@@ -52,6 +52,7 @@
   },
   "scripts": {
     "contracts": "cd auction && python auction/contracts.py",
+    "sale": "cd direct-listing && python sale/contracts.py",
     "start": "TS_NODE_BASEURL=./dist node -r tsconfig-paths/register dist/src/Main.js || echo \"\n\n\nCompile the project first!!!\n\n\"",
     "dev": "ts-node-dev -r tsconfig-paths/register --respawn src/Main.ts",
     "build": "tsc",

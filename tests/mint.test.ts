@@ -61,7 +61,7 @@ const stubOptInProcess = (assetId: number) => {
     sinon.stub(AuctionLogic.prototype, 'createAuction').resolves({
         'application-index': 242354235
     } as AuctionCreationResult)
-    sinon.stub(AuctionLogic.prototype, 'fundAuction').resolves({
+    sinon.stub(AuctionLogic.prototype, 'fundListing').resolves({
         result: {
             txId: 20942,
         },

@@ -23,7 +23,7 @@ export default class TransactionGroupService {
     const txns = algosdk.assignGroupID(transactions)
     const signedTxn = await this.signer.signTransaction(txns)
     const { txId } = await this.client.client.sendRawTransaction(signedTxn).do()
-
+    await algosdk.waitForConfirmation(this.client.client, txId, 9)
     return txId
   }
 }

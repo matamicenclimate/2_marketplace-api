@@ -63,10 +63,14 @@ export default class DeleteApplicationService {
 
   private async _closeRekey(state: DirectSellAppState) {
     const rekey = algosdk.encodeAddress(state["rekey"] as Uint8Array)
-    if (rekey) await this.transactionOperation.closeReminderTransaction(
-      await this.wallet.account,
+    if(rekey) await this.closeRekeyRemainderToAccount(rekey)
+  }
+
+  public async closeRekeyRemainderToAccount(rekey: string, account = this.wallet.account) {
+    return this.transactionOperation.closeReminderTransactionWithoutConfirm(
+      await account,
       rekey
     )
   }
-}
+} 
 

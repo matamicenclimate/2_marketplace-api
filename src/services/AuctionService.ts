@@ -4,7 +4,7 @@ import OptInService from '@common/services/OptInService'
 import config from 'src/config/default'
 import Container, { Inject, Service } from 'typedi'
 import axios from 'axios'
-import algosdk from 'algosdk'
+import algosdk, { TransactionLike } from 'algosdk'
 import { appendFileSync } from 'fs'
 import * as WalletAccountProvider from '@common/services/WalletAccountProvider'
 import { TransactionOperation } from '@common/services/TransactionOperation'
@@ -14,6 +14,7 @@ import { RekeyData } from 'src/interfaces'
 import RekeyAccountRecord from '../domain/model/RekeyAccount'
 import RekeyRepository from 'src/infrastructure/repositories/RekeyRepository'
 import { DataSource } from 'typeorm'
+import TransactionGroupService from './TransactionGroupService'
 
 @Service()
 export default class AuctionService {
@@ -22,8 +23,21 @@ export default class AuctionService {
   readonly client: AlgodClientProvider
   readonly account: WalletAccountProvider.type
   readonly op: TransactionOperation
+  private transactionGroupService: TransactionGroupService
   @Inject()
   private readonly logger!: CustomLogger
+  public status = {
+    rekey: {
+      account: '',
+      state: false,
+    }, 
+    assetTransfer: {
+      state: false
+    }, 
+    application: {
+      state: false
+    }
+  }
 
   constructor() {
     this.optInService = Container.get(OptInService)
@@ -34,6 +48,7 @@ export default class AuctionService {
   }
 
   async execute(
+    transactionGroupService: TransactionGroupService,
     assetId: number,
     asset: AssetNormalized,
     creatorWallet: string,
@@ -42,6 +57,7 @@ export default class AuctionService {
     endDate: string,
     db: DataSource,
   ) {
+    this.transactionGroupService = transactionGroupService
     this.logger.info('Creating auction')
     const rekeyAccount = await this.generateRekeyAccount()
     const cause = await this._getCauseInfo(asset.arc69.properties.cause)
@@ -126,17 +142,21 @@ export default class AuctionService {
       creatorPercentage,
       startDate,
       endDate
-    )
+      )
+    this.status.application.state = true
     const appIndex = auction['application-index']
     this.logger.info(
       `Auction created by ${rekeyAccount.addr} is ${appIndex} ${config.algoExplorerApi}/application/${appIndex}`
-    )
-    const appAddr = this._getApplicationAddressFromAppIndex(appIndex)
-    this.logger.info(`App wallet is ${appAddr}`)
-
-    const { amount } = await this.auctionLogic.fundListing(appIndex)
+      )
+      const appAddr = this._getApplicationAddressFromAppIndex(appIndex)
+      this.logger.info(`App wallet is ${appAddr}`)
+      
+    const transactions: TransactionLike[] = []
+    const { amount, fundTxn } = await this.auctionLogic.fundListingWithoutConfirm(appIndex)
+    transactions.push(fundTxn)
     this.logger.info(`Application funded with ${amount}`)
-    await this.auctionLogic.makeAppCallSetupProc(appIndex, assetId)
+    const appCallTxn = await this.auctionLogic.makeAppCallSetupProcWithoutConfirm(appIndex, assetId)
+    transactions.push(appCallTxn)
     const note = algosdk.encodeObj({
       ...asset,
       arc69: {
@@ -147,7 +167,12 @@ export default class AuctionService {
         },
       },
     })
-    await this.auctionLogic.makeTransferToApp(appIndex, assetId, note)
+    const result = await this.auctionLogic.makeTransferToApp(appIndex, assetId, note)
+    if (!result.failed) transactions.push(result.result)
+    await this.transactionGroupService.execute(transactions)
+    this.status.assetTransfer = {
+      state: true
+    }
     this.logger.info(`Asset ${assetId} transferred to ${appIndex}`)
 
     return appIndex
@@ -177,10 +202,12 @@ export default class AuctionService {
     )
     this.logger.info(`Dumping temporary account information:`, { rekeyAccountAddress: rekeyAccount.addr })
     this.logger.info(`Paying fees for temp ${rekeyAccount.addr}...`)
-    await this._payMinimumTransactionFeesToRekeyAccount(rekeyAccount)
+    const payTxn = await this._payMinimumTransactionFeesToRekeyAccount(rekeyAccount)
     this.logger.info(`Rekeying temporary account...`)
     const rekeyTransaction = await this._rekeyingTemporaryAccount(rekeyAccount)
-    await this.op.signAndConfirm(rekeyTransaction, undefined, rekeyAccount)
+    await this.transactionGroupService.execute([payTxn, rekeyTransaction])
+    this.status.rekey.state = true
+    this.status.rekey.account = rekeyAccount.addr
 
     return rekeyAccount
   }
@@ -206,7 +233,7 @@ export default class AuctionService {
     rekeyAccount: algosdk.Account
   ) {
     const microAlgosForFees = 1000000
-    await this.op.pay(
+    return await this.op.payTransactionWithoutConfirmation(
       this.account.account,
       rekeyAccount.addr,
       microAlgosForFees

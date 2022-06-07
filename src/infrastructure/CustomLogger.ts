@@ -20,7 +20,7 @@ export default class CustomLogger implements LoggerInterface {
 
   error(message: string, data: any = {}) {
     const child = this.logger.child(data)
-    if (process.env.NODE_ENV !== 'testing') child.error(message)
+    child.error(message)
   }
 
   warn(message: string, data: any = {}) {

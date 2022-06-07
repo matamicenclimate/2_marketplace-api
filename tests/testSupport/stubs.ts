@@ -7,9 +7,10 @@ import sinon from 'sinon'
 import algosdk from 'algosdk'
 import { populatedAsset } from './mocks'
 import { AuctionCreationResult } from "@common/lib/AuctionCreationResult"
-import { Result } from "@common/lib/Result"
+import TransactionGroupService from "src/services/TransactionGroupService"
 
 export const stubCreateAuction = (assetId: number) => {
+  sinon.stub(TransactionGroupService.prototype, 'execute').resolves(20942)
   sinon.stub(ListingService.prototype, 'populateAsset').resolves({ ...populatedAsset.data, id: assetId })
   sinon.stub(ListingService.prototype, 'normalizeAsset').resolves({
       value: {

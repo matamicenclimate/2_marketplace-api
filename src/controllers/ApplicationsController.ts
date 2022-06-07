@@ -26,7 +26,7 @@ export default class ApplicationsController {
         return {}
       }
     } catch (error) {
-      const message = `Delete cause error: ${error.message}`
+      const message = `Delete aplication error: ${error.message}`
       this.logger.error(message, { stack: error.stack })
       throw new ServiceException(message)
     }

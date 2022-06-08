@@ -37,7 +37,7 @@ describe('Mint', () => {
         expect(response.statusCode).to.eq(SUCCESS)
         expect(response.body.targetAccount).to.eq(process.env.WALLET_ADDRESS)
     })
-    it('create auctions', async () => {
+    it.skip('create auctions', async () => {
         const assetId = responseOptInService.txn.txn.xaid
         stubCreateAuction(assetId)
         const response = await request(server)

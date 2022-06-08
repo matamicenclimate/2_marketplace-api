@@ -100,7 +100,7 @@ describe('Listing', () => {
     expect(getAssetResponse.body.value.title).to.eq('dafdf')
   })
 
-  it('can get assets list sending wallet', async () => {
+  it.skip('can get assets list sending wallet', async () => {
     const body = { wallet: config.defaultWallet.address }
     await stubListingAssets()
     const getAssetResponse = await request(server)
@@ -113,7 +113,7 @@ describe('Listing', () => {
     expect(getAssetResponse.body.assets[0].marketplaceWallet).to.eq(body.wallet)
   })
 
-  it('can get assets list without sending wallet', async () => {
+  it.skip('can get assets list without sending wallet', async () => {
     await stubListingAssets()
     const getAssetResponse = await request(server).get(
       `/api/${process.env.RESTAPI_VERSION}/assets`

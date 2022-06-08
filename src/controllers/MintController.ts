@@ -80,9 +80,9 @@ export default class MintController {
               creatorWallet,
               1)
             transactions.push(optOutTxUnsigned)
-            const depositTxUnsigned = await this.unsignedtransactionService.execute(this.wallet.account.addr, creatorWallet, this._getDepositAmount())
-            transactions.push(depositTxUnsigned)
           }
+          const depositTxUnsigned = await this.unsignedtransactionService.execute(this.wallet.account.addr, creatorWallet, this._getDepositAmount())
+          transactions.push(depositTxUnsigned)
             
           const txId = await this.transactionGroupService.execute(transactions)
           this.logger.info(`Asset ${assetId} is returned to creator and deposit too with transaction ${txId}`)

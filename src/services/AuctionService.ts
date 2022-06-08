@@ -80,7 +80,7 @@ export default class AuctionService {
 
     const data: RekeyData = {
       cause: asset.arc69.properties.cause,
-      assetUrl: asset.image_url,
+      assetUrl: asset.image_url ?? '',
       isClosedAuction: false,
       appIndex,
       assetId,

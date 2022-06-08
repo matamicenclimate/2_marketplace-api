@@ -63,7 +63,10 @@ export default class DeleteApplicationService {
 
   private async _closeRekey(state: DirectSellAppState) {
     const rekey = algosdk.encodeAddress(state["rekey"] as Uint8Array)
-    if(rekey) await this.closeRekeyRemainderToAccount(rekey)
+    if(rekey) {
+      const tx = await this.closeRekeyRemainderToAccount(rekey)
+      return await this.transactionOperation.signAndConfirm(tx, undefined, this.wallet.account)
+    }
   }
 
   public async closeRekeyRemainderToAccount(rekey: string, account = this.wallet.account) {

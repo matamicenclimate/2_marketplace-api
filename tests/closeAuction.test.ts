@@ -18,7 +18,7 @@ afterEach(async () => {
   await connection.createQueryBuilder().delete().from(RekeyAccountRecord).execute()
   await connection.destroy()
 })
-describe('Close Auction', () => {
+describe.skip('Close Auction', () => {
   it('updates isClosedAuction field', async () => {
     const closeAuction = Container.get(CloseAuction)
     await prepareCloseAuctionStub()

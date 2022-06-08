@@ -167,8 +167,8 @@ export default class AuctionService {
         },
       },
     })
-    const result = await this.auctionLogic.makeTransferToApp(appIndex, assetId, note)
-    if (!result.failed) transactions.push(result.result)
+    const makeTransferTransactions = await this.auctionLogic.makeTransferToAppWithoutConfirm(appIndex, assetId, note)
+    if (Array.isArray(makeTransferTransactions) && makeTransferTransactions.length) transactions.push(...makeTransferTransactions)
     await this.transactionGroupService.execute(transactions)
     this.status.assetTransfer = {
       state: true
@@ -202,12 +202,12 @@ export default class AuctionService {
     )
     this.logger.info(`Dumping temporary account information:`, { rekeyAccountAddress: rekeyAccount.addr })
     this.logger.info(`Paying fees for temp ${rekeyAccount.addr}...`)
-    const payTxn = await this._payMinimumTransactionFeesToRekeyAccount(rekeyAccount)
-    this.logger.info(`Rekeying temporary account...`)
-    const rekeyTransaction = await this._rekeyingTemporaryAccount(rekeyAccount)
-    await this.transactionGroupService.execute([payTxn, rekeyTransaction])
+    await this._payMinimumTransactionFeesToRekeyAccount(rekeyAccount)
     this.status.rekey.state = true
     this.status.rekey.account = rekeyAccount.addr
+    this.logger.info(`Rekeying temporary account...`)
+    const rekeyTransaction = await this._rekeyingTemporaryAccount(rekeyAccount)
+    await this.op.signAndConfirm(rekeyTransaction, undefined, rekeyAccount)
 
     return rekeyAccount
   }
@@ -233,7 +233,7 @@ export default class AuctionService {
     rekeyAccount: algosdk.Account
   ) {
     const microAlgosForFees = 1000000
-    return await this.op.payTransactionWithoutConfirmation(
+    await this.op.pay(
       this.account.account,
       rekeyAccount.addr,
       microAlgosForFees

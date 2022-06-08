@@ -53,7 +53,7 @@ export const stubCreateAuction = (assetId: number) => {
   sinon.stub(algosdk, 'secretKeyToMnemonic').resolves('memonic words')
   sinon.stub(algosdk, 'getApplicationAddress').resolves('app-address')
   sinon.stub(algosdk, 'encodeObj').resolves({
-      note: {}
+      note: new Uint8Array()
   })
   sinon.stub(TransactionOperation.prototype, 'pay').resolves({
       txId: 20942,

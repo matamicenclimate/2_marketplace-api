@@ -6,7 +6,7 @@ export default class RekeyAccountRecord {
   id: string
 
   @Column()
-  assetUrl: string
+  assetUrl?: string
   
   @Column()
   cause: string
@@ -33,7 +33,7 @@ export default class RekeyAccountRecord {
   auctionEndDate: string
 
   @Column()
-  type: 'create-auction' | 'direct-listing'
+  type?: 'create-auction' | 'direct-listing'
 
   @CreateDateColumn()
   createdAt: Date

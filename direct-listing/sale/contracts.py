@@ -99,6 +99,7 @@ def approval_program():
         Approve(),
     )
 
+    on_setup_selector = MethodSignature("on_setup()void")
     on_setup = Seq(
         InnerTxnBuilder.Begin(),
         InnerTxnBuilder.SetFields(
@@ -153,21 +154,24 @@ def approval_program():
         closeAccountTo(App.globalGet(seller_key)),
         Approve(),
     )
-    on_bid_txn_index = Txn.group_index() - Int(1)
+
+
+    on_bid_selector = MethodSignature("on_bid()void")
+    on_bid_payment_txn = Gtxn[Txn.group_index() - Int(1)]
     on_bid = Seq(
         Assert(App.globalGet(bid_account_key) == Int(0)),
-        Assert(Gtxn[on_bid_txn_index].type_enum() == TxnType.Payment),
-        Assert(Gtxn[on_bid_txn_index].sender() == Txn.sender()),
-        Assert(Gtxn[on_bid_txn_index].receiver() ==
+        Assert(on_bid_payment_txn.type_enum() == TxnType.Payment),
+        Assert(on_bid_payment_txn.sender() == Txn.sender()),
+        Assert(on_bid_payment_txn.receiver() ==
                Global.current_application_address()),
-        Assert(Gtxn[on_bid_txn_index].amount() >= Global.min_txn_fee()),
+        Assert(on_bid_payment_txn.amount() >= Global.min_txn_fee()),
         If(
-            Gtxn[on_bid_txn_index].amount()
+            on_bid_payment_txn.amount()
             >= App.globalGet(reserve_amount_key)
         ).Then(
             Seq(
-                App.globalPut(bid_amount_key, (Gtxn[on_bid_txn_index].amount() - (Int(bid_fee_transactions + bid_deposit_transactions) * Global.min_txn_fee()))),
-                App.globalPut(bid_account_key, Gtxn[on_bid_txn_index].sender()),
+                App.globalPut(bid_amount_key, (on_bid_payment_txn.amount() - (Int(bid_fee_transactions + bid_deposit_transactions) * Global.min_txn_fee()))),
+                App.globalPut(bid_account_key, on_bid_payment_txn.sender()),
                 Return(onDeleteSubroutine()),
             ),
         ).Else(
@@ -177,16 +181,15 @@ def approval_program():
 
     on_call_method = Txn.application_args[0]
     on_call = Cond(
-        [on_call_method == Bytes("setup"), on_setup],
-        [on_call_method == Bytes("bid"), on_bid],
+        [on_call_method == on_setup_selector, on_setup],
+        [on_call_method == on_bid_selector, on_bid],
     )
 
     program = Cond(
         [Txn.application_id() == Int(0), on_create],
         [Txn.on_completion() == OnComplete.NoOp, on_call],
         [
-            Txn.on_completion() == OnComplete.DeleteApplication,
-            Seq(Approve()),
+            Txn.on_completion() == OnComplete.DeleteApplication, Approve(),
         ],
         [
             Or(

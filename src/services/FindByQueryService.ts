@@ -7,7 +7,7 @@ import { FindOptionsWhere } from 'typeorm'
 
 @Service()
 export default class FindByQueryService {
-  async execute(query: FindOptionsWhere<RekeyAccountRecord>): Promise<any> {
+  async execute(query: FindOptionsWhere<RekeyAccountRecord>): Promise<RekeyAccountRecord[]> {
     const db = await DbConnectionService.create()
     const repo = db.getRepository(RekeyAccountRecord)
     const repository =  new RekeyRepository(repo)
@@ -15,6 +15,6 @@ export default class FindByQueryService {
     if(rekeys.isDefined()) {
       return rekeys.value
     }
-    return undefined
+    return []
   }
 }

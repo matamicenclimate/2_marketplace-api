@@ -1,7 +1,8 @@
+import { RekeyAccountRecord } from '@common/lib/api/entities'
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm'
 
 @Entity()
-export default class RekeyAccountRecord {
+export default class RekeyAccountEntity implements RekeyAccountRecord {
   @PrimaryGeneratedColumn('uuid')
   id: string
 

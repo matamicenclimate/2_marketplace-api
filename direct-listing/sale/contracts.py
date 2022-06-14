@@ -16,7 +16,7 @@ def approval_program():
     bid_deposit_transactions = 7
 
     @Subroutine(TealType.none)
-    def closeNFTTo(assetID: Expr, account: Expr) -> Expr:
+    def closeNFTTo(assetID, account):
         asset_holding = AssetHolding.balance(
             Global.current_application_address(), assetID
         )
@@ -36,7 +36,7 @@ def approval_program():
             )
         )
     @Subroutine(TealType.none)
-    def closeAccountTo(account: Expr) -> Expr:
+    def closeAccountTo(account):
         return If(Balance(Global.current_application_address()) != Int(0)).Then(
             Seq(
                 InnerTxnBuilder.Begin(),
@@ -51,7 +51,7 @@ def approval_program():
         )
 
     @Subroutine(TealType.none)
-    def payAmountToCause(bid_amount: Expr, nft_cause_key: Expr, cause_percentaje: Expr) -> Expr:
+    def payAmountToCause(bid_amount, nft_cause_key, cause_percentaje):
         cause_amount = ((cause_percentaje * bid_amount) / Int(100))
         return If(Balance(Global.current_application_address()) != Int(0)).Then(
             Seq(
@@ -68,7 +68,7 @@ def approval_program():
         )
 
     @Subroutine(TealType.none)
-    def payAmountToCreator(bid_amount: Expr, nft_creator_key: Expr, creator_percentaje: Expr) -> Expr:
+    def payAmountToCreator(bid_amount, nft_creator_key, creator_percentaje):
         creator_amount = ((creator_percentaje * bid_amount) / Int(100))
         valid_payment = Assert(
             And(

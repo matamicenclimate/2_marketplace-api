@@ -133,7 +133,7 @@ def approval_program():
             Int(1)        
         )
 
-    @Subroutine(TealType.none)
+    @Subroutine(TealType.uint64)
     def on_delete():
         handle_payouts = Seq(
             payAmountToCreator(

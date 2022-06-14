@@ -117,18 +117,22 @@ def approval_program():
         )
 
     on_setup_selector = MethodSignature("on_setup()void")
-    on_setup = Seq(
-        InnerTxnBuilder.Begin(),
-        InnerTxnBuilder.SetFields(
-            {
-                TxnField.type_enum: TxnType.AssetTransfer,
-                TxnField.xfer_asset: App.globalGet(nft_id_key),
-                TxnField.asset_receiver: Global.current_application_address(),
-            }
-        ),
-        InnerTxnBuilder.Submit(),
-        Approve(),
-    )
+    @Subroutine(TealType.none)
+    def on_setup():
+        return Seq(
+            InnerTxnBuilder.Begin(),
+            InnerTxnBuilder.SetFields(
+                {
+                    TxnField.type_enum: TxnType.AssetTransfer,
+                    TxnField.xfer_asset: App.globalGet(nft_id_key),
+                    TxnField.asset_receiver: Global.current_application_address(),
+                }
+            ),
+            InnerTxnBuilder.Submit(),
+            # igual que hacer un approve pero sin el return implicito
+            Int(1)        
+        )
+
     on_delete = Seq(
         If(App.globalGet(bid_account_key) != Global.zero_address())
         .Then(
@@ -197,7 +201,7 @@ def approval_program():
     )
 
     on_call = Cond(
-        [Txn.application_args[0] == on_setup_selector, on_setup],
+        [Txn.application_args[0] == on_setup_selector, Return(on_setup())],
         [Txn.application_args[0] == on_bid_selector, on_bid],
     )
 

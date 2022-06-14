@@ -88,7 +88,7 @@ def approval_program():
             InnerTxnBuilder.Submit(),
         )
 
-    @Subroutine(TealType.none)
+    @Subroutine(TealType.uint64)
     def on_create():
         nft_asa_id = Btoi(Txn.application_args[1])
         nft_clawback = AssetParam.clawback(nft_asa_id)

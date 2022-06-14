@@ -97,7 +97,7 @@ def approval_program():
         valid_create = Assert(
             And(
                 nft_clawback.value() == Global.zero_address(),
-                nft_freeze.value() == Int(0)
+                nft_freeze.value() == Global.zero_address()
             )
         )
         return Seq(

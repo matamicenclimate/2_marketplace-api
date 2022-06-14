@@ -207,7 +207,7 @@ def approval_program():
 
     on_call = Cond(
         [Txn.application_args[0] == on_setup_selector, Return(on_setup())],
-        [Txn.application_args[0] == on_bid_selector, on_bid],
+        [Txn.application_args[0] == on_bid_selector, Return(on_bid())],
     )
 
     return Cond(

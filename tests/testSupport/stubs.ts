@@ -1,5 +1,4 @@
 import ListingService from "src/services/ListingService"
-import AuctionService from 'src/services/AuctionService'
 import SellingService from 'src/services/SellingsService'
 import { TransactionOperation } from '@common/services/TransactionOperation'
 import { AuctionLogic } from "@common/services/AuctionLogic"

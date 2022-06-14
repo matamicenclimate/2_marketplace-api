@@ -61,13 +61,14 @@ export default class MintController {
     }: BodyCommon<core['post']['create-auction']>
   ): Promise<Response<core['post']['create-auction']>> {
     let attemps = 0
+    const MAX_ATTEMPS_TO_SUCCEED = 3
     while(true) {
       try {
         return await this.tryCreateAuction(assetId, creatorWallet, causePercentage, startDate, endDate)
       } catch (error) {
         const message = `Create auction error: ${error.message}`
         this.logger.error(message, { stack: error.stack })
-        if (attemps >= 3) {
+        if (attemps >= MAX_ATTEMPS_TO_SUCCEED) {
           const transactions: TransactionLike[] = []
           if (this.auctionService.status.rekey.state && this.auctionService.status.rekey.account) {
             const closeRekeyTnxUnsigned = await this.applicationService.closeRekeyRemainderToAccount(this.auctionService.status.rekey.account)
@@ -81,8 +82,10 @@ export default class MintController {
               1)
             transactions.push(optOutTxUnsigned)
           }
-          const depositTxUnsigned = await this.unsignedtransactionService.execute(this.wallet.account.addr, creatorWallet, this._getDepositAmount())
-          transactions.push(depositTxUnsigned)
+          if(attemps === MAX_ATTEMPS_TO_SUCCEED) {
+            const depositTxUnsigned = await this.unsignedtransactionService.execute(this.wallet.account.addr, creatorWallet, this._getDepositAmount())
+            transactions.push(depositTxUnsigned)
+          }
             
           const txId = await this.transactionGroupService.execute(transactions)
           this.logger.info(`Asset ${assetId} is returned to creator and deposit too with transaction ${txId}`)
@@ -104,21 +107,34 @@ export default class MintController {
     }: BodyCommon<core['post']['direct-listing']>
   ): Promise<Response<core['post']['direct-listing']>> {
     let attemps = 0
+    const MAX_ATTEMPS_TO_SUCCEED = 3
+
     while(true) {
       try {
         return await this.tryCreateListing(assetId, creatorWallet, causePercentage)
       } catch (error) {
         const message = `Create auction error: ${error.message}`
         this.logger.error(message, { stack: error.stack })
-        if (attemps >= 3) {
-          const optOutTxUnsigned = await this.optInService.createOptInRequest(
-            assetId,
-            this.wallet.account.addr,
-            creatorWallet,
-            1)
-          const depositTxUnsigned = await this.unsignedtransactionService.execute(this.wallet.account.addr, creatorWallet, this._getDepositAmount())
-          
-          const txId = await this.transactionGroupService.execute([optOutTxUnsigned, depositTxUnsigned])
+        if (attemps >= MAX_ATTEMPS_TO_SUCCEED) {
+          const transactions: TransactionLike[] = []
+          if (this.directListingService.status.rekey.state && this.directListingService.status.rekey.account) {
+            const closeRekeyTnxUnsigned = await this.applicationService.closeRekeyRemainderToAccount(this.directListingService.status.rekey.account)
+            transactions.push(closeRekeyTnxUnsigned)
+          }
+          if (this.directListingService.status.assetTransfer.state) {
+            const optOutTxUnsigned = await this.optInService.createOptInRequest(
+              assetId,
+              this.wallet.account.addr,
+              creatorWallet,
+              1)
+            transactions.push(optOutTxUnsigned)
+          }
+          if(attemps === MAX_ATTEMPS_TO_SUCCEED) {
+            const depositTxUnsigned = await this.unsignedtransactionService.execute(this.wallet.account.addr, creatorWallet, this._getDepositAmount())
+            transactions.push(depositTxUnsigned)
+          }
+            
+          const txId = await this.transactionGroupService.execute(transactions)
           this.logger.info(`Asset ${assetId} is returned to creator and deposit too with transaction ${txId}`)
   
           throw new ServiceException(message)

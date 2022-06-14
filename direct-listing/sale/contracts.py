@@ -22,19 +22,18 @@ def approval_program():
         )
         return Seq(
             asset_holding,
-            If(asset_holding.hasValue()).Then(
-                Seq(
-                    InnerTxnBuilder.Begin(),
-                    InnerTxnBuilder.SetFields(
-                        {
-                            TxnField.type_enum: TxnType.AssetTransfer,
-                            TxnField.xfer_asset: assetID,
-                            TxnField.asset_close_to: account,
-                        }
-                    ),
-                    InnerTxnBuilder.Submit(),
-                )
-            ),
+            Assert(asset_holding.hasValue()),
+            Seq(
+                InnerTxnBuilder.Begin(),
+                InnerTxnBuilder.SetFields(
+                    {
+                        TxnField.type_enum: TxnType.AssetTransfer,
+                        TxnField.xfer_asset: assetID,
+                        TxnField.asset_close_to: account,
+                    }
+                ),
+                InnerTxnBuilder.Submit(),
+            )
         )
     @Subroutine(TealType.none)
     def closeAccountTo(account: Expr) -> Expr:
@@ -67,6 +66,7 @@ def approval_program():
                 InnerTxnBuilder.Submit(),
             ),
         )
+
     @Subroutine(TealType.none)
     def payAmountToCreator(bid_amount: Expr, nft_creator_key: Expr, creator_percentaje: Expr) -> Expr:
         creator_amount = ((creator_percentaje * bid_amount) / Int(100))

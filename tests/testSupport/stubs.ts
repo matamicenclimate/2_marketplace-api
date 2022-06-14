@@ -1,5 +1,5 @@
 import ListingService from "src/services/ListingService"
-import AuctionService from 'src/services/AuctionService'
+import SellingService from 'src/services/SellingsService'
 import { TransactionOperation } from '@common/services/TransactionOperation'
 import { AuctionLogic } from "@common/services/AuctionLogic"
 import { AxiosResponse } from 'axios'
@@ -39,11 +39,11 @@ export const stubCreateAuction = (assetId: number) => {
       },
       isDefined: () => true
   })
-  sinon.stub(AuctionService.prototype, '_rekeyingTemporaryAccount').resolves(true as any)
-  sinon.stub(AuctionService.prototype, '_getCauseInfo').resolves({
+  sinon.stub(SellingService.prototype, '_rekeyingTemporaryAccount').resolves(true as any)
+  sinon.stub(SellingService.prototype, 'getCauseInfo').resolves({
       data: { "id": "0e4407aa-cfb0-4a5e-9e99-51da39e148e7", "title": "Causa benefica developers", "description": "Thanks...", "wallet": "M32VTQGHNSDPIQE3VXCRSYWFPCUGVHQQPKQPEK5IAGKTJEAGEBRC7QU5OU", "imageUrl": "https://educowebmedia.blob.core.windows.net/educowebmedia/educospain/media/images/blog/ong-y-ods.jpg", "createdAt": "2022-03-25T11:33:30.000Z", "updatedAt": "2022-03-25T11:33:30.000Z", "deletedAt": null }
   } as AxiosResponse)
-  sinon.stub(AuctionService.prototype, '_getCausesPercentages').resolves({
+  sinon.stub(SellingService.prototype, '_getCausesPercentages').resolves({
       data: { "percentages": { "marketplace": "10", "cause": "50" } }
   } as AxiosResponse)
   sinon.stub(algosdk, 'generateAccount').resolves({

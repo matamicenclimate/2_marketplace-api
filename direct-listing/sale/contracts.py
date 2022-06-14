@@ -196,7 +196,7 @@ def approval_program():
             valid_bid,
             App.globalPut(bid_amount_key, result_bid_amount),
             App.globalPut(bid_account_key, payment_txn.sender()),
-            Return(on_delete()),
+            on_delete(),
         )
 
     on_call = Cond(

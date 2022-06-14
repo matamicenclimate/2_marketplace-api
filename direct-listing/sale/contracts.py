@@ -196,10 +196,9 @@ def approval_program():
         ),
     )
 
-    on_call_method = Txn.application_args[0]
     on_call = Cond(
-        [on_call_method == on_setup_selector, on_setup],
-        [on_call_method == on_bid_selector, on_bid],
+        [Txn.application_args[0] == on_setup_selector, on_setup],
+        [Txn.application_args[0] == on_bid_selector, on_bid],
     )
 
     program = Cond(

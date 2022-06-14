@@ -176,29 +176,34 @@ def approval_program():
         Approve(),
     )
 
-
     on_bid_selector = MethodSignature("on_bid()void")
-    on_bid_payment_txn = Gtxn[Txn.group_index() - Int(1)]
-    on_bid = Seq(
-        Assert(App.globalGet(bid_account_key) == Int(0)),
-        Assert(on_bid_payment_txn.type_enum() == TxnType.Payment),
-        Assert(on_bid_payment_txn.sender() == Txn.sender()),
-        Assert(on_bid_payment_txn.receiver() ==
-               Global.current_application_address()),
-        Assert(on_bid_payment_txn.amount() >= Global.min_txn_fee()),
-        If(
-            on_bid_payment_txn.amount()
-            >= App.globalGet(reserve_amount_key)
-        ).Then(
-            Seq(
-                App.globalPut(bid_amount_key, (on_bid_payment_txn.amount() - (Int(bid_fee_transactions + bid_deposit_transactions) * Global.min_txn_fee()))),
-                App.globalPut(bid_account_key, on_bid_payment_txn.sender()),
-                Return(onDeleteSubroutine()),
+    @Subroutine(TealType.none)
+    def on_bid():
+        payment_txn = Gtxn[Txn.group_index() - Int(1)]
+        valid_bid = Assert(
+            And(
+                App.globalGet(bid_account_key) == Int(0),
+                payment_txn.type_enum() == TxnType.Payment,
+                payment_txn.sender() == Txn.sender(),
+                payment_txn.receiver() == Global.current_application_address(),
+                payment_txn.amount() >= Global.min_txn_fee(),
+            )
+        )
+        return Seq(
+            valid_bid,
+            If(
+                payment_txn.amount()
+                >= App.globalGet(reserve_amount_key)
+            ).Then(
+                Seq(
+                    App.globalPut(bid_amount_key, (payment_txn.amount() - (Int(bid_fee_transactions + bid_deposit_transactions) * Global.min_txn_fee()))),
+                    App.globalPut(bid_account_key, payment_txn.sender()),
+                    Return(onDeleteSubroutine()),
+                ),
+            ).Else(
+                Reject(), 
             ),
-        ).Else(
-            Reject(), 
-        ),
-    )
+        )
 
     on_call = Cond(
         [Txn.application_args[0] == on_setup_selector, Return(on_setup())],

@@ -89,17 +89,32 @@ def approval_program():
             )
         )
 
-    on_create = Seq(
-        App.globalPut(seller_key, Txn.application_args[0]),
-        App.globalPut(nft_id_key, Btoi(Txn.application_args[1])),
-        App.globalPut(reserve_amount_key, Btoi(Txn.application_args[2])),
-        App.globalPut(nft_creator_key, Txn.application_args[3]),
-        App.globalPut(nft_cause_key, Txn.application_args[4]),
-        App.globalPut(creator_percentaje, Btoi(Txn.application_args[5])),
-        App.globalPut(cause_percentaje, Btoi(Txn.application_args[6])),
-        App.globalPut(rekey_key, Txn.application_args[7]),
-        Approve(),
-    )
+    @Subroutine(TealType.none)
+    def on_create():
+        nft_asa_id = Btoi(Txn.application_args[1])
+        nft_clawback = AssetParam.clawback(nft_asa_id)
+        nft_freeze = AssetParam.freeze(nft_asa_id)
+        valid_create = Assert(
+            And(
+                nft_clawback.value() == Int(0),
+                nft_freeze.value() == Int(0)
+            )
+        )
+        return Seq(
+            nft_clawback,
+            nft_freeze,
+            valid_create,
+            App.globalPut(seller_key, Txn.application_args[0]),
+            App.globalPut(nft_id_key, Btoi(Txn.application_args[1])),
+            App.globalPut(reserve_amount_key, Btoi(Txn.application_args[2])),
+            App.globalPut(nft_creator_key, Txn.application_args[3]),
+            App.globalPut(nft_cause_key, Txn.application_args[4]),
+            App.globalPut(creator_percentaje, Btoi(Txn.application_args[5])),
+            App.globalPut(cause_percentaje, Btoi(Txn.application_args[6])),
+            App.globalPut(rekey_key, Txn.application_args[7]),
+            # igual que hacer un approve pero sin el return implicito
+            Int(1),
+        )
 
     on_setup_selector = MethodSignature("on_setup()void")
     on_setup = Seq(
@@ -188,7 +203,7 @@ def approval_program():
     )
 
     program = Cond(
-        [Txn.application_id() == Int(0), on_create],
+        [Txn.application_id() == Int(0), Return(on_create())],
         [Txn.on_completion() == OnComplete.NoOp, on_call],
         [
             Txn.on_completion() == OnComplete.DeleteApplication, Approve(),

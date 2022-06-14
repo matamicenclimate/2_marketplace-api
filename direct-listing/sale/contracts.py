@@ -50,9 +50,6 @@ def approval_program():
                 InnerTxnBuilder.Submit(),
             )
         )
-    @Subroutine(TealType.uint64)
-    def onDeleteSubroutine() -> Expr:
-        return on_delete
 
     @Subroutine(TealType.none)
     def payAmountToCause(bid_amount: Expr, nft_cause_key: Expr, cause_percentaje: Expr) -> Expr:
@@ -133,48 +130,50 @@ def approval_program():
             Int(1)        
         )
 
-    on_delete = Seq(
-        If(App.globalGet(bid_account_key) != Global.zero_address())
-        .Then(
-            If(
-                App.globalGet(bid_amount_key)
-                >= App.globalGet(reserve_amount_key)
-            )
+    @Subroutine(TealType.none)
+    def on_delete():
+        return Seq(
+            If(App.globalGet(bid_account_key) != Global.zero_address())
             .Then(
-                Seq(
-                    payAmountToCreator(
-                        App.globalGet(bid_amount_key),
-                        App.globalGet(nft_creator_key),
-                        App.globalGet(creator_percentaje),
-                    ),
-                    payAmountToCause(
-                        App.globalGet(bid_amount_key),
-                        App.globalGet(nft_cause_key),
-                        App.globalGet(cause_percentaje),
-                    ),
-                    closeNFTTo(
-                        App.globalGet(nft_id_key),
-                        App.globalGet(bid_account_key),
-                    ),
+                If(
+                    App.globalGet(bid_amount_key)
+                    >= App.globalGet(reserve_amount_key)
+                )
+                .Then(
+                    Seq(
+                        payAmountToCreator(
+                            App.globalGet(bid_amount_key),
+                            App.globalGet(nft_creator_key),
+                            App.globalGet(creator_percentaje),
+                        ),
+                        payAmountToCause(
+                            App.globalGet(bid_amount_key),
+                            App.globalGet(nft_cause_key),
+                            App.globalGet(cause_percentaje),
+                        ),
+                        closeNFTTo(
+                            App.globalGet(nft_id_key),
+                            App.globalGet(bid_account_key),
+                        ),
+                    )
+                )
+                .Else(
+                    Seq(
+                        closeNFTTo(
+                            App.globalGet(nft_id_key),
+                            App.globalGet(seller_key),
+                        ),
+                    )
                 )
             )
             .Else(
                 Seq(
-                    closeNFTTo(
-                        App.globalGet(nft_id_key),
-                        App.globalGet(seller_key),
-                    ),
+                    closeNFTTo(App.globalGet(nft_id_key), App.globalGet(seller_key)),
                 )
-            )
+            ),
+            closeAccountTo(App.globalGet(seller_key)),
+            Int(1),
         )
-        .Else(
-            Seq(
-                closeNFTTo(App.globalGet(nft_id_key), App.globalGet(seller_key)),
-            )
-        ),
-        closeAccountTo(App.globalGet(seller_key)),
-        Approve(),
-    )
 
     on_bid_selector = MethodSignature("on_bid()void")
     @Subroutine(TealType.none)
@@ -198,7 +197,7 @@ def approval_program():
                 Seq(
                     App.globalPut(bid_amount_key, (payment_txn.amount() - (Int(bid_fee_transactions + bid_deposit_transactions) * Global.min_txn_fee()))),
                     App.globalPut(bid_account_key, payment_txn.sender()),
-                    Return(onDeleteSubroutine()),
+                    Return(on_delete()),
                 ),
             ).Else(
                 Reject(), 

@@ -178,6 +178,7 @@ def approval_program():
     on_bid_selector = MethodSignature("on_bid()void")
     @Subroutine(TealType.none)
     def on_bid():
+        # TODO: access by fixed position if not dynamic
         payment_txn = Gtxn[Txn.group_index() - Int(1)]
         valid_bid = Assert(
             And(
@@ -186,7 +187,9 @@ def approval_program():
                 payment_txn.sender() == Txn.sender(),
                 payment_txn.receiver() == Global.current_application_address(),
                 payment_txn.amount() >= Global.min_txn_fee(),
-                payment_txn.amount() >= App.globalGet(reserve_amount_key)
+                payment_txn.amount() >= App.globalGet(reserve_amount_key),
+                # make sure the group has the correct size
+                # Global.group_size() == Int(3),
             )
         )
         result_bid_amount = payment_txn.amount() - (Int(bid_fee_transactions + bid_deposit_transactions) * Global.min_txn_fee())

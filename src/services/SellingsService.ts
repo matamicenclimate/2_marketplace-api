@@ -87,22 +87,6 @@ export default class SellignsService {
     })
   }
 
-  private async _calculatePercentages(inputCausePercentage: number) {
-    const HUNDRED_PERCENT = 100
-    let causePercentage = inputCausePercentage
-    const percentages = await this._getCausesPercentages()
-    const causeP = percentages.data.percentages.cause
-    if (causeP > causePercentage) {
-      causePercentage = causeP
-    }
-    const creatorPercentage = HUNDRED_PERCENT - causePercentage - percentages.data.percentages.marketplace
-
-    return {
-      causePercentage,
-      creatorPercentage
-    }
-  }
-
   async generateRekeyAccount() {
     const rekeyAccount = this._generateRekeyAccount()
     appendFileSync(

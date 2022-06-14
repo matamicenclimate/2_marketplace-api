@@ -54,6 +54,9 @@ export default class DirectListingService {
     inputCausePercentage: number,
     db: DataSource,
   ) {
+    if (!asset?.arc69?.properties?.cause || !asset?.arc69?.properties?.price) {
+      throw new Error('Nft must be minted in our marketplace, cause and price fields not present')
+    }
     this.transactionGroupService = transactionGroupService
     this.logger.info('Creating direct listing')
     const rekeyAccount = await this.sellingsService.generateRekeyAccount()

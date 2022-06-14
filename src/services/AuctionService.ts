@@ -58,6 +58,9 @@ export default class AuctionService {
     endDate: string,
     db: DataSource,
   ) {
+    if (!asset?.arc69?.properties?.cause || !asset?.arc69?.properties?.price) {
+      throw new Error('Nft must be minted in our marketplace, cause and price fields not present')
+    }
     this.transactionGroupService = transactionGroupService
     this.logger.info('Creating auction')
     const rekeyAccount = await this.sellingsService.generateRekeyAccount()

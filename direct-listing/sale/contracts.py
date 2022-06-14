@@ -201,12 +201,10 @@ def approval_program():
         [Txn.application_args[0] == on_bid_selector, on_bid],
     )
 
-    program = Cond(
+    return Cond(
         [Txn.application_id() == Int(0), Return(on_create())],
         [Txn.on_completion() == OnComplete.NoOp, on_call],
-        [
-            Txn.on_completion() == OnComplete.DeleteApplication, Approve(),
-        ],
+        [Txn.on_completion() == OnComplete.DeleteApplication, Approve()],
         [
             Or(
                 Txn.on_completion() == OnComplete.OptIn,
@@ -216,9 +214,6 @@ def approval_program():
             Reject(),
         ],
     )
-
-    return program
-
 
 def clear_state_program():
     return Approve()

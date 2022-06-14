@@ -1,3 +1,4 @@
+from ast import Global
 from pyteal import *
 
 
@@ -95,7 +96,7 @@ def approval_program():
         nft_freeze = AssetParam.freeze(nft_asa_id)
         valid_create = Assert(
             And(
-                nft_clawback.value() == Int(0),
+                nft_clawback.value() == Global.zero_address(),
                 nft_freeze.value() == Int(0)
             )
         )

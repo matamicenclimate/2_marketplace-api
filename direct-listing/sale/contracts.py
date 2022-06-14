@@ -186,22 +186,15 @@ def approval_program():
                 payment_txn.sender() == Txn.sender(),
                 payment_txn.receiver() == Global.current_application_address(),
                 payment_txn.amount() >= Global.min_txn_fee(),
+                payment_txn.amount() >= App.globalGet(reserve_amount_key)
             )
         )
+        result_bid_amount = payment_txn.amount() - (Int(bid_fee_transactions + bid_deposit_transactions) * Global.min_txn_fee())
         return Seq(
             valid_bid,
-            If(
-                payment_txn.amount()
-                >= App.globalGet(reserve_amount_key)
-            ).Then(
-                Seq(
-                    App.globalPut(bid_amount_key, (payment_txn.amount() - (Int(bid_fee_transactions + bid_deposit_transactions) * Global.min_txn_fee()))),
-                    App.globalPut(bid_account_key, payment_txn.sender()),
-                    Return(on_delete()),
-                ),
-            ).Else(
-                Reject(), 
-            ),
+            App.globalPut(bid_amount_key, result_bid_amount),
+            App.globalPut(bid_account_key, payment_txn.sender()),
+            Return(on_delete()),
         )
 
     on_call = Cond(

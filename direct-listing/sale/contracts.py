@@ -116,7 +116,7 @@ def approval_program():
         )
 
     on_setup_selector = MethodSignature("on_setup()void")
-    @Subroutine(TealType.none)
+    @Subroutine(TealType.uint64)
     def on_setup():
         return Seq(
             InnerTxnBuilder.Begin(),
@@ -174,7 +174,7 @@ def approval_program():
         )
 
     on_bid_selector = MethodSignature("on_bid()void")
-    @Subroutine(TealType.none)
+    @Subroutine(TealType.uint64)
     def on_bid():
         # TODO: access by fixed position if not dynamic
         payment_txn = Gtxn[Txn.group_index() - Int(1)]

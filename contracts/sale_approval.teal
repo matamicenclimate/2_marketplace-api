@@ -273,7 +273,15 @@ global CurrentApplicationAddress
 balance
 int 0
 !=
+<<<<<<< HEAD
 bz payAmountToCreator_4_l2
+=======
+bz payAmountToCreator_4_l3
+load 10
+int 0
+>
+bz payAmountToCreator_4_l3
+>>>>>>> develop
 itxn_begin
 int pay
 itxn_field TypeEnum
@@ -286,5 +294,9 @@ itxn_field Amount
 load 9
 itxn_field Receiver
 itxn_submit
+<<<<<<< HEAD
 payAmountToCreator_4_l2:
+=======
+payAmountToCreator_4_l3:
+>>>>>>> develop
 retsub

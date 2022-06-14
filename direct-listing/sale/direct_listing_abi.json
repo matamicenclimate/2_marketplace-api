@@ -1,0 +1,17 @@
+{
+  "name": "climate_nft_direct_listing",
+  "methods": [
+    {
+      "name": "on_setup",
+      "desc": "TODO:",
+      "args": [],
+      "returns": { "type": "void" }
+    },
+    {
+      "name": "on_bid",
+      "desc": "TODO:",
+      "args": [],
+      "returns": { "type": "void" }
+    }
+  ]
+}

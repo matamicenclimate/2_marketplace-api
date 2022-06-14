@@ -1,4 +1,4 @@
-pyteal==0.10.0
+pyteal==0.10.1
 py-algorand-sdk==1.11.0
 mypy==0.910
 pytest

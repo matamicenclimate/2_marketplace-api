@@ -129,6 +129,7 @@ def approval_program():
         Approve(),
     )
 
+    on_setup_selector = MethodSignature("on_setup()void")
     on_setup = Seq(
         Assert(Global.latest_timestamp() < App.globalGet(start_time_key)),
         # opt into NFT asset -- because you can't opt in if you're already opted in, this is what
@@ -149,6 +150,7 @@ def approval_program():
     on_bid_nft_holding = AssetHolding.balance(
         Global.current_application_address(), App.globalGet(nft_id_key)
     )
+    on_bid_selector = MethodSignature("on_bid()void")
     on_bid = Seq(
         on_bid_nft_holding,
         # the auction has been set up
@@ -186,8 +188,8 @@ def approval_program():
 
     on_call_method = Txn.application_args[0]
     on_call = Cond(
-        [on_call_method == Bytes("setup"), on_setup],
-        [on_call_method == Bytes("bid"), on_bid],
+        [on_call_method == on_setup_selector, on_setup],
+        [on_call_method == on_bid_selector, on_bid],
     )
 
     on_delete = Seq(

@@ -2,6 +2,12 @@
 
 Api for climate nft marketplace
 
+## Pull submodules
+
+```
+git submodule update --init --recursive
+```
+
 # Requirements
 
 **Tested with**

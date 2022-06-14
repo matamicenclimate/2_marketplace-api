@@ -70,20 +70,23 @@ def approval_program():
     @Subroutine(TealType.none)
     def payAmountToCreator(bid_amount: Expr, nft_creator_key: Expr, creator_percentaje: Expr) -> Expr:
         creator_amount = ((creator_percentaje * bid_amount) / Int(100))
-        return If(Balance(Global.current_application_address()) != Int(0)).Then(
-            If(creator_percentaje > Int(0)).Then(
-                Seq(
-                    InnerTxnBuilder.Begin(),
-                    InnerTxnBuilder.SetFields(
-                        {
-                            TxnField.type_enum: TxnType.Payment,
-                            TxnField.amount: creator_amount,
-                            TxnField.receiver: nft_creator_key,
-                        }
-                    ),
-                    InnerTxnBuilder.Submit(),
-                ),
+        valid_payment = Assert(
+            And(
+                Balance(Global.current_application_address()) != Int(0),
+                creator_percentaje > Int(0)
             )
+        )
+        return Seq(
+            valid_payment,
+            InnerTxnBuilder.Begin(),
+            InnerTxnBuilder.SetFields(
+                {
+                    TxnField.type_enum: TxnType.Payment,
+                    TxnField.amount: creator_amount,
+                    TxnField.receiver: nft_creator_key,
+                }
+            ),
+            InnerTxnBuilder.Submit(),
         )
 
     @Subroutine(TealType.none)

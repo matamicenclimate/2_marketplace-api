@@ -215,6 +215,7 @@ export default class MintController {
     if (asset.isDefined()) {
       const db = await DbConnectionService.create()
       const response = await this.directListingService.execute(
+        this.transactionGroupService,
         assetId,
         asset.value,
         creatorWallet,

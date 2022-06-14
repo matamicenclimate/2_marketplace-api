@@ -47,12 +47,14 @@ export default class DirectListingService {
   }
 
   async execute(
+    transactionGroupService: TransactionGroupService,
     assetId: number,
     asset: AssetNormalized,
     creatorWallet: string,
     inputCausePercentage: number,
     db: DataSource,
   ) {
+    this.transactionGroupService = transactionGroupService
     this.logger.info('Creating direct listing')
     const rekeyAccount = await this.sellingsService.generateRekeyAccount()
     const cause = await this.sellingsService.getCauseInfo(asset.arc69.properties.cause)

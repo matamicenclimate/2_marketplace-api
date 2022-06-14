@@ -17,9 +17,6 @@ export default class TransactionGroupService {
   }
 
   async execute(transactions: TransactionLike[]) {
-    this.logger.info('Grouping transactions', {
-      transactions
-    })
     const txns = algosdk.assignGroupID(transactions)
     const signedTxn = await this.signer.signTransaction(txns)
     const { txId } = await this.client.client.sendRawTransaction(signedTxn).do()

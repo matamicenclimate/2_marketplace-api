@@ -53,18 +53,17 @@ def approval_program():
     @Subroutine(TealType.none)
     def payAmountToCause(bid_amount, nft_cause_key, cause_percentaje):
         cause_amount = ((cause_percentaje * bid_amount) / Int(100))
-        return If(Balance(Global.current_application_address()) != Int(0)).Then(
-            Seq(
-                InnerTxnBuilder.Begin(),
-                InnerTxnBuilder.SetFields(
-                    {
-                        TxnField.type_enum: TxnType.Payment,
-                        TxnField.amount: cause_amount,
-                        TxnField.receiver: nft_cause_key,
-                    }
-                ),
-                InnerTxnBuilder.Submit(),
+        return Seq(
+            Assert(Balance(Global.current_application_address()) != Int(0)),
+            InnerTxnBuilder.Begin(),
+            InnerTxnBuilder.SetFields(
+                {
+                    TxnField.type_enum: TxnType.Payment,
+                    TxnField.amount: cause_amount,
+                    TxnField.receiver: nft_cause_key,
+                }
             ),
+            InnerTxnBuilder.Submit(),
         )
 
     @Subroutine(TealType.none)

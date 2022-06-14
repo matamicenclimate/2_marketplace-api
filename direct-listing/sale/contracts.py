@@ -135,39 +135,35 @@ def approval_program():
 
     @Subroutine(TealType.none)
     def on_delete():
+        handle_payouts = Seq(
+            payAmountToCreator(
+                App.globalGet(bid_amount_key),
+                App.globalGet(nft_creator_key),
+                App.globalGet(creator_percentaje),
+            ),
+            payAmountToCause(
+                App.globalGet(bid_amount_key),
+                App.globalGet(nft_cause_key),
+                App.globalGet(cause_percentaje),
+            ),
+            closeNFTTo(
+                App.globalGet(nft_id_key),
+                App.globalGet(bid_account_key),
+            ),
+        )
+        handle_marketplace_refund =  Seq(
+            closeNFTTo(
+                App.globalGet(nft_id_key),
+                App.globalGet(seller_key),
+            ),
+        )
+        is_offer_greater_than_price = App.globalGet(bid_amount_key) >= App.globalGet(reserve_amount_key)
         return Seq(
             If(App.globalGet(bid_account_key) != Global.zero_address())
             .Then(
-                If(
-                    App.globalGet(bid_amount_key)
-                    >= App.globalGet(reserve_amount_key)
-                )
-                .Then(
-                    Seq(
-                        payAmountToCreator(
-                            App.globalGet(bid_amount_key),
-                            App.globalGet(nft_creator_key),
-                            App.globalGet(creator_percentaje),
-                        ),
-                        payAmountToCause(
-                            App.globalGet(bid_amount_key),
-                            App.globalGet(nft_cause_key),
-                            App.globalGet(cause_percentaje),
-                        ),
-                        closeNFTTo(
-                            App.globalGet(nft_id_key),
-                            App.globalGet(bid_account_key),
-                        ),
-                    )
-                )
-                .Else(
-                    Seq(
-                        closeNFTTo(
-                            App.globalGet(nft_id_key),
-                            App.globalGet(seller_key),
-                        ),
-                    )
-                )
+                If(is_offer_greater_than_price)
+                .Then(handle_payouts)
+                .Else(handle_marketplace_refund)
             )
             .Else(
                 Seq(

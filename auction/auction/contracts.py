@@ -103,31 +103,45 @@ def approval_program():
                 ),
             )
         )
-
-    on_create_start_time = Btoi(Txn.application_args[2])
-    on_create_end_time = Btoi(Txn.application_args[3])
-    on_create = Seq(
-        App.globalPut(seller_key, Txn.application_args[0]),
-        App.globalPut(nft_id_key, Btoi(Txn.application_args[1])),
-        App.globalPut(start_time_key, on_create_start_time),
-        App.globalPut(end_time_key, on_create_end_time),
-        App.globalPut(reserve_amount_key, Btoi(Txn.application_args[4])),
-        App.globalPut(min_bid_increment_key, Btoi(Txn.application_args[5])),
-        App.globalPut(nft_creator_key, Txn.application_args[6]),
-        App.globalPut(nft_cause_key, Txn.application_args[7]),
-        App.globalPut(creator_percentaje, Btoi(Txn.application_args[8])),
-        App.globalPut(cause_percentaje, Btoi(Txn.application_args[9])),
-        App.globalPut(rekey_key, Txn.application_args[10]),
-        App.globalPut(lead_bid_account_key, Global.zero_address()),
-        Assert(
+    @Subroutine(TealType.uint64)    
+    def on_create():
+        nft_asa_id = Btoi(Txn.application_args[1])
+        nft_clawback = AssetParam.clawback(nft_asa_id)
+        nft_freeze = AssetParam.freeze(nft_asa_id)
+        valid_create = Assert(
             And(
-                Global.latest_timestamp() < on_create_start_time,
-                on_create_start_time < on_create_end_time,
-                # TODO: should we impose a maximum auction length?
+                nft_clawback.value() == Global.zero_address(),
+                nft_freeze.value() == Global.zero_address()
             )
-        ),
-        Approve(),
-    )
+        )
+        on_create_start_time = Btoi(Txn.application_args[2])
+        on_create_end_time = Btoi(Txn.application_args[3])
+        return Seq(
+            nft_clawback,
+            nft_freeze,
+            valid_create,
+            App.globalPut(seller_key, Txn.application_args[0]),
+            App.globalPut(nft_id_key, Btoi(Txn.application_args[1])),
+            App.globalPut(start_time_key, on_create_start_time),
+            App.globalPut(end_time_key, on_create_end_time),
+            App.globalPut(reserve_amount_key, Btoi(Txn.application_args[4])),
+            App.globalPut(min_bid_increment_key, Btoi(Txn.application_args[5])),
+            App.globalPut(nft_creator_key, Txn.application_args[6]),
+            App.globalPut(nft_cause_key, Txn.application_args[7]),
+            App.globalPut(creator_percentaje, Btoi(Txn.application_args[8])),
+            App.globalPut(cause_percentaje, Btoi(Txn.application_args[9])),
+            App.globalPut(rekey_key, Txn.application_args[10]),
+            App.globalPut(lead_bid_account_key, Global.zero_address()),
+            Assert(
+                And(
+                    Global.latest_timestamp() < on_create_start_time,
+                    on_create_start_time < on_create_end_time,
+                    # TODO: should we impose a maximum auction length?
+                )
+            ),
+            # igual que hacer un approve pero sin el return implicito
+            Int(1),
+        )
 
     on_setup_selector = MethodSignature("on_setup()void")
     on_setup = Seq(
@@ -266,7 +280,7 @@ def approval_program():
     )
 
     program = Cond(
-        [Txn.application_id() == Int(0), on_create],
+        [Txn.application_id() == Int(0), Return(on_create())],
         [Txn.on_completion() == OnComplete.NoOp, on_call],
         [
             Txn.on_completion() == OnComplete.DeleteApplication,

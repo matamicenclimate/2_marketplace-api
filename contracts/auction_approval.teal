@@ -118,11 +118,11 @@ int 1
 return
 main_l16:
 txna ApplicationArgs 0
-byte "setup"
+method "on_setup()void"
 ==
 bnz main_l24
 txna ApplicationArgs 0
-byte "bid"
+method "on_bid()void"
 ==
 bnz main_l19
 err
@@ -246,61 +246,7 @@ itxn_submit
 int 1
 return
 main_l25:
-byte "seller"
-txna ApplicationArgs 0
-app_global_put
-byte "nft_id"
-txna ApplicationArgs 1
-btoi
-app_global_put
-byte "start"
-txna ApplicationArgs 2
-btoi
-app_global_put
-byte "end"
-txna ApplicationArgs 3
-btoi
-app_global_put
-byte "reserve_amount"
-txna ApplicationArgs 4
-btoi
-app_global_put
-byte "min_bid_inc"
-txna ApplicationArgs 5
-btoi
-app_global_put
-byte "creator"
-txna ApplicationArgs 6
-app_global_put
-byte "cause"
-txna ApplicationArgs 7
-app_global_put
-byte "creator_percentaje"
-txna ApplicationArgs 8
-btoi
-app_global_put
-byte "cause_percentaje"
-txna ApplicationArgs 9
-btoi
-app_global_put
-byte "rekey"
-txna ApplicationArgs 10
-app_global_put
-byte "bid_account"
-global ZeroAddress
-app_global_put
-global LatestTimestamp
-txna ApplicationArgs 2
-btoi
-<
-txna ApplicationArgs 2
-btoi
-txna ApplicationArgs 3
-btoi
-<
-&&
-assert
-int 1
+callsub oncreate_5
 return
 
 // closeNFTTo
@@ -414,4 +360,81 @@ load 13
 itxn_field Receiver
 itxn_submit
 payAmountToCreator_4_l3:
+retsub
+
+// on_create
+oncreate_5:
+txna ApplicationArgs 1
+btoi
+asset_params_get AssetClawback
+store 16
+store 15
+txna ApplicationArgs 1
+btoi
+asset_params_get AssetFreeze
+store 18
+store 17
+load 15
+global ZeroAddress
+==
+load 17
+global ZeroAddress
+==
+&&
+assert
+byte "seller"
+txna ApplicationArgs 0
+app_global_put
+byte "nft_id"
+txna ApplicationArgs 1
+btoi
+app_global_put
+byte "start"
+txna ApplicationArgs 2
+btoi
+app_global_put
+byte "end"
+txna ApplicationArgs 3
+btoi
+app_global_put
+byte "reserve_amount"
+txna ApplicationArgs 4
+btoi
+app_global_put
+byte "min_bid_inc"
+txna ApplicationArgs 5
+btoi
+app_global_put
+byte "creator"
+txna ApplicationArgs 6
+app_global_put
+byte "cause"
+txna ApplicationArgs 7
+app_global_put
+byte "creator_percentaje"
+txna ApplicationArgs 8
+btoi
+app_global_put
+byte "cause_percentaje"
+txna ApplicationArgs 9
+btoi
+app_global_put
+byte "rekey"
+txna ApplicationArgs 10
+app_global_put
+byte "bid_account"
+global ZeroAddress
+app_global_put
+global LatestTimestamp
+txna ApplicationArgs 2
+btoi
+<
+txna ApplicationArgs 2
+btoi
+txna ApplicationArgs 3
+btoi
+<
+&&
+assert
+int 1
 retsub

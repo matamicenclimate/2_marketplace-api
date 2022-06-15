@@ -1,8 +1,8 @@
-#pragma version 5
+#pragma version 6
 txn ApplicationID
 int 0
 ==
-bnz main_l14
+bnz main_l12
 txn OnCompletion
 int NoOp
 ==
@@ -34,88 +34,132 @@ main_l7:
 txna ApplicationArgs 0
 method "on_setup()void"
 ==
-bnz main_l13
+bnz main_l11
 txna ApplicationArgs 0
 method "on_bid()void"
 ==
 bnz main_l10
 err
 main_l10:
-byte "bid_account"
-app_global_get
-int 0
-==
-assert
-txn GroupIndex
-int 1
--
-gtxns TypeEnum
-int pay
-==
-assert
-txn GroupIndex
-int 1
--
-gtxns Sender
-txn Sender
-==
-assert
-txn GroupIndex
-int 1
--
-gtxns Receiver
-global CurrentApplicationAddress
-==
-assert
-txn GroupIndex
-int 1
--
-gtxns Amount
-global MinTxnFee
->=
-assert
-txn GroupIndex
-int 1
--
-gtxns Amount
-byte "reserve_amount"
-app_global_get
->=
-bnz main_l12
-int 0
+callsub onbid_7
+return
+main_l11:
+callsub onsetup_5
 return
 main_l12:
-byte "bid_amount"
-txn GroupIndex
-int 1
--
-gtxns Amount
-int 7
-global MinTxnFee
-*
--
-app_global_put
-byte "bid_account"
-txn GroupIndex
-int 1
--
-gtxns Sender
-app_global_put
-callsub onDeleteSubroutine_2
+callsub oncreate_4
 return
-main_l13:
+
+// closeNFTTo
+closeNFTTo_0:
+store 5
+store 4
+global CurrentApplicationAddress
+load 4
+asset_holding_get AssetBalance
+store 7
+store 6
+load 7
+assert
 itxn_begin
 int axfer
 itxn_field TypeEnum
-byte "nft_id"
-app_global_get
+load 4
 itxn_field XferAsset
-global CurrentApplicationAddress
-itxn_field AssetReceiver
+load 5
+itxn_field AssetCloseTo
 itxn_submit
-int 1
-return
-main_l14:
+retsub
+
+// closeAccountTo
+closeAccountTo_1:
+store 8
+global CurrentApplicationAddress
+balance
+int 0
+!=
+bz closeAccountTo_1_l2
+itxn_begin
+int pay
+itxn_field TypeEnum
+load 8
+itxn_field CloseRemainderTo
+itxn_submit
+closeAccountTo_1_l2:
+retsub
+
+// payAmountToCause
+payAmountToCause_2:
+store 11
+store 10
+store 9
+global CurrentApplicationAddress
+balance
+int 0
+!=
+assert
+itxn_begin
+int pay
+itxn_field TypeEnum
+load 11
+load 9
+*
+int 100
+/
+itxn_field Amount
+load 10
+itxn_field Receiver
+itxn_submit
+retsub
+
+// payAmountToCreator
+payAmountToCreator_3:
+store 14
+store 13
+store 12
+global CurrentApplicationAddress
+balance
+int 0
+!=
+load 14
+int 0
+>
+&&
+assert
+itxn_begin
+int pay
+itxn_field TypeEnum
+load 14
+load 12
+*
+int 100
+/
+itxn_field Amount
+load 13
+itxn_field Receiver
+itxn_submit
+retsub
+
+// on_create
+oncreate_4:
+txna ApplicationArgs 1
+btoi
+asset_params_get AssetClawback
+store 3
+store 2
+txna ApplicationArgs 1
+btoi
+asset_params_get AssetFreeze
+store 1
+store 0
+load 0
+global ZeroAddress
+==
+assert
+load 2
+global ZeroAddress
+==
+assert
 byte "seller"
 txna ApplicationArgs 0
 app_global_put
@@ -145,158 +189,133 @@ byte "rekey"
 txna ApplicationArgs 7
 app_global_put
 int 1
-return
+retsub
 
-// closeNFTTo
-closeNFTTo_0:
-store 1
-store 0
-global CurrentApplicationAddress
-load 0
-asset_holding_get AssetBalance
-store 3
-store 2
-load 3
-bz closeNFTTo_0_l2
+// on_setup
+onsetup_5:
 itxn_begin
 int axfer
 itxn_field TypeEnum
-load 0
+byte "nft_id"
+app_global_get
 itxn_field XferAsset
-load 1
-itxn_field AssetCloseTo
-itxn_submit
-closeNFTTo_0_l2:
-retsub
-
-// closeAccountTo
-closeAccountTo_1:
-store 4
 global CurrentApplicationAddress
-balance
-int 0
-!=
-bz closeAccountTo_1_l2
-itxn_begin
-int pay
-itxn_field TypeEnum
-load 4
-itxn_field CloseRemainderTo
+itxn_field AssetReceiver
 itxn_submit
-closeAccountTo_1_l2:
+int 1
 retsub
 
-// onDeleteSubroutine
-onDeleteSubroutine_2:
+// on_delete
+ondelete_6:
 byte "bid_account"
 app_global_get
 global ZeroAddress
 !=
-bnz onDeleteSubroutine_2_l2
+bnz ondelete_6_l2
 byte "nft_id"
 app_global_get
 byte "seller"
 app_global_get
 callsub closeNFTTo_0
-b onDeleteSubroutine_2_l5
-onDeleteSubroutine_2_l2:
+b ondelete_6_l5
+ondelete_6_l2:
 byte "bid_amount"
 app_global_get
 byte "reserve_amount"
 app_global_get
 >=
-bnz onDeleteSubroutine_2_l4
+bnz ondelete_6_l4
 byte "nft_id"
 app_global_get
 byte "seller"
 app_global_get
 callsub closeNFTTo_0
-b onDeleteSubroutine_2_l5
-onDeleteSubroutine_2_l4:
+b ondelete_6_l5
+ondelete_6_l4:
 byte "bid_amount"
 app_global_get
 byte "creator"
 app_global_get
 byte "creator_percentaje"
 app_global_get
-callsub payAmountToCreator_4
+callsub payAmountToCreator_3
 byte "bid_amount"
 app_global_get
 byte "cause"
 app_global_get
 byte "cause_percentaje"
 app_global_get
-callsub payAmountToCause_3
+callsub payAmountToCause_2
 byte "nft_id"
 app_global_get
 byte "bid_account"
 app_global_get
 callsub closeNFTTo_0
-onDeleteSubroutine_2_l5:
+ondelete_6_l5:
 byte "seller"
 app_global_get
 callsub closeAccountTo_1
-int 1
-return
-
-// payAmountToCause
-payAmountToCause_3:
-store 7
-store 6
-store 5
-global CurrentApplicationAddress
-balance
-int 0
-!=
-bz payAmountToCause_3_l2
-itxn_begin
-int pay
-itxn_field TypeEnum
-load 7
-load 5
-*
-int 100
-/
-itxn_field Amount
-load 6
-itxn_field Receiver
-itxn_submit
-payAmountToCause_3_l2:
 retsub
 
-// payAmountToCreator
-payAmountToCreator_4:
-store 10
-store 9
-store 8
-global CurrentApplicationAddress
-balance
+// on_bid
+onbid_7:
+byte "bid_account"
+app_global_get
 int 0
-!=
-<<<<<<< HEAD
-bz payAmountToCreator_4_l2
-=======
-bz payAmountToCreator_4_l3
-load 10
-int 0
->
-bz payAmountToCreator_4_l3
->>>>>>> develop
-itxn_begin
+==
+txn GroupIndex
+int 1
+-
+gtxns TypeEnum
 int pay
-itxn_field TypeEnum
-load 10
-load 8
+==
+&&
+txn GroupIndex
+int 1
+-
+gtxns Sender
+txn Sender
+==
+&&
+txn GroupIndex
+int 1
+-
+gtxns Receiver
+global CurrentApplicationAddress
+==
+&&
+txn GroupIndex
+int 1
+-
+gtxns Amount
+global MinTxnFee
+>=
+&&
+txn GroupIndex
+int 1
+-
+gtxns Amount
+byte "reserve_amount"
+app_global_get
+>=
+&&
+assert
+byte "bid_amount"
+txn GroupIndex
+int 1
+-
+gtxns Amount
+int 7
+global MinTxnFee
 *
-int 100
-/
-itxn_field Amount
-load 9
-itxn_field Receiver
-itxn_submit
-<<<<<<< HEAD
-payAmountToCreator_4_l2:
-=======
-payAmountToCreator_4_l3:
->>>>>>> develop
+-
+app_global_put
+byte "bid_account"
+txn GroupIndex
+int 1
+-
+gtxns Sender
+app_global_put
+callsub ondelete_6
+int 1
 retsub

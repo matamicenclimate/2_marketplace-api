@@ -121,7 +121,7 @@ def approval_program():
             nft_freeze,
             valid_create,
             App.globalPut(seller_key, Txn.application_args[0]),
-            App.globalPut(nft_id_key, Btoi(Txn.application_args[1])),
+            App.globalPut(nft_id_key, nft_asa_id),
             App.globalPut(start_time_key, on_create_start_time),
             App.globalPut(end_time_key, on_create_end_time),
             App.globalPut(reserve_amount_key, Btoi(Txn.application_args[4])),

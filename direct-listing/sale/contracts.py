@@ -92,18 +92,15 @@ def approval_program():
     @Subroutine(TealType.uint64)
     def on_create():
         nft_asa_id = Btoi(Txn.application_args[1])
-        nft_clawback = AssetParam.clawback(nft_asa_id)
         nft_freeze = AssetParam.freeze(nft_asa_id)
-        valid_create = Assert(
-            And(
-                nft_clawback.value() == Global.zero_address(),
-                nft_freeze.value() == Global.zero_address()
-            )
-        )
+        nft_clawback = AssetParam.clawback(nft_asa_id)
+        valid_freeze = Assert(nft_freeze.value() == Global.zero_address())
+        valid_clawback = Assert(nft_clawback.value() == Global.zero_address())
         return Seq(
             nft_clawback,
             nft_freeze,
-            valid_create,
+            valid_freeze,
+            valid_clawback,
             App.globalPut(seller_key, Txn.application_args[0]),
             App.globalPut(nft_id_key, Btoi(Txn.application_args[1])),
             App.globalPut(reserve_amount_key, Btoi(Txn.application_args[2])),
@@ -133,7 +130,7 @@ def approval_program():
             Int(1)        
         )
 
-    @Subroutine(TealType.uint64)
+    @Subroutine(TealType.none)
     def on_delete():
         handle_payouts = Seq(
             payAmountToCreator(
@@ -171,7 +168,6 @@ def approval_program():
                 )
             ),
             closeAccountTo(App.globalGet(seller_key)),
-            Int(1),
         )
 
     on_bid_selector = MethodSignature("on_bid()void")
@@ -196,7 +192,8 @@ def approval_program():
             valid_bid,
             App.globalPut(bid_amount_key, result_bid_amount),
             App.globalPut(bid_account_key, payment_txn.sender()),
-            Return(on_delete()),
+            on_delete(),
+            Int(1)
         )
 
     on_call = Cond(
@@ -225,10 +222,10 @@ def clear_state_program():
 if __name__ == "__main__":
     with open("../contracts/sale_approval.teal", "w") as f:
         compiled = compileTeal(
-            approval_program(), mode=Mode.Application, version=5)
+            approval_program(), mode=Mode.Application, version=6)
         f.write(compiled)
 
     with open("../contracts/sale_clear_state.teal", "w") as f:
         compiled = compileTeal(clear_state_program(),
-                               mode=Mode.Application, version=5)
+                               mode=Mode.Application, version=6)
         f.write(compiled)

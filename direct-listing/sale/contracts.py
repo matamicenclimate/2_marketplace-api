@@ -12,7 +12,6 @@ def approval_program():
     nft_cause_key = Bytes("cause")
     creator_percentaje = Bytes("creator_percentaje")
     cause_percentaje = Bytes("cause_percentaje")
-    rekey_key = Bytes("rekey")
     bid_fee_transactions = 0
     bid_deposit_transactions = 7
 
@@ -108,7 +107,6 @@ def approval_program():
             App.globalPut(nft_cause_key, Txn.application_args[4]),
             App.globalPut(creator_percentaje, Btoi(Txn.application_args[5])),
             App.globalPut(cause_percentaje, Btoi(Txn.application_args[6])),
-            App.globalPut(rekey_key, Txn.application_args[7]),
             # igual que hacer un approve pero sin el return implicito
             Int(1),
         )

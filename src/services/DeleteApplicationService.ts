@@ -5,7 +5,6 @@ import { DirectSellAppState } from '@common/lib/types'
 import AlgodClientProvider from '@common/services/AlgodClientProvider'
 import * as WalletProvider from '@common/services/WalletAccountProvider'
 import algosdk from 'algosdk'
-import { sleep } from 'src/utils/helpers'
 
 @Service()
 export default class DeleteApplicationService {
@@ -32,22 +31,11 @@ export default class DeleteApplicationService {
     let isDeleted = false
     const state = await this.transactionOperation.getApplicationState(appId) as DirectSellAppState
     if (state) {
-      await this._closeApplication(appId, state)
+      await this._deleteTransactionToCloseApplication(appId)
       isDeleted = true
     }
 
     return isDeleted
-  }
-
-  private async _closeApplication(appId: number, appGlobalState: DirectSellAppState) {
-    await this._deleteTransactionToCloseApplication(appId)
-    try {
-      await sleep(5000)
-      await this._closeRekey(appGlobalState)
-    } catch (error) {
-      this.logger.error(`Error closing rekey account: ${error.message}`, { stack: error.stack })
-      throw error
-    }
   }
 
   async _deleteTransactionToCloseApplication(appId: number) {
@@ -59,21 +47,6 @@ export default class DeleteApplicationService {
       appIndex: appId,
     })
     return await this.transactionOperation.signAndConfirm(deleteTxn)
-  }
-
-  private async _closeRekey(state: DirectSellAppState) {
-    const rekey = algosdk.encodeAddress(state["rekey"] as Uint8Array)
-    if(rekey) {
-      const tx = await this.closeRekeyRemainderToAccount(rekey)
-      return await this.transactionOperation.signAndConfirm(tx, undefined, this.wallet.account)
-    }
-  }
-
-  public async closeRekeyRemainderToAccount(rekey: string, account = this.wallet.account) {
-    return this.transactionOperation.closeReminderTransactionWithoutConfirm(
-      await account,
-      rekey
-    )
   }
 } 
 

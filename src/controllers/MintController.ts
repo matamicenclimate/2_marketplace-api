@@ -70,10 +70,6 @@ export default class MintController {
         this.logger.error(message, { stack: error.stack })
         if (attemps >= MAX_ATTEMPS_TO_SUCCEED) {
           const transactions: TransactionLike[] = []
-          if (this.auctionService.status.rekey.state && this.auctionService.status.rekey.account) {
-            const closeRekeyTnxUnsigned = await this.applicationService.closeRekeyRemainderToAccount(this.auctionService.status.rekey.account)
-            transactions.push(closeRekeyTnxUnsigned)
-          }
           if (this.auctionService.status.assetTransfer.state) {
             const optOutTxUnsigned = await this.optInService.createOptInRequest(
               assetId,
@@ -117,10 +113,6 @@ export default class MintController {
         this.logger.error(message, { stack: error.stack })
         if (attemps >= MAX_ATTEMPS_TO_SUCCEED) {
           const transactions: TransactionLike[] = []
-          if (this.directListingService.status.rekey.state && this.directListingService.status.rekey.account) {
-            const closeRekeyTnxUnsigned = await this.applicationService.closeRekeyRemainderToAccount(this.directListingService.status.rekey.account)
-            transactions.push(closeRekeyTnxUnsigned)
-          }
           if (this.directListingService.status.assetTransfer.state) {
             const optOutTxUnsigned = await this.optInService.createOptInRequest(
               assetId,

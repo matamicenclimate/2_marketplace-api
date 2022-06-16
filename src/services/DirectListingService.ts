@@ -3,7 +3,7 @@ import { AuctionLogic } from '@common/services/AuctionLogic'
 import OptInService from '@common/services/OptInService'
 import config from 'src/config/default'
 import Container, { Inject, Service } from 'typedi'
-import algosdk, { TransactionLike } from 'algosdk'
+import { TransactionLike } from 'algosdk'
 import * as WalletAccountProvider from '@common/services/WalletAccountProvider'
 import { TransactionOperation } from '@common/services/TransactionOperation'
 import CustomLogger from 'src/infrastructure/CustomLogger'
@@ -59,7 +59,6 @@ export default class DirectListingService {
     }
     this.transactionGroupService = transactionGroupService
     this.logger.info('Creating direct listing')
-    const rekeyAccount = await this.sellingsService.generateRekeyAccount()
     const cause = await this.sellingsService.getCauseInfo(asset.arc69.properties.cause)
     const {
       causePercentage,
@@ -68,7 +67,6 @@ export default class DirectListingService {
     const appIndex = await this.createDirectListing(
       assetId,
       asset.arc69.properties.price,
-      rekeyAccount,
       asset,
       cause.data.wallet,
       creatorWallet,
@@ -82,7 +80,7 @@ export default class DirectListingService {
       isClosedAuction: false,
       appIndex,
       assetId,
-      wallet: rekeyAccount.addr,
+      wallet: this.account.account.addr,
       type: 'direct-listing',
     }
 
@@ -95,7 +93,6 @@ export default class DirectListingService {
   async createDirectListing(
     assetId: number,
     reserve: number,
-    rekeyAccount: algosdk.Account,
     asset: AssetNormalized,
     causeWallet: string,
     creatorWallet: string,
@@ -106,8 +103,6 @@ export default class DirectListingService {
     const directSell = await this.auctionLogic.createDirectListing(
       assetId,
       reserve,
-      parseInt(config.bid.increment),
-      rekeyAccount,
       causeWallet,
       creatorWallet,
       causePercentage,
@@ -116,7 +111,7 @@ export default class DirectListingService {
     this.status.application.state = true
     const appIndex = directSell['application-index']
     this.logger.info(
-      `DirectSell created by ${rekeyAccount.addr} is ${appIndex} ${config.algoExplorerApi}/application/${appIndex}`
+      `DirectSell created by ${this.account.account.addr} is ${appIndex} ${config.algoExplorerApi}/application/${appIndex}`
     )
     const appAddr = this.sellingsService.getApplicationAddressFromAppIndex(appIndex)
     this.logger.info(`App wallet is ${appAddr}`)

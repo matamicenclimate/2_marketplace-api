@@ -1,4 +1,4 @@
-#pragma version 5
+#pragma version 6
 txn ApplicationID
 int 0
 ==
@@ -418,9 +418,6 @@ app_global_put
 byte "cause_percentaje"
 txna ApplicationArgs 9
 btoi
-app_global_put
-byte "rekey"
-txna ApplicationArgs 10
 app_global_put
 byte "bid_account"
 global ZeroAddress

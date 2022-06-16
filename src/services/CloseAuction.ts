@@ -82,13 +82,6 @@ export default class CloseAuction {
     let accounts = this._getInitialAccountsToSplitAlgos(appGlobalState)
     accounts = this._addMaxBidAccount(accounts, appGlobalState)
     await this._deleteTransactionToCloseAuction(appId, accounts, nftId)
-    try {
-      await sleep(5000)
-      await this._closeRekey(appGlobalState)
-    } catch (error) {
-      this.logger.error(`Error closing rekey account: ${error.message}`, { stack: error.stack })
-      throw error
-    }
   }
 
   async _deleteTransactionToCloseAuction(appId: number, accounts: string[], nftId: number) {
@@ -102,14 +95,6 @@ export default class CloseAuction {
       foreignAssets: [nftId],
     })
     return await this.transactionOperation.signAndConfirm(deleteTxn)
-  }
-
-  private async _closeRekey(state: AuctionAppState) {
-    const rekey = algosdk.encodeAddress(state["rekey"] as Uint8Array)
-    if (rekey) await this.transactionOperation.closeReminderTransaction(
-      await this.wallet.account,
-      rekey
-    )
   }
 
   private _getInitialAccountsToSplitAlgos(appGlobalState: AuctionAppState) {

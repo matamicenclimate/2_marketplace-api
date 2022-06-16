@@ -185,9 +185,6 @@ byte "cause_percentaje"
 txna ApplicationArgs 6
 btoi
 app_global_put
-byte "rekey"
-txna ApplicationArgs 7
-app_global_put
 int 1
 retsub
 

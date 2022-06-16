@@ -306,10 +306,10 @@ def clear_state_program():
 if __name__ == "__main__":
     with open("../contracts/auction_approval.teal", "w") as f:
         compiled = compileTeal(
-            approval_program(), mode=Mode.Application, version=5)
+            approval_program(), mode=Mode.Application, version=6)
         f.write(compiled)
 
     with open("../contracts/auction_clear_state.teal", "w") as f:
         compiled = compileTeal(clear_state_program(),
-                               mode=Mode.Application, version=5)
+                               mode=Mode.Application, version=6)
         f.write(compiled)

@@ -3,7 +3,7 @@ import { AuctionLogic } from '@common/services/AuctionLogic'
 import OptInService from '@common/services/OptInService'
 import config from 'src/config/default'
 import Container, { Inject, Service } from 'typedi'
-import algosdk, { TransactionLike } from 'algosdk'
+import { TransactionLike } from 'algosdk'
 import * as WalletAccountProvider from '@common/services/WalletAccountProvider'
 import { TransactionOperation } from '@common/services/TransactionOperation'
 import CustomLogger from 'src/infrastructure/CustomLogger'
@@ -63,7 +63,6 @@ export default class AuctionService {
     }
     this.transactionGroupService = transactionGroupService
     this.logger.info('Creating auction')
-    const rekeyAccount = await this.sellingsService.generateRekeyAccount()
     const cause = await this.sellingsService.getCauseInfo(asset.arc69.properties.cause)
     const {
       causePercentage,
@@ -72,7 +71,6 @@ export default class AuctionService {
     const appIndex = await this.createAuction(
       assetId,
       asset.arc69.properties.price,
-      rekeyAccount,
       asset,
       cause.data.wallet,
       creatorWallet,
@@ -88,7 +86,7 @@ export default class AuctionService {
       isClosedAuction: false,
       appIndex,
       assetId,
-      wallet: rekeyAccount.addr,
+      wallet: this.account.account.addr,
       startDate,
       endDate,
       type: 'create-auction'
@@ -104,7 +102,6 @@ export default class AuctionService {
   async createAuction(
     assetId: number,
     reserve: number,
-    rekeyAccount: algosdk.Account,
     asset: AssetNormalized,
     causeWallet: string,
     creatorWallet: string,
@@ -118,7 +115,6 @@ export default class AuctionService {
       assetId,
       reserve,
       parseInt(config.bid.increment),
-      rekeyAccount,
       causeWallet,
       creatorWallet,
       causePercentage,
@@ -129,7 +125,7 @@ export default class AuctionService {
     this.status.application.state = true
     const appIndex = auction['application-index']
     this.logger.info(
-      `Auction created by ${rekeyAccount.addr} is ${appIndex} ${config.algoExplorerApi}/application/${appIndex}`
+      `Auction created by ${this.account.account.addr} is ${appIndex} ${config.algoExplorerApi}/application/${appIndex}`
       )
     const appAddr = this.sellingsService.getApplicationAddressFromAppIndex(appIndex)
     this.logger.info(`App wallet is ${appAddr}`)

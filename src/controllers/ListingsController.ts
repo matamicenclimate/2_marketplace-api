@@ -9,7 +9,6 @@ import config from '../config/default'
 import { Response } from '@common/lib/api'
 import { core } from '@common/lib/api/endpoints'
 import { AssetNormalized } from 'src/interfaces'
-import RekeyAccountEntity from 'src/domain/model/RekeyAccount'
 
 @Service()
 @JsonController('/api')
@@ -61,7 +60,7 @@ export default class ListingsController {
     @Param('id') id: number
   ): Promise<Response<core['get']['asset-info/:id']>> {
     try {
-      const assets = await this.findByQueryService.execute({ assetId: id })
+      const assets = await this.findByQueryService.execute({ assetIdBlockchain: id })
       return assets[0]
     } catch (error) {
       const message = `Get asset from database error: ${error.message}`

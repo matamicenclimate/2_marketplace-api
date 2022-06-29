@@ -1,17 +1,12 @@
 import { DataSource } from 'typeorm'
-import RekeyAccountRecord from '../domain/model/RekeyAccount'
-import config from '../config/default'
-import { Service } from 'typedi'
+import { datasource } from '../data-source/Datasource'
+let db: DataSource | null = null
 
-@Service()
 export default class DbConnectionService {
   static async create() {
-    const db = await new DataSource({
-      type: 'sqlite',
-      database: `./databases/${config.environment}-${config.dbName}`,
-      synchronize: true,
-      entities: [RekeyAccountRecord],
-    }).initialize()
+    if (db) return db
+    const connection = await datasource.initialize()
+    db = connection
     return db
   }
 }

@@ -1,6 +1,6 @@
 import { Service } from 'typedi'
-import RekeyRepository from '../infrastructure/repositories/RekeyRepository'
-import RekeyAccountRecord from '../domain/model/RekeyAccount'
+import RekeyRepository from '../infrastructure/repositories/ListRepository'
+import RekeyAccountRecord from '../domain/model/ListEntity'
 import DbConnectionService from './DbConnectionService'
 import { option } from '@octantis/option'
 
@@ -11,12 +11,12 @@ export default class UpdateRekeyService {
     const repo = db.getRepository(RekeyAccountRecord)
     const query =  new RekeyRepository(repo)
     const rekey: option<RekeyAccountRecord> = await query.findOneByQuery({
-      applicationId: appId
+      applicationIdBlockchain: appId
     })
     let result = null
     if(rekey.isDefined()) {
-      result = await query.updateOne(rekey.value.assetId, {
-        isClosedAuction
+      result = await query.updateOne(rekey.value.assetIdBlockchain, {
+        isClosed: isClosedAuction
       })
     }
     return result

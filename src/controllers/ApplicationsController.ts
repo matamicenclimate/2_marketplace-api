@@ -3,7 +3,7 @@ import { Inject, Service } from 'typedi'
 import DeleteApplicationService from '../services/DeleteApplicationService'
 import CustomLogger from '../infrastructure/CustomLogger'
 import ServiceException from 'src/infrastructure/errors/ServiceException'
-import UpdateRekeyService from 'src/services/UpdateRekeyService'
+import UpdateListingService from 'src/services/UpdateListingService'
 
 @Service()
 @JsonController('/api')
@@ -13,7 +13,7 @@ export default class ApplicationsController {
   @Inject()
   private readonly logger!: CustomLogger
   @Inject()
-  readonly updateRekeyService: UpdateRekeyService
+  readonly updateListingService: UpdateListingService
 
   @Delete('/v1/sell-asset/:appId')
   async delete(@Param('appId') appId: number) {
@@ -22,7 +22,7 @@ export default class ApplicationsController {
         appId
       )
       if (result) {
-        await this.updateRekeyService.execute(appId, result)
+        await this.updateListingService.execute(appId, result)
         return {}
       }
     } catch (error) {

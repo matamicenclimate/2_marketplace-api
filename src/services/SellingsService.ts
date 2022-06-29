@@ -10,10 +10,13 @@ import * as WalletAccountProvider from '@common/services/WalletAccountProvider'
 import { TransactionOperation } from '@common/services/TransactionOperation'
 import CustomLogger from 'src/infrastructure/CustomLogger'
 import { AssetNormalized } from 'src/interfaces'
-import { RekeyData } from 'src/interfaces'
-import RekeyAccountRecord from '../domain/model/RekeyAccount'
-import RekeyRepository from 'src/infrastructure/repositories/RekeyRepository'
+import ListEntity from '../domain/model/ListEntity'
+import ListRepository from 'src/infrastructure/repositories/ListRepository'
+import AssetRepository from 'src/infrastructure/repositories/AssetRepository'
 import { DataSource } from 'typeorm'
+import AssetEntity from 'src/domain/model/AssetEntity'
+import AuctionEntity from 'src/domain/model/AuctionEntity'
+import AuctionRepository from 'src/infrastructure/repositories/AuctionRepository'
 
 @Service()
 export default class SellignsService {
@@ -33,29 +36,65 @@ export default class SellignsService {
     this.op = Container.get(TransactionOperation)
   }
 
-  async store(data: RekeyData, db: DataSource) {
-    const rekey = await this._insertRekey(data)
-    const repo = db.getRepository(RekeyAccountRecord)
-    const query =  new RekeyRepository(repo)
-    await query.insert(rekey).catch((error) => {
-        this.logger.error(`Insert rekey error: ${error.message}`, error.stack)
+  async store(data: any, db: DataSource) {
+    const asset = await this._insertAsset(data)
+    const assetRepo = db.getRepository(AssetEntity)
+    const assetQuery =  new AssetRepository(assetRepo)
+    console.log('.......', asset)
+    const assetResult = await assetQuery.insert(asset).catch((error) => {
+        this.logger.error(`Insert asset error: ${error.message}`, {stack: error.stack})
+        throw error
+    })
+    console.log('............asset insert result', assetResult)
+    let auctionResult
+    if (data.startDate) {
+      const auction = await this._insertAuction(data)
+      const auctionRepo = db.getRepository(AuctionEntity)
+      const auctionQuery =  new AuctionRepository(auctionRepo)
+      auctionResult = await auctionQuery.insert(auction).catch((error) => {
+          this.logger.error(`Insert list error: ${error.message}`, {stack: error.stack})
+          throw error
+      })
+    }
+    let list = await this._insertList(data, assetResult.id)
+    if (auctionResult) list = await this._insertList(data, assetResult.id, auctionResult.id)
+    const listRepo = db.getRepository(ListEntity)
+    const listQuery =  new ListRepository(listRepo)
+    await listQuery.insert(list).catch((error) => {
+        this.logger.error(`Insert list error: ${error.message}`, {stack: error.stack})
         throw error
     })
   }
+  _insertAsset(data: any) {
+    const entity = new AssetEntity()
+    entity.arc69 = data.asset.arc69
+    entity.imageUrl = data.asset.image_url
+    entity.ipnft = data.asset.ipnft
+    entity.title = data.asset.title
+    entity.url = data.asset.url
+    entity.creator = data.asset.creator
+    entity.assetIdBlockchain = data.asset.id
+    entity.causeId = data.cause
+    entity.applicationIdBlockchain = data.appIndex || 0
 
-  _insertRekey(data: RekeyData) {
-    const rekey = new RekeyAccountRecord()
-    rekey.assetUrl = data.assetUrl
-    rekey.cause = data.cause
-    rekey.isClosedAuction = data.isClosedAuction
-    rekey.applicationId = data.appIndex | 0
-    rekey.assetId = data.assetId
-    rekey.rekeyWallet = data.wallet
-    rekey.marketplaceWallet = config.defaultWallet.address
-    rekey.auctionStartDate = data.startDate || ''
-    rekey.auctionEndDate = data.endDate || ''
-    rekey.type = data.type
-    return rekey
+    return entity
+  }
+  _insertAuction(data: any) {
+    const entity = new AuctionEntity()
+    entity.startDate =  data.startDate || ''
+    entity.endDate =  data.endDate || ''
+
+    return entity
+  }
+  _insertList(data: any, assetId: string, auctionId?: string) {
+    const entity = new ListEntity()
+    entity.isClosed = data.isClosed
+    entity.applicationIdBlockchain = data.appIndex || 0
+    entity.assetIdBlockchain = data.assetId
+    entity.marketplaceWallet = config.defaultWallet.address
+    entity.assetId = assetId
+    if (auctionId) entity.auctionId = auctionId
+    return entity
   }
 
   public async calculatePercentages(inputCausePercentage: number) {

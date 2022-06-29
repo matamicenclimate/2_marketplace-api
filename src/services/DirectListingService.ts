@@ -8,7 +8,6 @@ import * as WalletAccountProvider from '@common/services/WalletAccountProvider'
 import { TransactionOperation } from '@common/services/TransactionOperation'
 import CustomLogger from 'src/infrastructure/CustomLogger'
 import { AssetNormalized } from 'src/interfaces'
-import { RekeyData } from 'src/interfaces'
 import TransactionGroupService from './TransactionGroupService'
 import { DataSource } from 'typeorm'
 import SellignsService from './SellingsService'
@@ -74,14 +73,14 @@ export default class DirectListingService {
       creatorPercentage,
     )
 
-    const data: RekeyData = {
+    const data: any = {
+      asset,
       cause: asset.arc69.properties.cause,
       assetUrl: asset.image_url ?? '',
-      isClosedAuction: false,
+      isClosed: false,
       appIndex,
       assetId,
       wallet: this.account.account.addr,
-      type: 'direct-listing',
     }
 
     this.sellingsService.store(data, db)
@@ -99,39 +98,45 @@ export default class DirectListingService {
     causePercentage: number,
     creatorPercentage: number,
   ): Promise<number> {
-    this.logger.info(`Creating directListing`)
-    const directSell = await this.auctionLogic.createDirectListing(
-      assetId,
-      reserve,
-      causeWallet,
-      creatorWallet,
-      causePercentage,
-      creatorPercentage,
-    )
-    this.status.application.state = true
-    const appIndex = directSell['application-index']
-    this.logger.info(
-      `DirectSell created by ${this.account.account.addr} is ${appIndex} ${config.algoExplorerApi}/application/${appIndex}`
-    )
-    const appAddr = this.sellingsService.getApplicationAddressFromAppIndex(appIndex)
-    this.logger.info(`App wallet is ${appAddr}`)
-
-    const transactions: TransactionLike[] = []
-    const { amount, fundTxn } = await this.auctionLogic.fundListingWithoutConfirm(appIndex)
-    transactions.push(fundTxn)
-    this.logger.info(`Application funded with ${amount}`)
-    const appCallTxn = await this.auctionLogic.makeAppCallSetupProcWithoutConfirm(appIndex, assetId)
-    transactions.push(appCallTxn)
-    const note = this.sellingsService.getNote(asset, appIndex)
-
-    const makeTransferTransactions = await this.auctionLogic.makeTransferToAppWithoutConfirm(appIndex, assetId, note)
-    if (Array.isArray(makeTransferTransactions) && makeTransferTransactions.length) transactions.push(...makeTransferTransactions)
-    await this.transactionGroupService.execute(transactions)
-    this.status.assetTransfer = {
-      state: true
+    let appIndex
+    try {
+      this.logger.info(`Creating directListing`)
+      const directSell = await this.auctionLogic.createDirectListing(
+        assetId,
+        reserve,
+        causeWallet,
+        creatorWallet,
+        causePercentage,
+        creatorPercentage,
+      )
+      this.status.application.state = true
+      appIndex = directSell['application-index']
+      this.logger.info(
+        `DirectSell created by ${this.account.account.addr} is ${appIndex} ${config.algoExplorerApi}/application/${appIndex}`
+      )
+      const appAddr = this.sellingsService.getApplicationAddressFromAppIndex(appIndex)
+      this.logger.info(`App wallet is ${appAddr}`)
+  
+      const transactions: TransactionLike[] = []
+      const { amount, fundTxn } = await this.auctionLogic.fundListingWithoutConfirm(appIndex)
+      transactions.push(fundTxn)
+      this.logger.info(`Application funded with ${amount}`)
+      const appCallTxn = await this.auctionLogic.makeAppCallSetupProcWithoutConfirm(appIndex, assetId)
+      transactions.push(appCallTxn)
+      const note = this.sellingsService.getNote(asset, appIndex)
+  
+      const makeTransferTransactions = await this.auctionLogic.makeTransferToAppWithoutConfirm(appIndex, assetId, note)
+      if (Array.isArray(makeTransferTransactions) && makeTransferTransactions.length) transactions.push(...makeTransferTransactions)
+      await this.transactionGroupService.execute(transactions)
+      this.status.assetTransfer = {
+        state: true
+      }
+      this.logger.info(`Asset ${assetId} transferred to ${appIndex}`)
+  
+      return appIndex
+    } catch(error) {
+      this.logger.error('Error creating app', { appIndex: appIndex || 'app-index-error', message: error.message, stack: error.stack })
+      throw error
     }
-    this.logger.info(`Asset ${assetId} transferred to ${appIndex}`)
-
-    return appIndex
   }
 }

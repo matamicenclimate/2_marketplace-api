@@ -8,7 +8,6 @@ import * as WalletAccountProvider from '@common/services/WalletAccountProvider'
 import { TransactionOperation } from '@common/services/TransactionOperation'
 import CustomLogger from 'src/infrastructure/CustomLogger'
 import { AssetNormalized } from 'src/interfaces'
-import { RekeyData } from 'src/interfaces'
 import { DataSource } from 'typeorm'
 import TransactionGroupService from './TransactionGroupService'
 import SellignsService from './SellingsService'
@@ -80,16 +79,16 @@ export default class AuctionService {
       endDate,
     )
 
-    const data: RekeyData = {
+    const data: any = {
+      asset,
       cause: asset.arc69.properties.cause,
       assetUrl: asset.image_url ?? '',
-      isClosedAuction: false,
+      isClosed: false,
       appIndex,
       assetId,
       wallet: this.account.account.addr,
       startDate,
       endDate,
-      type: 'create-auction'
     }
 
     this.sellingsService.store(data, db)

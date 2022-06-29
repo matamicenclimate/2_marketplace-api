@@ -10,9 +10,9 @@ import DefaultWalletProvider from 'src/services/impl/DefaultWalletProvider'
 import ListingService from 'src/services/ListingService'
 import { AuctionLogic } from '@common/services/AuctionLogic'
 import { AuctionCreationResult } from '@common/lib/AuctionCreationResult'
-import FindRekey from 'src/services/FindRekeyService'
+import FindService from 'src/services/FindByQueryService'
 import DbConnectionService from 'src/services/DbConnectionService'
-import RekeyAccountRecord from 'src/domain/model/RekeyAccount'
+import ListEntity from 'src/domain/model/ListEntity'
 import { stubCreateAuction } from './testSupport/stubs'
 
 const SUCCESS = 200
@@ -21,7 +21,7 @@ beforeEach(() => {
 })
 afterEach(async () => {
   const connection = await DbConnectionService.create()
-  await connection.createQueryBuilder().delete().from(RekeyAccountRecord).execute()
+  await connection.createQueryBuilder().delete().from(ListEntity).execute()
   await connection.destroy()
 })
 describe('Mint', () => {
@@ -51,9 +51,9 @@ describe('Mint', () => {
             })
         expect(response.statusCode).to.eq(SUCCESS)
         expect(response.body.appIndex).to.eq(23409723)
-        const findRekey = new FindRekey()
-        const rekey = await findRekey.execute()
-        expect(rekey.length).to.eq(1)
+        const findService = new FindService()
+        const entity = await findService.execute({})
+        expect(entity.length).to.eq(1)
     })
 })
 

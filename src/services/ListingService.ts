@@ -13,8 +13,8 @@ import { some, option, none } from '@octantis/option'
 import { AxiosPromise, AxiosResponse } from 'axios'
 import ServiceException from 'src/infrastructure/errors/ServiceException'
 import { retrying } from '@common/lib/net'
-import RekeyAccountRecord from '../domain/model/RekeyAccount'
-import RekeyRepository from 'src/infrastructure/repositories/RekeyRepository'
+import ListEntity from '../domain/model/ListEntity'
+import ListRepostory from 'src/infrastructure/repositories/ListRepository'
 import { DataSource } from 'typeorm'
 
 @Service()
@@ -53,11 +53,11 @@ export default class ListingService {
     wallet: string = config.defaultWallet.address,
     db: DataSource
   ) {
-    const repo = db.getRepository(RekeyAccountRecord)
-    const query = new RekeyRepository(repo)
+    const repo = db.getRepository(ListEntity)
+    const query = new ListRepostory(repo)
     const response = await query.findByQuery({
       marketplaceWallet: wallet,
-      isClosedAuction: false,
+      isClosed: false,
     })
 
     return response

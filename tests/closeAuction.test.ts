@@ -8,23 +8,23 @@ import CloseAuction from 'src/services/CloseAuction'
 import { TransactionOperation } from '@common/services/TransactionOperation'
 import algosdk from 'algosdk'
 import Container from 'typedi'
-import FindRekey from 'src/services/FindRekeyService'
+import FindListing from 'src/services/FindListingService'
 import DbConnectionService from 'src/services/DbConnectionService'
-import RekeyAccountRecord from 'src/domain/model/RekeyAccount'
+import ListEntity from 'src/domain/model/ListEntity'
 import { stubCreateAuction } from './testSupport/stubs'
 
 afterEach(async () => {
   const connection = await DbConnectionService.create()
-  await connection.createQueryBuilder().delete().from(RekeyAccountRecord).execute()
+  await connection.createQueryBuilder().delete().from(ListEntity).execute()
   await connection.destroy()
 })
 describe.skip('Close Auction', () => {
   it('updates isClosedAuction field', async () => {
     const closeAuction = Container.get(CloseAuction)
     await prepareCloseAuctionStub()
-    await closeAuction.execute([{applicationId: assetNormalized.arc69.properties.app_id} as RekeyAccountRecord])
-    const findRekey = new FindRekey()
-    const rekey = await findRekey.execute()
+    await closeAuction.execute([{applicationIdBlockchain: assetNormalized.arc69.properties.app_id} as ListEntity])
+    const findListing = new FindListing()
+    const rekey = await findListing.execute()
     expect(rekey[0].applicationId).to.equal(assetNormalized.arc69.properties.app_id)
     expect(rekey[0].isClosedAuction).to.be.equal(true)
   })
@@ -45,9 +45,9 @@ const prepareCloseAuctionStub = async () => {
     sinon.stub(CloseAuction.prototype, '_deleteTransactionToCloseAuction').resolves({
       txId: 20942,
     } as { txId: number; result: Record<string, unknown>; })
-    sinon.stub(TransactionOperation.prototype, 'closeReminderTransaction').resolves({
-      txId: 20942,
-    } as { txId: number; result: Record<string, unknown>; })
+    // sinon.stub(TransactionOperation.prototype, 'closeReminderTransaction').resolves({
+    //   txId: 20942,
+    // } as { txId: number; result: Record<string, unknown>; })
     const response = await request(server)
             .post(`/api/${process.env.RESTAPI_VERSION}/create-auction`)
             .send({

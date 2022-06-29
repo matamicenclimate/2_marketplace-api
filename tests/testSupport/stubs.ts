@@ -41,7 +41,7 @@ export const stubCreateAuction = (assetId: number) => {
   })
   sinon.stub(SellingService.prototype, '_rekeyingTemporaryAccount').resolves(true as any)
   sinon.stub(SellingService.prototype, 'getCauseInfo').resolves({
-      data: { "id": "0e4407aa-cfb0-4a5e-9e99-51da39e148e7", "title": "Causa benefica developers", "description": "Thanks...", "wallet": "M32VTQGHNSDPIQE3VXCRSYWFPCUGVHQQPKQPEK5IAGKTJEAGEBRC7QU5OU", "imageUrl": "https://educowebmedia.blob.core.windows.net/educowebmedia/educospain/media/images/blog/ong-y-ods.jpg", "createdAt": "2022-03-25T11:33:30.000Z", "updatedAt": "2022-03-25T11:33:30.000Z", "deletedAt": null }
+      data: { "id": "0e4407aa-cfb0-4a5e-9e99-51da39e148e7", "title": "Causa benefica developers", "description": "Thanks...", "wallet": "M32VTQGHNSDPIQE3VXCRSYWFPCUGVHQQPKQPEK5IAGKTJEAGEBRC7QU5OU", "imageUrl": "https://educowebmedia.blob.core.windows.net/educowebmedia/educospain/media/images/blog/ong-y-ods.jpg", "createdAt": "2022-03-25T11:33:30.000Z", "updatedAt": "2022-03-25T11:33:30.000Z" }
   } as AxiosResponse)
   sinon.stub(SellingService.prototype, '_getCausesPercentages').resolves({
       data: { "percentages": { "marketplace": "10", "cause": "50" } }

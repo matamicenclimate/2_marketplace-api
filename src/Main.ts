@@ -63,7 +63,7 @@ export default class Main {
         const closeAuction = Container.get(CloseAuction)
         logger.info('close auctions')
         const nfts = await findByQueryService.execute({
-          isClosedAuction: false
+          isClosed: false
         })
         logger.info(`Close auctions detect ${nfts.length} nfts`)
         await closeAuction.execute(nfts)

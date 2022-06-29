@@ -1,14 +1,15 @@
 import { FindOptionsWhere, Repository } from 'typeorm'
 import { none, option, some } from '@octantis/option'
-import RekeyAccountRecord from '../../domain/model/RekeyAccount'
 import { Service } from 'typedi'
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity'
+import ListEntity from '../../domain/model/ListEntity'
+
 export type Future<T> = Promise<option<T>>
 
 @Service()
-export default class RekeyRepository {
-  constructor(private repo: Repository<RekeyAccountRecord>) {}
-  async findOneByQuery(query: FindOptionsWhere<RekeyAccountRecord>): Future<RekeyAccountRecord>{
+export default class ListRepository {
+  constructor(private repo: Repository<ListEntity>) {}
+  async findOneByQuery(query: FindOptionsWhere<ListEntity>): Future<ListEntity>{
     const result = await this.repo.findOne({
       where: query,
     })
@@ -16,7 +17,7 @@ export default class RekeyRepository {
     return none()
   }
 
-  async findByQuery(query: FindOptionsWhere<RekeyAccountRecord>): Future<RekeyAccountRecord[]>{
+  async findByQuery(query: FindOptionsWhere<ListEntity>): Future<ListEntity[]>{
     const result = await this.repo.find({
       where: query,
     })
@@ -24,15 +25,16 @@ export default class RekeyRepository {
     return none()
   }
 
-  async updateOne(assetId: number, updateData: QueryDeepPartialEntity<RekeyAccountRecord>){
+  async updateOne(assetId: number, updateData: QueryDeepPartialEntity<ListEntity>){
     return await this.repo.update({
-        assetId,
+        assetIdBlockchain: assetId,
       }, updateData)
   }
   /**
    * Saves one rekey account.
    */
-  async insert(entity: RekeyAccountRecord) {
+  async insert(entity: ListEntity) {
+    console.log('......entity', entity)
     return await this.repo.save(entity)
   }
 

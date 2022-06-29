@@ -20,6 +20,7 @@ export default class ListRepository {
   async findByQuery(query: FindOptionsWhere<ListEntity>): Future<ListEntity[]>{
     const result = await this.repo.find({
       where: query,
+      relations: ['asset', 'auction']
     })
     if (result) return some(result)
     return none()

@@ -61,7 +61,7 @@ M32VTQGHNSDPIQE3VXCRSYWFPCUGVHQQPKQPEK5IAGKTJEAGEBRC7QU5OU
 
 - Create new migrations
 
-`typeorm migration:create ./src/migration/ListEntity`
+`npx typeorm migration:create ./src/migration/ListEntity`
 
 - Run migrations
 

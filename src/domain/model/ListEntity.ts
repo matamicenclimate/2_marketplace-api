@@ -1,5 +1,7 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm'
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn, DeleteDateColumn, OneToOne, JoinColumn } from 'typeorm'
 import { Listing } from '@common/lib/api/entities'
+import AssetEntity from './AssetEntity';
+import AuctionEntity from './AuctionEntity';
 @Entity()
 // ListEntity
 export default class ListEntity implements Listing {
@@ -12,11 +14,19 @@ export default class ListEntity implements Listing {
   @Column()
   assetIdBlockchain: number
 
+  @OneToOne(() => AssetEntity)
+  @JoinColumn()
+  asset: AssetEntity
+
   @Column()
   assetId: string
 
   @Column({ nullable: true, default: null })
   auctionId?: string
+
+  @OneToOne(() => AuctionEntity)
+  @JoinColumn()
+  auction?: AuctionEntity
 
   @Column()
   applicationIdBlockchain: number

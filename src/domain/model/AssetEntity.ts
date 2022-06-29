@@ -1,5 +1,6 @@
 import { IsOptional } from 'class-validator'
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm'
+import { Arc69 } from '../../../climate-nft-common/src/lib/AssetNote';
 
 @Entity()
 export default class AssetEntity{
@@ -7,18 +8,22 @@ export default class AssetEntity{
   id: string
 
   @Column({
-    type: 'blob',
+    type: 'text',
     transformer: {
-      from(input: object) {
+      to(input: Arc69) {
+        console.log('******************')
+        console.log('input')
+        console.log(input)
+        console.log('')
         return JSON.stringify(input)
       },
-      to(output: string) {
-        console.log('.....output', typeof output)
-        return output
+      from(output: string) {
+        console.log('.....output', typeof JSON.parse(output))
+        return JSON.parse(output)
       }
     }
   })
-  arc69: object
+  arc69: Arc69
 
   @Column()
   assetIdBlockchain: number

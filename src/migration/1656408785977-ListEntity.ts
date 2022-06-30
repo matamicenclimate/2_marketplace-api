@@ -131,6 +131,10 @@ export class ListEntity1656408785977 implements MigrationInterface {
               isNullable: true
             },
             {
+              name: 'type',
+              type: 'text'
+            },
+            {
               name: 'isClosed',
               type: 'boolean',
             },

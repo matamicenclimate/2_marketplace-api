@@ -95,7 +95,12 @@ export default class SellignsService {
     entity.assetIdBlockchain = data.assetId
     entity.marketplaceWallet = config.defaultWallet.address
     entity.assetId = assetId
-    if (auctionId) entity.auctionId = auctionId
+    if (auctionId) {
+      entity.auctionId = auctionId
+      entity.type = 'auction'
+    } else {
+      entity.type = 'direct-listing'
+    }
     return entity
   }
 

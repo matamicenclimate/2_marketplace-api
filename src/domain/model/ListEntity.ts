@@ -19,7 +19,10 @@ export default class ListEntity implements Listing {
   asset: AssetEntity
 
   @Column()
-  assetId?: string
+  assetId: string
+
+  @Column()
+  type: 'direct-listing' | 'auction'
 
   @Column({ nullable: true, default: null })
   auctionId?: string

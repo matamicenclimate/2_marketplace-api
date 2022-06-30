@@ -9,11 +9,11 @@ import { appendFileSync } from 'fs'
 import * as WalletAccountProvider from '@common/services/WalletAccountProvider'
 import { TransactionOperation } from '@common/services/TransactionOperation'
 import CustomLogger from 'src/infrastructure/CustomLogger'
-import { AssetNormalized } from 'src/interfaces'
+import { AssetNormalized, SellingData } from 'src/interfaces'
 import ListEntity from '../domain/model/ListEntity'
 import ListRepository from 'src/infrastructure/repositories/ListRepository'
 import AssetRepository from 'src/infrastructure/repositories/AssetRepository'
-import { DataSource } from 'typeorm'
+import { DataSource, EntityTarget } from 'typeorm'
 import AssetEntity from 'src/domain/model/AssetEntity'
 import AuctionEntity from 'src/domain/model/AuctionEntity'
 import AuctionRepository from 'src/infrastructure/repositories/AuctionRepository'
@@ -36,36 +36,38 @@ export default class SellignsService {
     this.op = Container.get(TransactionOperation)
   }
 
-  async store(data: any, db: DataSource) {
+  async store(data: SellingData, db: DataSource) {
+    const assetStored = await this._storeAsset(data, db)
+    const auctionStored = await this._storeAuction(data, db)    
+    await this._storeList(data, db, assetStored.id)
+    if (auctionStored) await this._storeList(data, db, assetStored.id, auctionStored.id)
+  }
+
+  async _storeAsset (data: SellingData, db: DataSource) {
     const asset = await this._insertAsset(data)
-    const assetRepo = db.getRepository(AssetEntity)
-    const assetQuery =  new AssetRepository(assetRepo)
-    console.log('.......', asset)
-    const assetResult = await assetQuery.insert(asset).catch((error) => {
-        this.logger.error(`Insert asset error: ${error.message}`, {stack: error.stack})
-        throw error
-    })
-    console.log('............asset insert result', assetResult)
-    let auctionResult
+    return this.storeDatabaseEntity(db, AssetEntity, AssetRepository, asset)
+  }
+
+  async _storeAuction (data: SellingData, db: DataSource) {
     if (data.startDate) {
       const auction = await this._insertAuction(data)
-      const auctionRepo = db.getRepository(AuctionEntity)
-      const auctionQuery =  new AuctionRepository(auctionRepo)
-      auctionResult = await auctionQuery.insert(auction).catch((error) => {
-          this.logger.error(`Insert list error: ${error.message}`, {stack: error.stack})
-          throw error
-      })
+      return this.storeDatabaseEntity(db, AuctionEntity, AuctionRepository, auction)
     }
-    let list = await this._insertList(data, assetResult.id)
-    if (auctionResult) list = await this._insertList(data, assetResult.id, auctionResult.id)
-    const listRepo = db.getRepository(ListEntity)
-    const listQuery =  new ListRepository(listRepo)
-    await listQuery.insert(list).catch((error) => {
+  }
+  async _storeList (data: SellingData, db: DataSource, assetId: string, auctionId?: string) {
+    let list = await this._insertList(data, assetId, auctionId)
+    this.storeDatabaseEntity(db, ListEntity, ListRepository, list)
+  }
+
+  async storeDatabaseEntity (db: DataSource, entityClass: EntityTarget<unknown>, Repo: any, data: any) {
+    const repo = db.getRepository(entityClass)
+    const query =  new Repo(repo)
+    return await query.insert(data).catch((error: Error) => {
         this.logger.error(`Insert list error: ${error.message}`, {stack: error.stack})
         throw error
     })
   }
-  _insertAsset(data: any) {
+  _insertAsset(data: SellingData) {
     const entity = new AssetEntity()
     entity.arc69 = data.asset.arc69
     entity.imageUrl = data.asset.image_url
@@ -79,14 +81,14 @@ export default class SellignsService {
 
     return entity
   }
-  _insertAuction(data: any) {
+  _insertAuction(data: SellingData) {
     const entity = new AuctionEntity()
     entity.startDate =  data.startDate || ''
     entity.endDate =  data.endDate || ''
 
     return entity
   }
-  _insertList(data: any, assetId: string, auctionId?: string) {
+  _insertList(data: SellingData, assetId: string, auctionId?: string) {
     const entity = new ListEntity()
     entity.isClosed = data.isClosed
     entity.applicationIdBlockchain = data.appIndex || 0
@@ -177,7 +179,7 @@ export default class SellignsService {
   }
 
   async getCauseInfo(causeId: string) {
-    this.logger.info(`getting causes info.... causeId ${config.apiUrlCauses}causes/${causeId}`)
+    this.logger.info(`getting causes info ${config.apiUrlCauses}causes/${causeId}`)
     const cause = await axios.get(
       `${config.apiUrlCauses}/causes/${causeId}`,
       {
@@ -191,7 +193,7 @@ export default class SellignsService {
   }
 
   async _getCausesPercentages() {
-    this.logger.info('getting causes percentages....')
+    this.logger.info('getting causes percentages')
     const percentages = await axios.get(
       `${config.apiUrlCauses}/causes/config`,
       {

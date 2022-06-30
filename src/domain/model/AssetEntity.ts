@@ -11,14 +11,9 @@ export default class AssetEntity{
     type: 'text',
     transformer: {
       to(input: Arc69) {
-        console.log('******************')
-        console.log('input')
-        console.log(input)
-        console.log('')
         return JSON.stringify(input)
       },
       from(output: string) {
-        console.log('.....output', typeof JSON.parse(output))
         return JSON.parse(output)
       }
     }

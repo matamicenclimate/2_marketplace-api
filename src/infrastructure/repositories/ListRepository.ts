@@ -35,7 +35,6 @@ export default class ListRepository {
    * Saves one rekey account.
    */
   async insert(entity: ListEntity) {
-    console.log('......entity', entity)
     return await this.repo.save(entity)
   }
 

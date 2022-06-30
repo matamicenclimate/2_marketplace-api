@@ -19,7 +19,7 @@ export default class ListEntity implements Listing {
   asset: AssetEntity
 
   @Column()
-  assetId: string
+  assetId?: string
 
   @Column({ nullable: true, default: null })
   auctionId?: string

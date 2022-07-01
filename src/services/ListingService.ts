@@ -222,7 +222,7 @@ export default class ListingService {
     return none()
   }
 
-  async getMyAssetsFromWallet(wallet: string = config.defaultWallet.address): Promise<Asset[]> {
+  async getMyAssetsFromWallet(wallet: string = config.defaultWallet.address): Promise<{assets: Asset[]}>{
     const response = await axios.get(
       `${config.algoIndexerApi}/accounts/${wallet}/assets`,
       {
@@ -233,6 +233,8 @@ export default class ListingService {
       }
     )
 
-    return { ...response.data }
+    return {
+      assets: response.data.assets
+    }
   }
 }

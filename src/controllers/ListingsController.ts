@@ -109,7 +109,7 @@ export default class ListingsController {
   ): Promise<Response<core['get']['my-assets']>> {
     try {
       const assetsInBlockchain = await this.listingService.getMyAssetsFromWallet(wallet)
-      const result = await this._mapWithDatabaseExistentAssets(assetsInBlockchain)
+      const result = await this._mapWithDatabaseExistentAssets(assetsInBlockchain.assets)
       return {
         assets: result
       }
@@ -129,15 +129,18 @@ export default class ListingsController {
   }
 
   async _mapWithDatabaseExistentAssets(assetsInBlockchain: Asset[]) {
-    const assetIds = assetsInBlockchain.map(i => i['asset-id'])
-      const assets = await this.assetFindAllByQueryService.execute({assetIdBlockchain: In(assetIds)})
-      const assetsInDBMap = assets.reduce((acc, item) => {
-        acc[item.assetIdBlockchain] = item
-        return acc
-      }, {} as Record<number, AssetEntity>)
-      return assetsInBlockchain.map(i => {
-        if (assetsInDBMap[i['asset-id']]) return assetsInDBMap[i['asset-id']]
-        return i
-      })
+    if (Array.isArray(assetsInBlockchain)) {
+      const assetIds = assetsInBlockchain.map(i => i['asset-id'])
+        const assets = await this.assetFindAllByQueryService.execute({assetIdBlockchain: In(assetIds)})
+        const assetsInDBMap = assets.reduce((acc, item) => {
+          acc[item.assetIdBlockchain] = item
+          return acc
+        }, {} as Record<number, AssetEntity>)
+        return assetsInBlockchain.map(i => {
+          if (assetsInDBMap[i['asset-id']]) return assetsInDBMap[i['asset-id']]
+          return i
+        })
+    }
+    return []
   }
 }

@@ -2,8 +2,8 @@ import { Delete, JsonController, Param } from 'routing-controllers'
 import { Inject, Service } from 'typedi'
 import DeleteApplicationService from '../services/DeleteApplicationService'
 import CustomLogger from '../infrastructure/CustomLogger'
-import ServiceException from 'src/infrastructure/errors/ServiceException'
-import UpdateListingService from 'src/services/list/UpdateListingService'
+import ServiceException from '../infrastructure/errors/ServiceException'
+import UpdateListingService from '../services/list/UpdateListingService'
 
 @Service()
 @JsonController('/api')

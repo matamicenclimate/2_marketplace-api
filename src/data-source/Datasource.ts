@@ -6,8 +6,8 @@ export const datasource = new DataSource({
   type: 'sqlite',
   database: `./databases/${config.environment}${config.dbName}`,
   synchronize: false,
-  entities: [`./src/domain/model/*.{ts,js}`],
-  migrations: [`./src/migration/*.{ts,js}`],
+  entities: [`../domain/model/*.{ts,js}`],
+  migrations: [`../migration/*.{ts,js}`],
 })
 
 export default (async function () {

@@ -11,10 +11,10 @@ import {
 } from 'src/interfaces'
 import { some, option, none } from '@octantis/option'
 import { AxiosPromise, AxiosResponse } from 'axios'
-import ServiceException from 'src/infrastructure/errors/ServiceException'
+import ServiceException from '../infrastructure/errors/ServiceException'
 import { retrying } from '@common/lib/net'
 import ListEntity from '../domain/model/ListEntity'
-import ListRepostory from 'src/infrastructure/repositories/ListRepository'
+import ListRepostory from '../infrastructure/repositories/ListRepository'
 import { DataSource } from 'typeorm'
 
 @Service()

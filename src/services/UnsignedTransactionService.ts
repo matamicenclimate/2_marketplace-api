@@ -1,7 +1,7 @@
 import AlgodClientProvider from '@common/services/AlgodClientProvider'
 import Container, { Inject, Service } from 'typedi'
 import algosdk from 'algosdk'
-import CustomLogger from 'src/infrastructure/CustomLogger'
+import CustomLogger from '../infrastructure/CustomLogger'
 
 @Service()
 export default class UnsignedTransactionService {

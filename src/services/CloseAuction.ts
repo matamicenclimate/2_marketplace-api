@@ -5,10 +5,10 @@ import algosdk from 'algosdk'
 import Container, { Inject, Service } from 'typedi'
 import * as WalletProvider from '@common/services/WalletAccountProvider'
 import { AuctionAppState } from '@common/lib/types'
-import CloseAuctionException from 'src/infrastructure/errors/CloseAutionException'
-import CustomLogger from 'src/infrastructure/CustomLogger'
+import CloseAuctionException from '../infrastructure/errors/CloseAutionException'
+import CustomLogger from '../infrastructure/CustomLogger'
 import UpdateListingService from './list/UpdateListingService'
-import ListEntity from 'src/domain/model/ListEntity'
+import ListEntity from '../domain/model/ListEntity'
 
 @Service()
 export default class CloseAuction {

@@ -2,6 +2,7 @@ import { Get, JsonController, Param, QueryParam } from 'routing-controllers'
 import { Inject, Service } from 'typedi'
 import FindByQueryService from '../services/list/FindByQueryService'
 import AssetFindByQueryService from '../services/asset/FindByQueryService'
+import AssetFindAllByQueryService from '../services/asset/FindAllByQueryService'
 import UpdateAssetService from '../services/asset/UpdateAssetService'
 import ListingService from '../services/ListingService'
 import DbConnectionService from 'src/services/DbConnectionService'
@@ -12,6 +13,8 @@ import { Response } from '@common/lib/api'
 import { core } from '@common/lib/api/endpoints'
 import { AssetNormalized } from 'src/interfaces'
 import AssetEntity from 'src/domain/model/AssetEntity'
+import { In } from 'typeorm'
+import { Asset } from '@common/lib/api/entities'
 
 @Service()
 @JsonController('/api')
@@ -24,6 +27,8 @@ export default class ListingsController {
   readonly updateAssetService: UpdateAssetService
   @Inject()
   readonly assetFindByQueryService: AssetFindByQueryService
+  @Inject()
+  readonly assetFindAllByQueryService: AssetFindAllByQueryService
   @Inject()
   private readonly logger!: CustomLogger
 
@@ -57,13 +62,7 @@ export default class ListingsController {
           const updatedAsset = this._prepareAssetToUpdate(result.value)
           await this.updateAssetService.execute(id, updatedAsset)
         }
-        const response = await this.findByQueryService.execute({
-          assetIdBlockchain: id,
-          isClosed: false
-        })
-        if (Array.isArray(response)) return {
-          value: response[0]
-        } 
+        return result
       }
 
       throw new ServiceException(`Asset ${id} not found`)
@@ -109,7 +108,11 @@ export default class ListingsController {
     @QueryParam('wallet') wallet?: string
   ): Promise<Response<core['get']['my-assets']>> {
     try {
-      return await this.listingService.getMyAssetsFromWallet(wallet)
+      const assetsInBlockchain = await this.listingService.getMyAssetsFromWallet(wallet)
+      const result = await this._mapWithDatabaseExistentAssets(assetsInBlockchain)
+      return {
+        assets: result
+      }
     } catch (error) {
       const message = `Get assets from wallet error: ${error.message}`
       this.logger.error(message, { stack: error.stack })
@@ -123,5 +126,18 @@ export default class ListingsController {
     type AssetImmediate = typeof immediate
 
     return immediate as AssetImmediate & Partial<Omit<AssetEntity, keyof AssetImmediate>>
+  }
+
+  async _mapWithDatabaseExistentAssets(assetsInBlockchain: Asset[]) {
+    const assetIds = assetsInBlockchain.map(i => i['asset-id'])
+      const assets = await this.assetFindAllByQueryService.execute({assetIdBlockchain: In(assetIds)})
+      const assetsInDBMap = assets.reduce((acc, item) => {
+        acc[item.assetIdBlockchain] = item
+        return acc
+      }, {} as Record<number, AssetEntity>)
+      return assetsInBlockchain.map(i => {
+        if (assetsInDBMap[i['asset-id']]) return assetsInDBMap[i['asset-id']]
+        return i
+      })
   }
 }

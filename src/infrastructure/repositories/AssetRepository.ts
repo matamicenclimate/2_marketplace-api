@@ -25,4 +25,12 @@ export default class AssetRepository {
         assetIdBlockchain: assetId,
       }, updateData)
   }
+
+  async findByQuery(query: FindOptionsWhere<AssetEntity>): Future<AssetEntity[]>{
+    const result = await this.repo.find({
+      where: query,
+    })
+    if (result) return some(result)
+    return none()
+  }
 }

@@ -222,7 +222,7 @@ export default class ListingService {
     return none()
   }
 
-  async getMyAssetsFromWallet(wallet: string = config.defaultWallet.address) {
+  async getMyAssetsFromWallet(wallet: string = config.defaultWallet.address): Promise<Asset[]> {
     const response = await axios.get(
       `${config.algoIndexerApi}/accounts/${wallet}/assets`,
       {

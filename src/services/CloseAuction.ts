@@ -7,7 +7,7 @@ import * as WalletProvider from '@common/services/WalletAccountProvider'
 import { AuctionAppState } from '@common/lib/types'
 import CloseAuctionException from 'src/infrastructure/errors/CloseAutionException'
 import CustomLogger from 'src/infrastructure/CustomLogger'
-import UpdateListingService from './UpdateListingService'
+import UpdateListingService from './list/UpdateListingService'
 import ListEntity from 'src/domain/model/ListEntity'
 
 @Service()
@@ -34,7 +34,7 @@ export default class CloseAuction {
         } else if(isClosed) {
           this.logger.info('Updating rekey closed auction')
           const isClosedAuction = true
-          await this.updateListingService.execute(appId, isClosedAuction)
+          await this.updateListingService.execute(appId, {isClosed: isClosedAuction})
           this.logger.info('Updated rekey closed auction')
         }
       }

@@ -17,6 +17,9 @@ import { DataSource, EntityTarget } from 'typeorm'
 import AssetEntity from 'src/domain/model/AssetEntity'
 import AuctionEntity from 'src/domain/model/AuctionEntity'
 import AuctionRepository from 'src/infrastructure/repositories/AuctionRepository'
+import FindByQueryService from './list/FindByQueryService'
+import { arrayBuffer } from 'stream/consumers'
+import { assets } from 'tests/testSupport/mocks'
 
 @Service()
 export default class SellignsService {
@@ -44,8 +47,17 @@ export default class SellignsService {
   }
 
   async _storeAsset (data: SellingData, db: DataSource) {
-    const asset = await this._insertAsset(data)
-    return this.storeDatabaseEntity(db, AssetEntity, AssetRepository, asset)
+    const assets = await (new FindByQueryService()).execute({assetIdBlockchain: data.asset.id})
+    if (Array.isArray(assets) && assets.length) {
+      return this._ensureAssetHasOnlyOneRegisteredAssetWithSameAssetIdBlockchain(assets[0])
+    } else {
+      const asset = await this._insertAsset(data)
+      return this.storeDatabaseEntity(db, AssetEntity, AssetRepository, asset)
+    }
+  }
+
+  _ensureAssetHasOnlyOneRegisteredAssetWithSameAssetIdBlockchain (listing: ListEntity) {
+      return listing.asset
   }
 
   async _storeAuction (data: SellingData, db: DataSource) {
@@ -90,7 +102,7 @@ export default class SellignsService {
   }
   _insertList(data: SellingData, assetId: string, auctionId?: string) {
     const entity = new ListEntity()
-    entity.isClosed = data.isClosed
+    entity.isClosed = data.isClosed || false
     entity.applicationIdBlockchain = data.appIndex || 0
     entity.assetIdBlockchain = data.assetId
     entity.marketplaceWallet = config.defaultWallet.address

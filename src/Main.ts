@@ -14,7 +14,7 @@ import ListingsController from './controllers/ListingsController'
 import ApplicationsController from './controllers/ApplicationsController'
 import MintController from './controllers/MintController'
 import CloseAuction from './services/CloseAuction'
-import FindByQueryService from './services/FindByQueryService'
+import FindByQueryService from './services/list/FindByQueryService'
 import Container from 'typedi'
 
 @Entry

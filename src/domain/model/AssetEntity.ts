@@ -1,5 +1,3 @@
-import { Nft } from '@common/lib/api/entities';
-import { IsOptional } from 'class-validator'
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm'
 import { Arc69 } from '../../../climate-nft-common/src/lib/AssetNote';
 
@@ -26,6 +24,9 @@ export default class AssetEntity {
 
   @Column()
   causeId: string
+
+  @Column()
+  note?: string
 
   @Column()
   applicationIdBlockchain: number

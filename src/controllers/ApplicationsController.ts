@@ -3,7 +3,7 @@ import { Inject, Service } from 'typedi'
 import DeleteApplicationService from '../services/DeleteApplicationService'
 import CustomLogger from '../infrastructure/CustomLogger'
 import ServiceException from 'src/infrastructure/errors/ServiceException'
-import UpdateListingService from 'src/services/UpdateListingService'
+import UpdateListingService from 'src/services/list/UpdateListingService'
 
 @Service()
 @JsonController('/api')
@@ -22,7 +22,7 @@ export default class ApplicationsController {
         appId
       )
       if (result) {
-        await this.updateListingService.execute(appId, result)
+        await this.updateListingService.execute(appId, {isClosed: result})
         return {}
       }
     } catch (error) {

@@ -108,6 +108,7 @@ export interface AssetNormalized {
   url: string
   id: number
   creator: string
+  note?: string
 }
 
 export interface Properties {

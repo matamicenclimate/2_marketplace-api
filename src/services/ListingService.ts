@@ -212,6 +212,7 @@ export default class ListingService {
         return some({
           ...metadata,
           id: (asset as any).id,
+          note: txn.note
         })
       } catch (error) {
         this.logger.error(error.message, { stack: error.stack })

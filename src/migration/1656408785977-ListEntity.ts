@@ -62,6 +62,10 @@ export class ListEntity1656408785977 implements MigrationInterface {
               type: 'text',
             },
             {
+              name: 'note',
+              type: 'text',
+            },
+            {
               name: 'imageUrl',
               type: 'text',
             },

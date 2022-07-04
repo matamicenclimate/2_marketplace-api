@@ -177,6 +177,8 @@ export default class MintController {
     const populatedAsset = await this.listingService.populateAsset(assetId)
     const asset: option<AssetNormalized> = await this.listingService.normalizeAsset(populatedAsset)
     if (asset.isDefined()) {
+      const note = asset.value.note
+      this._avoidErrorMetadataQuantityOnBlockchain(asset)
       const db = await DbConnectionService.create()
       const response = await this.auctionService.execute(
         this.transactionGroupService,
@@ -186,7 +188,8 @@ export default class MintController {
         causePercentage,
         startDate,
         endDate,
-        db
+        db,
+        note
       )
       this.logger.info(
         `DONE: Sending back the asset ${assetId} to wallet owner.`
@@ -205,6 +208,8 @@ export default class MintController {
     const populatedAsset = await this.listingService.populateAsset(assetId)
     const asset: option<AssetNormalized> = await this.listingService.normalizeAsset(populatedAsset)
     if (asset.isDefined()) {
+      const note = asset.value.note
+      this._avoidErrorMetadataQuantityOnBlockchain(asset)
       const db = await DbConnectionService.create()
       const response = await this.directListingService.execute(
         this.transactionGroupService,
@@ -212,7 +217,8 @@ export default class MintController {
         asset.value,
         creatorWallet,
         causePercentage,
-        db
+        db,
+        note
       )
       this.logger.info(
         `DONE: Sending back the asset ${assetId} to wallet owner.`
@@ -221,6 +227,10 @@ export default class MintController {
     } else {
       throw new ServiceException(`Create direct listing error: Asset ${assetId} not found`)
     }
+  }
+
+  _avoidErrorMetadataQuantityOnBlockchain(asset: option<AssetNormalized>) {
+    if (asset.isDefined()) delete asset.value.note
   }
 
   _getDepositAmount() {

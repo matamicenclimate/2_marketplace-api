@@ -18,8 +18,6 @@ import AssetEntity from '../domain/model/AssetEntity'
 import AuctionEntity from '../domain/model/AuctionEntity'
 import AuctionRepository from '../infrastructure/repositories/AuctionRepository'
 import FindByQueryService from './list/FindByQueryService'
-import { arrayBuffer } from 'stream/consumers'
-import { assets } from 'tests/testSupport/mocks'
 
 @Service()
 export default class SellignsService {
@@ -89,6 +87,7 @@ export default class SellignsService {
     entity.creator = data.asset.creator
     entity.assetIdBlockchain = data.asset.id
     entity.causeId = data.cause
+    entity.note = data.asset.note
     entity.applicationIdBlockchain = data.appIndex || 0
 
     return entity

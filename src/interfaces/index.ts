@@ -23,6 +23,7 @@ export interface SellingData  {
   endDate: string,
 }
 export interface Nft {
+  note?: string
   arc69: Arc69
   id: number
   image_url: string

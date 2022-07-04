@@ -52,6 +52,7 @@ export default class DirectListingService {
     creatorWallet: string,
     inputCausePercentage: number,
     db: DataSource,
+    note?: string
   ) {
     if (!asset?.arc69?.properties?.cause || !asset?.arc69?.properties?.price) {
       throw new Error('Nft must be minted in our marketplace, cause and price fields not present')
@@ -82,6 +83,7 @@ export default class DirectListingService {
       assetId,
       wallet: this.account.account.addr,
     }
+    data.asset.note = note
 
     this.sellingsService.store(data, db)
     return {

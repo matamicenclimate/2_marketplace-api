@@ -72,6 +72,24 @@ export default class ListingsController {
       throw new ServiceException(message)
     }
   }
+  @Get(`/${config.version}/listing/:id`)
+  async getListing(
+    @Param('id') id: number
+  ): Promise<Response<core['get']['listing/:id']>> {
+    try {
+      await this._updateAssetInDatabase(id)
+      const db = await DbConnectionService.create()
+      const result = await this.listingService.getListing(id, db)
+      if (result.isDefined()) {
+        return result.value
+      }
+      throw new ServiceException(`Asset ${id} not found`)
+    } catch (error) {
+      const message = `Get asset error: ${error.message}`
+      this.logger.error(message, { stack: error.stack })
+      throw new ServiceException(message)
+    }
+  }
   @Get(`/${config.version}/asset-info/:id`)
   async getAssetInfo(
     @Param('id') id: number
@@ -126,6 +144,17 @@ export default class ListingsController {
     type AssetImmediate = typeof immediate
 
     return immediate as AssetImmediate & Partial<Omit<AssetEntity, keyof AssetImmediate>>
+  }
+
+  async _updateAssetInDatabase (id: number) {
+    const result = await this.listingService.getAsset(id)
+    if (result.isDefined()) {
+      const assetInDB = await this.assetFindByQueryService.execute({ assetIdBlockchain: id})
+      if (assetInDB.note !== result.value.note) {
+        const updatedAsset = this._prepareAssetToUpdate(result.value)
+        await this.updateAssetService.execute(id, updatedAsset)
+      }
+    }
   }
 
   async _mapWithDatabaseExistentAssets(assetsInBlockchain: Asset[]) {

@@ -16,6 +16,7 @@ import { retrying } from '@common/lib/net'
 import ListEntity from '../domain/model/ListEntity'
 import ListRepostory from '../infrastructure/repositories/ListRepository'
 import { DataSource } from 'typeorm'
+export type Future<T> = Promise<option<T>>
 
 @Service()
 export default class ListingService {
@@ -42,6 +43,14 @@ export default class ListingService {
     const assetsPopulated = await this.getPopulatedAssets(assets)
     this.logger.info(`Listed ${assetsPopulated.length} assets`)
     return this.getNormalizedAssets(assetsPopulated)
+  }
+
+  async getListing(assetIdBlockchain: number, db: DataSource): Future<ListEntity> {
+    const repo = db.getRepository(ListEntity)
+    const query = new ListRepostory(repo)
+    return await query.findOneByQuery({
+      assetIdBlockchain,
+    })
   }
 
   async getAsset(assetId: number) {

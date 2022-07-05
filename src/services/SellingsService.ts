@@ -40,8 +40,11 @@ export default class SellignsService {
   async store(data: SellingData, db: DataSource) {
     const assetStored = await this._storeAsset(data, db)
     const auctionStored = await this._storeAuction(data, db)    
-    await this._storeList(data, db, assetStored.id)
-    if (auctionStored) await this._storeList(data, db, assetStored.id, auctionStored.id)
+    if (auctionStored) {
+      await this._storeList(data, db, assetStored.id, auctionStored.id)
+    } else {
+      await this._storeList(data, db, assetStored.id)
+    }
   }
 
   async _storeAsset (data: SellingData, db: DataSource) {

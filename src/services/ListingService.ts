@@ -50,6 +50,7 @@ export default class ListingService {
     const query = new ListRepostory(repo)
     return await query.findOneByQuery({
       assetIdBlockchain,
+      isClosed: false
     })
   }
 

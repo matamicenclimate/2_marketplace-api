@@ -13,7 +13,7 @@ import Container from 'typedi'
 const SUCCESS = 200
 const SERVER_ERROR = 500
 
-describe('api', () => {
+describe.skip('api', () => {
 
 	it('Server is available', async () => {
 		const response = await request(server)

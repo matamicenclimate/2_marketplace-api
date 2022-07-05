@@ -55,3 +55,14 @@ Wallet de marketplace:
 ```
 M32VTQGHNSDPIQE3VXCRSYWFPCUGVHQQPKQPEK5IAGKTJEAGEBRC7QU5OU
 ```
+
+
+## Database
+
+- Create new migrations
+
+`npx typeorm migration:create ./src/migration/ListEntity`
+
+- Run migrations
+
+`npx ts-node ./src/data-source/Datasource.ts --migrate`

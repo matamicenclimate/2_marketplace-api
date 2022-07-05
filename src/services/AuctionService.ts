@@ -1,14 +1,13 @@
 import AlgodClientProvider from '@common/services/AlgodClientProvider'
 import { AuctionLogic } from '@common/services/AuctionLogic'
 import OptInService from '@common/services/OptInService'
-import config from 'src/config/default'
+import config from '../config/default'
 import Container, { Inject, Service } from 'typedi'
 import { TransactionLike } from 'algosdk'
 import * as WalletAccountProvider from '@common/services/WalletAccountProvider'
 import { TransactionOperation } from '@common/services/TransactionOperation'
-import CustomLogger from 'src/infrastructure/CustomLogger'
-import { AssetNormalized } from 'src/interfaces'
-import { RekeyData } from 'src/interfaces'
+import CustomLogger from '../infrastructure/CustomLogger'
+import { AssetNormalized, SellingData } from '../interfaces'
 import { DataSource } from 'typeorm'
 import TransactionGroupService from './TransactionGroupService'
 import SellignsService from './SellingsService'
@@ -57,6 +56,7 @@ export default class AuctionService {
     startDate: string,
     endDate: string,
     db: DataSource,
+    note?: string
   ) {
     if (!asset?.arc69?.properties?.cause || !asset?.arc69?.properties?.price) {
       throw new Error('Nft must be minted in our marketplace, cause and price fields not present')
@@ -80,17 +80,18 @@ export default class AuctionService {
       endDate,
     )
 
-    const data: RekeyData = {
+    const data: SellingData = {
+      asset,
       cause: asset.arc69.properties.cause,
       assetUrl: asset.image_url ?? '',
-      isClosedAuction: false,
+      isClosed: false,
       appIndex,
       assetId,
       wallet: this.account.account.addr,
       startDate,
       endDate,
-      type: 'create-auction'
     }
+    data.asset.note = note
 
     this.sellingsService.store(data, db)
 

@@ -5,11 +5,10 @@ import algosdk from 'algosdk'
 import Container, { Inject, Service } from 'typedi'
 import * as WalletProvider from '@common/services/WalletAccountProvider'
 import { AuctionAppState } from '@common/lib/types'
-import CloseAuctionException from 'src/infrastructure/errors/CloseAutionException'
-import { sleep } from 'src/utils/helpers'
-import CustomLogger from 'src/infrastructure/CustomLogger'
-import UpdateRekeyService from './UpdateRekeyService'
-import RekeyAccountRecord from 'src/domain/model/RekeyAccount'
+import CloseAuctionException from '../infrastructure/errors/CloseAutionException'
+import CustomLogger from '../infrastructure/CustomLogger'
+import UpdateListingService from './list/UpdateListingService'
+import ListEntity from '../domain/model/ListEntity'
 
 @Service()
 export default class CloseAuction {
@@ -19,24 +18,24 @@ export default class CloseAuction {
   @Inject()
   readonly optInService: OptInService
   @Inject()
-  readonly updateRekeyService: UpdateRekeyService
+  readonly updateListingService: UpdateListingService
   @Inject()
   private readonly logger!: CustomLogger
 
-  async execute(rekeys: RekeyAccountRecord[]) {
+  async execute(listings: ListEntity[]) {
     let errors: any[] = []
-    for (const rekey of rekeys) {
-      const appId = rekey.applicationId
+    for (const listing of listings) {
+      const appId = listing.applicationIdBlockchain
       if (appId) {
         const { errors: resultErrors, isClosed } = await this._closeNFTAuction(appId)
         if (resultErrors.length) {
           this.logger.error('There are errors closing auction', { errors: resultErrors })
           errors.push(...resultErrors)
         } else if(isClosed) {
-          this.logger.info('Updating rekey closed auction')
+          this.logger.info('Updating listing closed auction')
           const isClosedAuction = true
-          await this.updateRekeyService.execute(appId, isClosedAuction)
-          this.logger.info('Updated rekey closed auction')
+          await this.updateListingService.execute(appId, {isClosed: isClosedAuction})
+          this.logger.info('Updated listing closed auction')
         }
       }
     }

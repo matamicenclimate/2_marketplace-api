@@ -1,3 +1,5 @@
+import { Arc69 } from "@common/lib/AssetNote"
+
 export interface IpfsRequestData {
   title: string
   author: string
@@ -9,7 +11,27 @@ export interface IpfsStorageInterface {
   storage: any
   store(ipfsData: any): Promise<any>
 }
-
+export interface SellingData  {
+  asset: Nft,
+  cause: string,
+  assetUrl: string,
+  isClosed: boolean,
+  appIndex: number,
+  assetId: number,
+  wallet: string,
+  startDate: string,
+  endDate: string,
+}
+export interface Nft {
+  note?: string
+  arc69: Arc69
+  id: number
+  image_url: string
+  ipnft: string
+  url: string
+  title: string
+  creator: string
+}
 export interface Asset {
   amount: number
   'asset-id': number
@@ -87,14 +109,7 @@ export interface AssetNormalized {
   url: string
   id: number
   creator: string
-}
-
-export interface Arc69 {
-  description: string
-  external_url: string
-  mime_type: string
-  properties: Properties
-  standard: string
+  note?: string
 }
 
 export interface Properties {
@@ -109,16 +124,4 @@ export interface Properties {
   }
   date: Date
   price: number
-}
-
-export interface RekeyData {
-  cause: string
-  assetUrl: string
-  isClosedAuction: boolean
-  appIndex: number
-	wallet: string
-	assetId: number
-	startDate?: string
-	endDate?: string
-  type: 'create-auction' | 'direct-listing'
 }

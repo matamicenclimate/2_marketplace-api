@@ -11,11 +11,12 @@ import {
 } from 'src/interfaces'
 import { some, option, none } from '@octantis/option'
 import { AxiosPromise, AxiosResponse } from 'axios'
-import ServiceException from 'src/infrastructure/errors/ServiceException'
+import ServiceException from '../infrastructure/errors/ServiceException'
 import { retrying } from '@common/lib/net'
-import RekeyAccountRecord from '../domain/model/RekeyAccount'
-import RekeyRepository from 'src/infrastructure/repositories/RekeyRepository'
+import ListEntity from '../domain/model/ListEntity'
+import ListRepostory from '../infrastructure/repositories/ListRepository'
 import { DataSource } from 'typeorm'
+export type Future<T> = Promise<option<T>>
 
 @Service()
 export default class ListingService {
@@ -44,6 +45,14 @@ export default class ListingService {
     return this.getNormalizedAssets(assetsPopulated)
   }
 
+  async getListing(assetIdBlockchain: number, db: DataSource): Future<ListEntity> {
+    const repo = db.getRepository(ListEntity)
+    const query = new ListRepostory(repo)
+    return await query.findOneByQuery({
+      assetIdBlockchain,
+    })
+  }
+
   async getAsset(assetId: number) {
     const assetPopulated = await this.populateAsset(assetId)
     return this.normalizeAsset(assetPopulated)
@@ -53,11 +62,11 @@ export default class ListingService {
     wallet: string = config.defaultWallet.address,
     db: DataSource
   ) {
-    const repo = db.getRepository(RekeyAccountRecord)
-    const query = new RekeyRepository(repo)
+    const repo = db.getRepository(ListEntity)
+    const query = new ListRepostory(repo)
     const response = await query.findByQuery({
       marketplaceWallet: wallet,
-      isClosedAuction: false,
+      isClosed: false,
     })
 
     return response
@@ -212,6 +221,7 @@ export default class ListingService {
         return some({
           ...metadata,
           id: (asset as any).id,
+          note: txn.note
         })
       } catch (error) {
         this.logger.error(error.message, { stack: error.stack })
@@ -221,7 +231,7 @@ export default class ListingService {
     return none()
   }
 
-  async getMyAssetsFromWallet(wallet: string = config.defaultWallet.address) {
+  async getMyAssetsFromWallet(wallet: string = config.defaultWallet.address): Promise<{assets: Asset[]}>{
     const response = await axios.get(
       `${config.algoIndexerApi}/accounts/${wallet}/assets`,
       {
@@ -232,6 +242,8 @@ export default class ListingService {
       }
     )
 
-    return { ...response.data }
+    return {
+      assets: response.data.assets
+    }
   }
 }

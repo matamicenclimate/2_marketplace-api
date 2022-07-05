@@ -1,5 +1,5 @@
 import Container, { Inject, Service } from 'typedi'
-import CustomLogger from 'src/infrastructure/CustomLogger'
+import CustomLogger from '../infrastructure/CustomLogger'
 import { TransactionOperation } from '@common/services/TransactionOperation'
 import { DirectSellAppState } from '@common/lib/types'
 import AlgodClientProvider from '@common/services/AlgodClientProvider'

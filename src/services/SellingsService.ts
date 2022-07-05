@@ -1,19 +1,23 @@
 import AlgodClientProvider from '@common/services/AlgodClientProvider'
 import { AuctionLogic } from '@common/services/AuctionLogic'
 import OptInService from '@common/services/OptInService'
-import config from 'src/config/default'
+import config from '../config/default'
 import Container, { Inject, Service } from 'typedi'
 import axios from 'axios'
 import algosdk from 'algosdk'
 import { appendFileSync } from 'fs'
 import * as WalletAccountProvider from '@common/services/WalletAccountProvider'
 import { TransactionOperation } from '@common/services/TransactionOperation'
-import CustomLogger from 'src/infrastructure/CustomLogger'
-import { AssetNormalized } from 'src/interfaces'
-import { RekeyData } from 'src/interfaces'
-import RekeyAccountRecord from '../domain/model/RekeyAccount'
-import RekeyRepository from 'src/infrastructure/repositories/RekeyRepository'
-import { DataSource } from 'typeorm'
+import CustomLogger from '../infrastructure/CustomLogger'
+import { AssetNormalized, SellingData } from '../interfaces'
+import ListEntity from '../domain/model/ListEntity'
+import ListRepository from '../infrastructure/repositories/ListRepository'
+import AssetRepository from '../infrastructure/repositories/AssetRepository'
+import { DataSource, EntityTarget } from 'typeorm'
+import AssetEntity from '../domain/model/AssetEntity'
+import AuctionEntity from '../domain/model/AuctionEntity'
+import AuctionRepository from '../infrastructure/repositories/AuctionRepository'
+import FindByQueryService from './list/FindByQueryService'
 
 @Service()
 export default class SellignsService {
@@ -33,29 +37,82 @@ export default class SellignsService {
     this.op = Container.get(TransactionOperation)
   }
 
-  async store(data: RekeyData, db: DataSource) {
-    const rekey = await this._insertRekey(data)
-    const repo = db.getRepository(RekeyAccountRecord)
-    const query =  new RekeyRepository(repo)
-    await query.insert(rekey).catch((error) => {
-        this.logger.error(`Insert rekey error: ${error.message}`, error.stack)
+  async store(data: SellingData, db: DataSource) {
+    const assetStored = await this._storeAsset(data, db)
+    const auctionStored = await this._storeAuction(data, db)    
+    await this._storeList(data, db, assetStored.id)
+    if (auctionStored) await this._storeList(data, db, assetStored.id, auctionStored.id)
+  }
+
+  async _storeAsset (data: SellingData, db: DataSource) {
+    const assets = await (new FindByQueryService()).execute({assetIdBlockchain: data.asset.id})
+    if (Array.isArray(assets) && assets.length) {
+      return this._ensureAssetHasOnlyOneRegisteredAssetWithSameAssetIdBlockchain(assets[0])
+    } else {
+      const asset = await this._insertAsset(data)
+      return this.storeDatabaseEntity(db, AssetEntity, AssetRepository, asset)
+    }
+  }
+
+  _ensureAssetHasOnlyOneRegisteredAssetWithSameAssetIdBlockchain (listing: ListEntity) {
+      return listing.asset
+  }
+
+  async _storeAuction (data: SellingData, db: DataSource) {
+    if (data.startDate) {
+      const auction = await this._insertAuction(data)
+      return this.storeDatabaseEntity(db, AuctionEntity, AuctionRepository, auction)
+    }
+  }
+  async _storeList (data: SellingData, db: DataSource, assetId: string, auctionId?: string) {
+    let list = await this._insertList(data, assetId, auctionId)
+    this.storeDatabaseEntity(db, ListEntity, ListRepository, list)
+  }
+
+  async storeDatabaseEntity (db: DataSource, entityClass: EntityTarget<unknown>, Repo: any, data: any) {
+    const repo = db.getRepository(entityClass)
+    const query =  new Repo(repo)
+    return await query.insert(data).catch((error: Error) => {
+        this.logger.error(`Insert list error: ${error.message}`, {stack: error.stack})
         throw error
     })
   }
+  _insertAsset(data: SellingData) {
+    const entity = new AssetEntity()
+    entity.arc69 = data.asset.arc69
+    entity.imageUrl = data.asset.image_url
+    entity.ipnft = data.asset.ipnft
+    entity.title = data.asset.title
+    entity.url = data.asset.url
+    entity.creator = data.asset.creator
+    entity.assetIdBlockchain = data.asset.id
+    entity.causeId = data.cause
+    entity.note = data.asset.note
+    entity.applicationIdBlockchain = data.appIndex || 0
 
-  _insertRekey(data: RekeyData) {
-    const rekey = new RekeyAccountRecord()
-    rekey.assetUrl = data.assetUrl
-    rekey.cause = data.cause
-    rekey.isClosedAuction = data.isClosedAuction
-    rekey.applicationId = data.appIndex | 0
-    rekey.assetId = data.assetId
-    rekey.rekeyWallet = data.wallet
-    rekey.marketplaceWallet = config.defaultWallet.address
-    rekey.auctionStartDate = data.startDate || ''
-    rekey.auctionEndDate = data.endDate || ''
-    rekey.type = data.type
-    return rekey
+    return entity
+  }
+  _insertAuction(data: SellingData) {
+    const entity = new AuctionEntity()
+    entity.startDate =  data.startDate || ''
+    entity.endDate =  data.endDate || ''
+
+    return entity
+  }
+  _insertList(data: SellingData, assetId: string, auctionId?: string) {
+    const entity = new ListEntity()
+    entity.isClosed = data.isClosed || false
+    entity.applicationIdBlockchain = data.appIndex || 0
+    entity.assetIdBlockchain = data.assetId
+    entity.marketplaceWallet = config.defaultWallet.address
+    entity.assetId = assetId
+    if (auctionId) {
+      entity.auctionId = auctionId
+      entity.type = 'auction'
+    } else {
+      entity.type = 'direct-listing'
+    }
+    return entity
   }
 
   public async calculatePercentages(inputCausePercentage: number) {
@@ -138,7 +195,7 @@ export default class SellignsService {
   }
 
   async getCauseInfo(causeId: string) {
-    this.logger.info(`getting causes info.... causeId ${config.apiUrlCauses}causes/${causeId}`)
+    this.logger.info(`getting causes info ${config.apiUrlCauses}causes/${causeId}`)
     const cause = await axios.get(
       `${config.apiUrlCauses}/causes/${causeId}`,
       {
@@ -152,7 +209,7 @@ export default class SellignsService {
   }
 
   async _getCausesPercentages() {
-    this.logger.info('getting causes percentages....')
+    this.logger.info('getting causes percentages')
     const percentages = await axios.get(
       `${config.apiUrlCauses}/causes/config`,
       {

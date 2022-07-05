@@ -8,7 +8,7 @@ import {
 } from '../infrastructure/IpfsStorage'
 import { Response } from '@common/lib/api'
 import { core } from '@common/lib/api/endpoints'
-import ServiceException from 'src/infrastructure/errors/ServiceException'
+import ServiceException from '../infrastructure/errors/ServiceException'
 
 @Service()
 @Controller('/api')

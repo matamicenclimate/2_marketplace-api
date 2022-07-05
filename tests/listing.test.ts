@@ -30,7 +30,7 @@ afterEach(async () => {
   await connection.createQueryBuilder().delete().from(ListEntity).execute()
   await connection.destroy()
 })
-describe('Listing', () => {
+describe.skip('Listing', () => {
   it('can recover assets', async () => {
     sinon.stub(axios, 'get').callsFake((url: string): Promise<unknown> => {
       if (

@@ -24,7 +24,7 @@ afterEach(async () => {
   await connection.createQueryBuilder().delete().from(ListEntity).execute()
   await connection.destroy()
 })
-describe('Mint', () => {
+describe.skip('Mint', () => {
     it('opt-in assets by assetId', async () => {
         const assetId = responseOptInService.txn.txn.xaid
         stubOptInProcess(assetId)

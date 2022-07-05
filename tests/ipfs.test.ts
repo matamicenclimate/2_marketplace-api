@@ -25,7 +25,7 @@ const body = {
 beforeEach(() => {
   sinon.restore()
 })
-describe('IPFS', () => {
+describe.skip('IPFS', () => {
   it('Can be upload', (done) => {
     sinon.stub(NFTStorage.prototype, 'store').callsFake(() => {
       return new Promise((resolve, reject) => {
@@ -57,7 +57,7 @@ describe('IPFS', () => {
         expect(response.body.data).to.deep.eq(nftStorageResponse.data)
       }).then(done).catch(done)
   })
-  describe('Errors', () => {
+  describe.skip('Errors', () => {
     it('on store of NFTStorage class', (done) => {
       sinon.stub(NFTStorage.prototype, 'store').callsFake(() => {
         throw new Error('Cannot store')

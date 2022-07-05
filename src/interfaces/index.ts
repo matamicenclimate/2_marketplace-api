@@ -125,15 +125,3 @@ export interface Properties {
   date: Date
   price: number
 }
-
-// export interface RekeyData {
-//   cause: string
-//   assetUrl: string
-//   isClosedAuction: boolean
-//   appIndex: number
-// 	wallet: string
-// 	assetId: number
-// 	startDate?: string
-// 	endDate?: string
-//   type: 'create-auction' | 'direct-listing'
-// }

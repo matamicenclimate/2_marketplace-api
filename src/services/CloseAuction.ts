@@ -24,18 +24,18 @@ export default class CloseAuction {
 
   async execute(listings: ListEntity[]) {
     let errors: any[] = []
-    for (const rekey of listings) {
-      const appId = rekey.applicationIdBlockchain
+    for (const listing of listings) {
+      const appId = listing.applicationIdBlockchain
       if (appId) {
         const { errors: resultErrors, isClosed } = await this._closeNFTAuction(appId)
         if (resultErrors.length) {
           this.logger.error('There are errors closing auction', { errors: resultErrors })
           errors.push(...resultErrors)
         } else if(isClosed) {
-          this.logger.info('Updating rekey closed auction')
+          this.logger.info('Updating listing closed auction')
           const isClosedAuction = true
           await this.updateListingService.execute(appId, {isClosed: isClosedAuction})
-          this.logger.info('Updated rekey closed auction')
+          this.logger.info('Updated listing closed auction')
         }
       }
     }

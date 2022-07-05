@@ -96,7 +96,7 @@ export default class ListingsController {
   ): Promise<Response<core['get']['asset-info/:id']>> {
     try {
       const assets = await this.findByQueryService.execute({ assetIdBlockchain: id })
-      return assets[0]
+      return assets.reverse()[0]
     } catch (error) {
       const message = `Get asset from database error: ${error.message}`
       this.logger.error(message, { stack: error.stack })

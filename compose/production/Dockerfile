@@ -7,7 +7,7 @@ RUN apk add --update \
   openssh-client \
 && rm -rf /var/cache/apk/*
 
-COPY ./package*.json ./
+COPY . .
 RUN yarn
 RUN mkdir -p ./node_modules
 RUN mkdir -p ./src/public

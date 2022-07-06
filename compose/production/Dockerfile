@@ -7,8 +7,8 @@ RUN apk add --update \
   openssh-client \
 && rm -rf /var/cache/apk/*
 
-COPY . .
-RUN mv .env.example .env
+COPY ./package*.json ./
+COPY ./.env.example ./.env
 RUN yarn
 RUN mkdir -p ./node_modules
 RUN mkdir -p ./src/public

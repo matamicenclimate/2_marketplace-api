@@ -47,6 +47,7 @@ services:
       placement:
         constraints:
           - node.hostname == node03.staging.dekaside.com
+    command: yarn run migrations
     command: yarn start
     env_file:
       - ./.env.backend

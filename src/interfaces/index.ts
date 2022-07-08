@@ -125,3 +125,21 @@ export interface Properties {
   date: Date
   price: number
 }
+
+export type AuctionCreateAppData = {
+  assetId: number,
+  creatorWallet: string,
+  causePercentage: number,
+  startDate: string,
+  endDate: string
+}
+
+export interface ListingStrategy {
+  createApp(body: AuctionCreateAppData, asset: AssetNormalized): void 
+}
+
+export type CauseAppInfo = {
+  causeWallet: string,
+  causePercentage: number,
+  creatorPercentage: number
+}

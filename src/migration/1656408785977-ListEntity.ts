@@ -1,4 +1,4 @@
-import {MigrationInterface, QueryRunner, Table, TableIndex, TableColumn, TableForeignKey } from "typeorm";
+import {MigrationInterface, QueryRunner, Table, TableForeignKey } from "typeorm";
 
 export class ListEntity1656408785977 implements MigrationInterface {
     async up(queryRunner: QueryRunner): Promise<void> {
@@ -161,12 +161,15 @@ export class ListEntity1656408785977 implements MigrationInterface {
           ]
       }), true)
 
+      
+
         await queryRunner.createForeignKey("list_entity", new TableForeignKey({
             columnNames: ["auctionId"],
             referencedColumnNames: ["id"],
             referencedTableName: "auction_entity",
             onDelete: "CASCADE"
         }));
+
         await queryRunner.createForeignKey("list_entity", new TableForeignKey({
           columnNames: ["assetId"],
           referencedColumnNames: ["id"],

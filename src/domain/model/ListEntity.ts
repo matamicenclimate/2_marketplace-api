@@ -1,9 +1,9 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn, DeleteDateColumn, OneToOne, JoinColumn } from 'typeorm'
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn, DeleteDateColumn, OneToOne, JoinColumn, OneToMany, ManyToOne } from 'typeorm'
 import { Listing } from '@common/lib/api/entities'
 import AssetEntity from './AssetEntity';
 import AuctionEntity from './AuctionEntity';
+import OfferEntity from './OfferEntity';
 @Entity()
-// ListEntity
 export default class ListEntity implements Listing {
   @PrimaryGeneratedColumn('uuid')
   id: string
@@ -13,6 +13,9 @@ export default class ListEntity implements Listing {
 
   @Column()
   assetIdBlockchain: number
+
+  @Column()
+  price: number
 
   @OneToOne(() => AssetEntity)
   @JoinColumn()
@@ -30,6 +33,10 @@ export default class ListEntity implements Listing {
   @OneToOne(() => AuctionEntity)
   @JoinColumn()
   auction?: AuctionEntity
+
+  @OneToMany(() => OfferEntity, offer => offer.listing)
+  @JoinColumn({ name: 'listingId' })
+  offers?: OfferEntity[];
 
   @Column()
   applicationIdBlockchain: number

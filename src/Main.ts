@@ -16,6 +16,7 @@ import MintController from './controllers/MintController'
 import CloseAuction from './services/CloseAuction'
 import FindByQueryService from './services/list/FindByQueryService'
 import Container from 'typedi'
+import OfferController from './controllers/OfferController'
 
 @Entry
 export default class Main {
@@ -53,6 +54,7 @@ export default class Main {
         ListingsController,
         MintController,
         ApplicationsController,
+        OfferController
       ],
     })
 

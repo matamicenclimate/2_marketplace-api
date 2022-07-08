@@ -1,4 +1,3 @@
-from ast import Global
 from pyteal import *
 
 def approval_program():

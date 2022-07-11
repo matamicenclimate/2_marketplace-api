@@ -1,4 +1,4 @@
-import { Get, JsonController, Param, QueryParam } from 'routing-controllers'
+import { Get, Post, JsonController, Param, QueryParam, Body } from 'routing-controllers'
 import { Inject, Service } from 'typedi'
 import FindByQueryService from '../services/list/FindByQueryService'
 import AssetFindByQueryService from '../services/asset/FindByQueryService'
@@ -9,12 +9,13 @@ import DbConnectionService from '../services/DbConnectionService'
 import ServiceException from '../infrastructure/errors/ServiceException'
 import CustomLogger from '../infrastructure/CustomLogger'
 import config from '../config/default'
-import { Response } from '@common/lib/api'
+import { Response, Body as BodyCommon } from '@common/lib/api'
 import { core } from '@common/lib/api/endpoints'
 import { AssetNormalized } from '../interfaces'
 import AssetEntity from '../domain/model/AssetEntity'
 import { In } from 'typeorm'
 import { Asset } from '@common/lib/api/entities'
+import { option } from '@octantis/option'
 
 @Service()
 @JsonController('/api')
@@ -133,6 +134,28 @@ export default class ListingsController {
       }
     } catch (error) {
       const message = `Get assets from wallet error: ${error.message}`
+      this.logger.error(message, { stack: error.stack })
+      throw new ServiceException(message)
+    }
+  }
+
+  @Post(`/${config.version}/create-listing`)
+  async createListing(
+    @Body() body: BodyCommon<core['post']['create-listing']>
+  ): Promise<Response<core['post']['create-listing']>> {
+    try {
+      // create app
+      const populatedAsset = await this.listingService.populateAsset(body.assetId)
+      const asset: option<AssetNormalized> = await this.listingService.normalizeAsset(populatedAsset)
+      if (asset.isDefined()) {
+        const strategy = await this.listingService.createAppStrategy(body.type, body.causePercentage, asset.value.arc69.properties.cause)
+        const db = await DbConnectionService.create()
+        return await strategy.execute(db, body, asset.value)
+      } else {
+        throw new ServiceException(`Create Listing error: Asset ${body.assetId} not found`)
+      }
+    } catch (error) {
+      const message = `Create Listing error: ${error.message}`
       this.logger.error(message, { stack: error.stack })
       throw new ServiceException(message)
     }

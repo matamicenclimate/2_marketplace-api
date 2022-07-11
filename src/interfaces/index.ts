@@ -137,7 +137,7 @@ export type AuctionCreateAppData = {
 }
 
 export interface ListingStrategy {
-  createApp(body: AuctionCreateAppData, asset: AssetNormalized): void 
+  execute(db: DataSource, body: AuctionCreateAppData, asset: AssetNormalized): Promise<CreateListingResponse>
 }
 
 export type CauseAppInfo = {

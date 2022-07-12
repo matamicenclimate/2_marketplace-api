@@ -11,6 +11,7 @@ import Container from "typedi";
 import config from "src/config/default";
 import algosdk, { TransactionLike } from "algosdk";
 import { CreateListingResponse } from "@common/lib/api/endpoints";
+import AlgodClientProvider from "@common/services/AlgodClientProvider";
 
 
 
@@ -20,9 +21,13 @@ export default class AuctionStrategy implements ListingStrategy {
   private logger: CustomLogger
   @TransactionSigner.inject() 
   readonly signer: TransactionSigner.type
+  readonly clientProvider: AlgodClientProvider
+  readonly walletProvider: WalletAccountProvider.type
 
   constructor (private cause: CauseAppInfo) {
     this.auctionLogic = Container.get(AuctionLogic)
+    this.clientProvider = Container.get(AlgodClientProvider)
+    this.walletProvider = WalletAccountProvider.get()
     this.logger = new CustomLogger()
   }
 
@@ -62,11 +67,59 @@ export default class AuctionStrategy implements ListingStrategy {
     })
   }
 
+  private get client() {
+    return this.clientProvider.client
+  }
+
+  async createOptInRequest(
+    assetId: number,
+    sender: string = this.walletProvider.account.addr,
+    recipient = sender,
+    ammout = 0
+  ) {
+    const params = await this.client.getTransactionParams().do()
+    const revocationTarget = undefined
+    const closeRemainderTo = undefined
+    const note = undefined
+    const amount = ammout
+    console.log(`[OPT IN]\nsender = ${sender}\nrecipient = ${recipient}`)
+    return await algosdk.makeAssetTransferTxnWithSuggestedParams(
+      sender,
+      recipient,
+      closeRemainderTo,
+      revocationTarget,
+      amount,
+      note,
+      assetId,
+      params
+    )
+  }
+
+  async optInAssetByID(
+    assetId: number,
+    sender: string = this.walletProvider.account.addr,
+    recipient = sender,
+    ammout = 0
+  ) {
+    return await this.createOptInRequest(
+      assetId,
+      sender,
+      recipient,
+      ammout
+    )
+  }
+
   async createGroupTxn(appIndex: number, assetId: number, asset: AssetNormalized) {
+    
+    const transactions: TransactionLike[] = []
+    const optInTxnUnsigned = await this.optInAssetByID(assetId)
+    transactions.push(optInTxnUnsigned)
+    
+    
+    
     const appAddr = this.getApplicationAddressFromAppIndex(appIndex)
     this.logger.info(`App wallet is ${appAddr}`)
       
-    const transactions: TransactionLike[] = []
     const { amount, fundTxn } = await this.auctionLogic.fundListingWithoutConfirm(appIndex)
     transactions.push(fundTxn)
     this.logger.info(`Application funded with ${amount}`)

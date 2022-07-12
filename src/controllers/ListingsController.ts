@@ -1,10 +1,11 @@
 import { Get, Post, JsonController, Param, QueryParam, Body } from 'routing-controllers'
-import { Inject, Service } from 'typedi'
+import Container, { Inject, Service } from 'typedi'
 import FindByQueryService from '../services/list/FindByQueryService'
 import AssetFindByQueryService from '../services/asset/FindByQueryService'
 import AssetFindAllByQueryService from '../services/asset/FindAllByQueryService'
 import UpdateAssetService from '../services/asset/UpdateAssetService'
 import ListingService from '../services/ListingService'
+import StoreListingService from '../services/StoreListingService'
 import DbConnectionService from '../services/DbConnectionService'
 import ServiceException from '../infrastructure/errors/ServiceException'
 import CustomLogger from '../infrastructure/CustomLogger'
@@ -16,6 +17,8 @@ import AssetEntity from '../domain/model/AssetEntity'
 import { In } from 'typeorm'
 import { Asset } from '@common/lib/api/entities'
 import { option } from '@octantis/option'
+import { TransactionOperation } from '@common/services/TransactionOperation'
+import { AuctionAppState } from '@common/lib/types'
 
 @Service()
 @JsonController('/api')
@@ -25,6 +28,8 @@ export default class ListingsController {
   @Inject()
   readonly findByQueryService: FindByQueryService
   @Inject()
+  readonly storeListingService: StoreListingService
+  @Inject()
   readonly updateAssetService: UpdateAssetService
   @Inject()
   readonly assetFindByQueryService: AssetFindByQueryService
@@ -32,6 +37,7 @@ export default class ListingsController {
   readonly assetFindAllByQueryService: AssetFindAllByQueryService
   @Inject()
   private readonly logger!: CustomLogger
+  readonly transactionOperation = Container.get(TransactionOperation)
 
   /** @deprecated */
   @Get(`/${config.version}/nfts`)
@@ -153,6 +159,33 @@ export default class ListingsController {
         return await strategy.execute(db, body, asset.value)
       } else {
         throw new ServiceException(`Create Listing error: Asset ${body.assetId} not found`)
+      }
+    } catch (error) {
+      const message = `Create Listing error: ${error.message}`
+      this.logger.error(message, { stack: error.stack })
+      throw new ServiceException(message)
+    }
+  }
+
+  @Post(`/${config.version}/finish-create-listing`)
+  async finishCreateListing(
+    @Body() body: BodyCommon<core['post']['finish-create-listing']>
+  ): Promise<Response<core['post']['finish-create-listing']>> {
+    try {
+      const strategy = await this.listingService.finishListingStrategy(body)
+      await strategy.execute()
+      
+      const db = await DbConnectionService.create()
+      const state = await this.transactionOperation.getApplicationState(body.appIndex) as AuctionAppState
+      const populatedAsset = await this.listingService.populateAsset(state.nft_id)
+      const asset: option<AssetNormalized> = await this.listingService.normalizeAsset(populatedAsset)
+      if (asset.isDefined()) {
+        const data = this.storeListingService.prepareSellingData(state, asset.value, body.appIndex)
+        await this.storeListingService.store(data, db)
+      }
+      
+      return {
+        appIndex: body.appIndex
       }
     } catch (error) {
       const message = `Create Listing error: ${error.message}`

@@ -8,6 +8,7 @@ import {
   AssetNormalized,
   AssetTransactionResponse,
   CauseAppInfo,
+  FinishListingStrategy,
   Transaction,
 } from 'src/interfaces'
 import { some, option, none } from '@octantis/option'
@@ -22,6 +23,8 @@ import { ListingStrategy } from '../interfaces/index';
 import DirectListingStrategy from 'src/domain/listing/DirectListingStrategy'
 import { Cause, ListingTypes } from '@common/lib/api/entities'
 import { Value } from '../../climate-nft-common/src/lib/AuctionCreationResult';
+import { CreateListingRequest } from '@common/lib/api/endpoints'
+import FinishAuctionStrategy from 'src/domain/listing/FinishAuctionStrategy'
 export type Future<T> = Promise<option<T>>
 
 @Service()
@@ -322,5 +325,15 @@ export default class ListingService {
   }
 
   return strategies[type]
+ }
+
+ async finishListingStrategy(body: CreateListingRequest): Promise<FinishListingStrategy> {
+  const strategies = {
+    'auction': new FinishAuctionStrategy(body),
+    /*@ts-ignore*/
+    'direct-listing': new FinishDirectListingStrategy(body)
+  }
+  /*@ts-ignore*/
+  return strategies[body.type]
  }
 }

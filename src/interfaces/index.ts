@@ -140,6 +140,10 @@ export interface ListingStrategy {
   execute(db: DataSource, body: AuctionCreateAppData, asset: AssetNormalized): Promise<CreateListingResponse>
 }
 
+export interface FinishListingStrategy {
+  execute(): Promise<void>
+}
+
 export type CauseAppInfo = {
   causeWallet: string,
   causePercentage: number,

@@ -30,25 +30,6 @@ export default class AuctionStrategy implements ListingStrategy {
     this.logger = new CustomLogger()
   }
 
-
-  // async storeSellingData(db: DataSource, body: AuctionCreateAppData, asset:AssetNormalized, appIndex: number) {
-  //   body.startDate
-  //   const data: SellingData = {
-  //     asset,
-  //     cause: asset.arc69.properties.cause,
-  //     assetUrl: asset.image_url ?? '',
-  //     isClosed: false,
-  //     appIndex,
-  //     body.assetId,
-  //     wallet: this.account.account.addr,
-  //     body.,
-  //     body.endDate,
-  //   }
-  //   data.asset.note = note
-
-  //   this.sellingsService.store(data, db)
-  // }
-
   public getApplicationAddressFromAppIndex(appIndex: number) {
     return algosdk.getApplicationAddress(appIndex)
   }
@@ -128,11 +109,11 @@ export default class AuctionStrategy implements ListingStrategy {
     if (Array.isArray(makeTransferTransactions) && makeTransferTransactions.length) transactions.push(...makeTransferTransactions)
     const [optIn, fundApp, appCall, payGas, fundNft] = algosdk.assignGroupID(transactions)
 
-    const encodedOpnInTxn = this.encodeUnsignedTxn(optIn)
-    const signedFundAppTxn = await fundApp.signTxn(this.walletProvider.account.sk)
-    const signedAppCallTxn = await appCall.signTxn(this.walletProvider.account.sk)
-    const signedPayGasTxn = await payGas.signTxn(this.walletProvider.account.sk)
-    const signedFundNftTxn = await fundNft.signTxn(this.walletProvider.account.sk)
+    const encodedOpnInTxn = Buffer.from(this.encodeUnsignedTxn(optIn)).toString('base64')
+    const signedFundAppTxn = Buffer.from(await fundApp.signTxn(this.walletProvider.account.sk)).toString('base64')
+    const signedAppCallTxn = Buffer.from(await appCall.signTxn(this.walletProvider.account.sk)).toString('base64')
+    const signedPayGasTxn = Buffer.from(await payGas.signTxn(this.walletProvider.account.sk)).toString('base64')
+    const signedFundNftTxn = Buffer.from(await fundNft.signTxn(this.walletProvider.account.sk)).toString('base64')
 
 
     this.logger.info(`Asset ${assetId} transferred to ${appIndex}`)

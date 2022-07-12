@@ -17,7 +17,6 @@ import AlgodClientProvider from "@common/services/AlgodClientProvider";
 
 export default class AuctionStrategy implements ListingStrategy {
   readonly auctionLogic: AuctionLogic
-  readonly account: WalletAccountProvider.type
   private logger: CustomLogger
   @TransactionSigner.inject() 
   readonly signer: TransactionSigner.type
@@ -109,33 +108,41 @@ export default class AuctionStrategy implements ListingStrategy {
     )
   }
 
+  encodeUnsignedTxn(txn: algosdk.Transaction) {
+    return algosdk.encodeUnsignedTransaction(txn)
+  }
+
   async createGroupTxn(appIndex: number, assetId: number, asset: AssetNormalized) {
-    
     const transactions: TransactionLike[] = []
     const optInTxnUnsigned = await this.optInAssetByID(assetId)
     transactions.push(optInTxnUnsigned)
-    
-    
-    
     const appAddr = this.getApplicationAddressFromAppIndex(appIndex)
     this.logger.info(`App wallet is ${appAddr}`)
-      
     const { amount, fundTxn } = await this.auctionLogic.fundListingWithoutConfirm(appIndex)
     transactions.push(fundTxn)
     this.logger.info(`Application funded with ${amount}`)
     const appCallTxn = await this.auctionLogic.makeAppCallSetupProcWithoutConfirm(appIndex, assetId)
     transactions.push(appCallTxn)
     const note = this.getNote(asset, appIndex)
-
     const makeTransferTransactions = await this.auctionLogic.makeTransferToAppWithoutConfirm(appIndex, assetId, note)
     if (Array.isArray(makeTransferTransactions) && makeTransferTransactions.length) transactions.push(...makeTransferTransactions)
-    const txns = algosdk.assignGroupID(transactions)
-    // const signedTxn = await this.signer.signTransaction(txns)
-    // this.status.assetTransfer = {
-    //   state: true
-    // }
+    const [optIn, fundApp, appCall, payGas, fundNft] = algosdk.assignGroupID(transactions)
+
+    const encodedOpnInTxn = this.encodeUnsignedTxn(optIn)
+    const signedFundAppTxn = await fundApp.signTxn(this.walletProvider.account.sk)
+    const signedAppCallTxn = await appCall.signTxn(this.walletProvider.account.sk)
+    const signedPayGasTxn = await payGas.signTxn(this.walletProvider.account.sk)
+    const signedFundNftTxn = await fundNft.signTxn(this.walletProvider.account.sk)
+
+
     this.logger.info(`Asset ${assetId} transferred to ${appIndex}`)
-    return txns
+    return {
+      encodedOpnInTxn,
+      signedFundAppTxn,
+      signedAppCallTxn,
+      signedPayGasTxn,
+      signedFundNftTxn
+    }
   }
 
 

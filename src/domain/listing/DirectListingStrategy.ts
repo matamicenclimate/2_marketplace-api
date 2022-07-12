@@ -44,6 +44,7 @@ export default class DirectLisgingStrategy implements ListingStrategy {
       // await this.storeSellingData(db, body, asset, appIndex)
 
 
+    /* @ts-ignore */
     return { appIndex: 0, unsignedTxnGroup }
   }
 

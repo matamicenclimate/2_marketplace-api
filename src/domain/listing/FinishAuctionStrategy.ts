@@ -21,12 +21,12 @@ export default class FinishAuctionStrategy implements FinishListingStrategy {
 
   async execute(): Promise<void> {
     const txnBlob = [
-      Buffer.from(this.signedTxn.signedOpnInTxn, 'base64'),
-      Buffer.from(this.signedTxn.signedFundAppTxn, 'base64'),
-      Buffer.from(this.signedTxn.signedAppCallTxn, 'base64'),
-      Buffer.from(this.signedTxn.signedPayGasTxn, 'base64'),
-      Buffer.from(this.signedTxn.signedFundNftTxn, 'base64'),
-    ]
+      this.signedTxn.signedOpnInTxn,
+      this.signedTxn.signedFundAppTxn,
+      this.signedTxn.signedAppCallTxn,
+      this.signedTxn.signedPayGasTxn,
+      this.signedTxn.signedFundNftTxn,
+    ].map(f => Buffer.from(f, 'base64'))
     const { txId } = await this.client.sendRawTransaction(txnBlob).do()
     const result = await algosdk.waitForConfirmation(this.client, txId, 9)
     this.logger.info('Smart Contract create auction finished', { txId })

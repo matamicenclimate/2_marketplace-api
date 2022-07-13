@@ -111,10 +111,10 @@
     mkdirp "^1.0.4"
     rimraf "^3.0.2"
 
-"@octantis/option@^1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@octantis/option/-/option-1.2.0.tgz#536d6e310515d985f21e612eec25045f4817c49e"
-  integrity sha512-cXfNSgue1Q4oxr3obY9V6R/esbP9LS0BWcmqlYBzlbQRpwAazx5vdjL1oQAZUy0o7/+1Mnrb/sLnU2bk7ue/nA==
+"@octantis/option@^1.3.3":
+  version "1.3.3"
+  resolved "https://registry.yarnpkg.com/@octantis/option/-/option-1.3.3.tgz#1f4e9b45516403c9f42b02b557481cec59e2a091"
+  integrity sha512-yKvVOqKlOZhFUKUhm/B3kAxpt4jJGminSSpN0oSyIFAL/hdHGu9HpVEIQn6nTs/5rM1ZlBihbosMl274PF/AzA==
 
 "@sinonjs/commons@^1.6.0", "@sinonjs/commons@^1.7.0", "@sinonjs/commons@^1.8.3":
   version "1.8.3"

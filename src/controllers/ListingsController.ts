@@ -1,4 +1,11 @@
-import { Get, Post, JsonController, Param, QueryParam, Body } from 'routing-controllers'
+import {
+  Get,
+  Post,
+  JsonController,
+  Param,
+  QueryParam,
+  Body,
+} from 'routing-controllers'
 import Container, { Inject, Service } from 'typedi'
 import FindByQueryService from '../services/list/FindByQueryService'
 import AssetFindByQueryService from '../services/asset/FindByQueryService'
@@ -64,7 +71,9 @@ export default class ListingsController {
     try {
       const result = await this.listingService.getAsset(id)
       if (result.isDefined()) {
-        const assetInDB = await this.assetFindByQueryService.execute({ assetIdBlockchain: id})
+        const assetInDB = await this.assetFindByQueryService.execute({
+          assetIdBlockchain: id,
+        })
         if (assetInDB.note !== result.value.note) {
           const updatedAsset = this._prepareAssetToUpdate(result.value)
           await this.updateAssetService.execute(id, updatedAsset)
@@ -102,7 +111,9 @@ export default class ListingsController {
     @Param('id') id: number
   ): Promise<Response<core['get']['asset-info/:id']>> {
     try {
-      const assets = await this.findByQueryService.execute({ assetIdBlockchain: id })
+      const assets = await this.findByQueryService.execute({
+        assetIdBlockchain: id,
+      })
       return assets.reverse()[0]
     } catch (error) {
       const message = `Get asset from database error: ${error.message}`
@@ -121,7 +132,7 @@ export default class ListingsController {
         return { assets: assets.value }
       }
 
-      return {assets: []}
+      return { assets: [] }
     } catch (error) {
       const message = `Get assets from wallet error: ${error.message}`
       this.logger.error(message, { stack: error.stack })
@@ -133,10 +144,13 @@ export default class ListingsController {
     @QueryParam('wallet') wallet?: string
   ): Promise<Response<core['get']['my-assets']>> {
     try {
-      const assetsInBlockchain = await this.listingService.getMyAssetsFromWallet(wallet)
-      const result = await this._mapWithDatabaseExistentAssets(assetsInBlockchain.assets)
+      const assetsInBlockchain =
+        await this.listingService.getMyAssetsFromWallet(wallet)
+      const result = await this._mapWithDatabaseExistentAssets(
+        assetsInBlockchain.assets
+      )
       return {
-        assets: result
+        assets: result,
       }
     } catch (error) {
       const message = `Get assets from wallet error: ${error.message}`
@@ -151,13 +165,22 @@ export default class ListingsController {
   ): Promise<Response<core['post']['create-listing']>> {
     try {
       // create app
-      const populatedAsset = await this.listingService.populateAsset(body.assetId)
-      const asset: option<AssetNormalized> = await this.listingService.normalizeAsset(populatedAsset)
+      const populatedAsset = await this.listingService.populateAsset(
+        body.assetId
+      )
+      const asset: option<AssetNormalized> =
+        await this.listingService.normalizeAsset(populatedAsset)
       if (asset.isDefined()) {
-        const strategy = await this.listingService.createAppStrategy(body.type, body.causePercentage, asset.value.arc69.properties.cause)
+        const strategy = await this.listingService.createAppStrategy(
+          body.type,
+          body.causePercentage,
+          asset.value.arc69.properties.cause
+        )
         return await strategy.execute(body, asset.value)
       } else {
-        throw new ServiceException(`Create Listing error: Asset ${body.assetId} not found`)
+        throw new ServiceException(
+          `Create Listing error: Asset ${body.assetId} not found`
+        )
       }
     } catch (error) {
       const message = `Create Listing error: ${error.message}`
@@ -173,18 +196,27 @@ export default class ListingsController {
     try {
       const strategy = await this.listingService.finishListingStrategy(body)
       await strategy.execute()
-      
+
       const db = await DbConnectionService.create()
-      const state = await this.transactionOperation.getApplicationState(body.appIndex) as AuctionAppState
-      const populatedAsset = await this.listingService.populateAsset(state.nft_id)
-      const asset: option<AssetNormalized> = await this.listingService.normalizeAsset(populatedAsset)
+      const state = (await this.transactionOperation.getApplicationState(
+        body.appIndex
+      )) as AuctionAppState
+      const populatedAsset = await this.listingService.populateAsset(
+        state.nft_id
+      )
+      const asset: option<AssetNormalized> =
+        await this.listingService.normalizeAsset(populatedAsset)
       if (asset.isDefined()) {
-        const data = this.storeListingService.prepareSellingData(state, asset.value, body.appIndex)
+        const data = this.storeListingService.prepareSellingData(
+          state,
+          asset.value,
+          body.appIndex
+        )
         await this.storeListingService.store(data, db)
       }
-      
+
       return {
-        appIndex: body.appIndex
+        appIndex: body.appIndex,
       }
     } catch (error) {
       const message = `Create Listing error: ${error.message}`
@@ -198,13 +230,16 @@ export default class ListingsController {
     const immediate = { ...fields, imageUrl: image_url }
     type AssetImmediate = typeof immediate
 
-    return immediate as AssetImmediate & Partial<Omit<AssetEntity, keyof AssetImmediate>>
+    return immediate as AssetImmediate &
+      Partial<Omit<AssetEntity, keyof AssetImmediate>>
   }
 
-  async _updateAssetInDatabase (id: number) {
+  async _updateAssetInDatabase(id: number) {
     const result = await this.listingService.getAsset(id)
     if (result.isDefined()) {
-      const assetInDB = await this.assetFindByQueryService.execute({ assetIdBlockchain: id})
+      const assetInDB = await this.assetFindByQueryService.execute({
+        assetIdBlockchain: id,
+      })
       if (assetInDB.note !== result.value.note) {
         const updatedAsset = this._prepareAssetToUpdate(result.value)
         await this.updateAssetService.execute(id, updatedAsset)
@@ -215,15 +250,17 @@ export default class ListingsController {
   async _mapWithDatabaseExistentAssets(assetsInBlockchain: Asset[]) {
     if (Array.isArray(assetsInBlockchain)) {
       const assetIds = assetsInBlockchain.map(i => i['asset-id'])
-        const assets = await this.assetFindAllByQueryService.execute({assetIdBlockchain: In(assetIds)})
-        const assetsInDBMap = assets.reduce((acc, item) => {
-          acc[item.assetIdBlockchain] = item
-          return acc
-        }, {} as Record<number, AssetEntity>)
-        return assetsInBlockchain.map(i => {
-          if (assetsInDBMap[i['asset-id']]) return assetsInDBMap[i['asset-id']]
-          return i
-        })
+      const assets = await this.assetFindAllByQueryService.execute({
+        assetIdBlockchain: In(assetIds),
+      })
+      const assetsInDBMap = assets.reduce((acc, item) => {
+        acc[item.assetIdBlockchain] = item
+        return acc
+      }, {} as Record<number, AssetEntity>)
+      return assetsInBlockchain.map(i => {
+        if (assetsInDBMap[i['asset-id']]) return assetsInDBMap[i['asset-id']]
+        return i
+      })
     }
     return []
   }

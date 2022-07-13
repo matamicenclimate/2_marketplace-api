@@ -155,8 +155,7 @@ export default class ListingsController {
       const asset: option<AssetNormalized> = await this.listingService.normalizeAsset(populatedAsset)
       if (asset.isDefined()) {
         const strategy = await this.listingService.createAppStrategy(body.type, body.causePercentage, asset.value.arc69.properties.cause)
-        const db = await DbConnectionService.create()
-        return await strategy.execute(db, body, asset.value)
+        return await strategy.execute(body, asset.value)
       } else {
         throw new ServiceException(`Create Listing error: Asset ${body.assetId} not found`)
       }

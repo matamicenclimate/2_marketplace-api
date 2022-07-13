@@ -7,6 +7,7 @@ import CustomLogger from "src/infrastructure/CustomLogger";
 import { AssetNormalized, AuctionCreateAppData, CauseAppInfo, ListingStrategy } from "src/interfaces";
 import Container from "typedi";
 import { DataSource } from "typeorm";
+import ListingTransactions from "./ListingTransactions";
 
 
 export default class DirectLisgingStrategy implements ListingStrategy {
@@ -16,13 +17,13 @@ export default class DirectLisgingStrategy implements ListingStrategy {
   @TransactionSigner.inject() 
   readonly signer: TransactionSigner.type
 
-  constructor (private cause: CauseAppInfo) {
+  constructor (private cause: CauseAppInfo, private listingTransactions: ListingTransactions) {
     this.auctionLogic = Container.get(AuctionLogic)
     this.logger = new CustomLogger()
   }
 
   
-  async execute(db: DataSource, body: AuctionCreateAppData, asset: AssetNormalized): Promise<CreateListingResponse> {
+  async execute(body: AuctionCreateAppData, asset: AssetNormalized): Promise<CreateListingResponse> {
     // const note = asset.note
     // this._avoidErrorMetadataQuantityOnBlockchain(asset)
     // const appIndex = await this.createApp(

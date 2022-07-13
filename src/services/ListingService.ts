@@ -25,6 +25,7 @@ import { Cause, ListingTypes } from '@common/lib/api/entities'
 import { Value } from '../../climate-nft-common/src/lib/AuctionCreationResult';
 import { CreateListingRequest } from '@common/lib/api/endpoints'
 import FinishAuctionStrategy from 'src/domain/listing/FinishAuctionStrategy'
+import ListingTransactions from 'src/domain/listing/ListingTransactions'
 export type Future<T> = Promise<option<T>>
 
 @Service()
@@ -318,10 +319,10 @@ export default class ListingService {
   
  async createAppStrategy(type: ListingTypes, inputCausePercentage: number, causeId: string): Promise<ListingStrategy> {
   const cause = await this.getCauseInfo(causeId, inputCausePercentage)
-
+  const listingTransactions = new ListingTransactions()
   const strategies = {
-    'auction': new AuctionStrategy(cause),
-    'direct-listing': new DirectListingStrategy(cause)
+    'auction': new AuctionStrategy(cause, listingTransactions),
+    'direct-listing': new DirectListingStrategy(cause, listingTransactions)
   }
 
   return strategies[type]

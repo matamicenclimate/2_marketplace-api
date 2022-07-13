@@ -1,17 +1,16 @@
 import { ListingStrategy, AuctionCreateAppData, CauseAppInfo, SellingData } from "src/interfaces";
 import { AssetNormalized } from '../../interfaces/index';
-import { DataSource } from 'typeorm';
 import CustomLogger from '../../infrastructure/CustomLogger';
-import ListingService from '../../services/ListingService';
-import { Value } from '../../../climate-nft-common/src/lib/AuctionCreationResult';
 import { AuctionLogic } from '@common/services/AuctionLogic'
 import * as WalletAccountProvider from '@common/services/WalletAccountProvider'
 import * as TransactionSigner from '@common/services/TransactionSigner'
 import Container from "typedi";
 import config from "src/config/default";
-import algosdk, { TransactionLike } from "algosdk";
+import algosdk from "algosdk";
 import { CreateListingResponse } from "@common/lib/api/endpoints";
 import AlgodClientProvider from "@common/services/AlgodClientProvider";
+import ListingTransactions from "./ListingTransactions";
+import Application from "./Application";
 
 
 
@@ -22,101 +21,55 @@ export default class AuctionStrategy implements ListingStrategy {
   readonly signer: TransactionSigner.type
   readonly clientProvider: AlgodClientProvider
   readonly walletProvider: WalletAccountProvider.type
+  readonly application: Application
 
-  constructor (private cause: CauseAppInfo) {
+  constructor (private cause: CauseAppInfo, private listingTransactions: ListingTransactions) {
     this.auctionLogic = Container.get(AuctionLogic)
     this.clientProvider = Container.get(AlgodClientProvider)
     this.walletProvider = WalletAccountProvider.get()
     this.logger = new CustomLogger()
+    this.application = new Application()
   }
 
-  public getApplicationAddressFromAppIndex(appIndex: number) {
-    return algosdk.getApplicationAddress(appIndex)
-  }
-
-  public getNote(asset: AssetNormalized, appIndex: number) {
-    return algosdk.encodeObj({
-      ...asset,
-      arc69: {
-        ...asset.arc69,
-        properties: {
-          ...asset.arc69.properties,
-          app_id: appIndex,
-        },
-      },
-    })
-  }
-
-  private get client() {
-    return this.clientProvider.client
-  }
-
-  async createOptInRequest(
-    assetId: number,
-    sender: string = this.walletProvider.account.addr,
-    recipient = sender,
-    ammout = 0
-  ) {
-    const params = await this.client.getTransactionParams().do()
-    const revocationTarget = undefined
-    const closeRemainderTo = undefined
-    const note = undefined
-    const amount = ammout
-    console.log(`[OPT IN]\nsender = ${sender}\nrecipient = ${recipient}`)
-    return await algosdk.makeAssetTransferTxnWithSuggestedParams(
-      sender,
-      recipient,
-      closeRemainderTo,
-      revocationTarget,
-      amount,
-      note,
-      assetId,
-      params
+  async execute(body: AuctionCreateAppData, asset: AssetNormalized): Promise<CreateListingResponse> {
+    this._avoidErrorMetadataQuantityOnBlockchain(asset)
+    const appIndex = await this.createApp(
+      body.assetId,
+      asset,
+      body.creatorWallet,
+      body.startDate,
+      body.endDate,
     )
-  }
-
-  async optInAssetByID(
-    assetId: number,
-    sender: string = this.walletProvider.account.addr,
-    recipient = sender,
-    ammout = 0
-  ) {
-    return await this.createOptInRequest(
-      assetId,
-      sender,
-      recipient,
-      ammout
+    this.logger.info(
+      `DONE: Sending back the asset ${body.assetId} to wallet owner.`
     )
-  }
 
-  encodeUnsignedTxn(txn: algosdk.Transaction) {
-    return algosdk.encodeUnsignedTransaction(txn)
+    const unsignedTxnGroup = await this.createGroupTxn(appIndex, body.assetId, asset)
+
+    return { appIndex, unsignedTxnGroup }
+
   }
 
   async createGroupTxn(appIndex: number, assetId: number, asset: AssetNormalized) {
-    const transactions: TransactionLike[] = []
-    const optInTxnUnsigned = await this.optInAssetByID(assetId)
-    transactions.push(optInTxnUnsigned)
-    const appAddr = this.getApplicationAddressFromAppIndex(appIndex)
-    this.logger.info(`App wallet is ${appAddr}`)
-    const { amount, fundTxn } = await this.auctionLogic.fundListingWithoutConfirm(appIndex)
-    transactions.push(fundTxn)
-    this.logger.info(`Application funded with ${amount}`)
-    const appCallTxn = await this.auctionLogic.makeAppCallSetupProcWithoutConfirm(appIndex, assetId)
-    transactions.push(appCallTxn)
-    const note = this.getNote(asset, appIndex)
-    const makeTransferTransactions = await this.auctionLogic.makeTransferToAppWithoutConfirm(appIndex, assetId, note)
-    if (Array.isArray(makeTransferTransactions) && makeTransferTransactions.length) transactions.push(...makeTransferTransactions)
-    const [optIn, fundApp, appCall, payGas, fundNft] = algosdk.assignGroupID(transactions)
+    await this.listingTransactions.addOptInRequest(assetId)
+    await this.listingTransactions.addFundListing(appIndex)
+    await this.listingTransactions.addApplicationCall(appIndex, assetId)
+    const note = this.application.getNote(asset, appIndex)
+    await this.listingTransactions.makeTransferTransactions(appIndex, assetId, note)
+    const result = await this.prepareTransactions()
 
-    const encodedOpnInTxn = Buffer.from(this.encodeUnsignedTxn(optIn)).toString('base64')
-    const signedFundAppTxn = Buffer.from(await fundApp.signTxn(this.walletProvider.account.sk)).toString('base64')
-    const signedAppCallTxn = Buffer.from(await appCall.signTxn(this.walletProvider.account.sk)).toString('base64')
-    const signedPayGasTxn = Buffer.from(await payGas.signTxn(this.walletProvider.account.sk)).toString('base64')
-    const signedFundNftTxn = Buffer.from(await fundNft.signTxn(this.walletProvider.account.sk)).toString('base64')
+    return result
+  }
 
+  private async prepareTransactions () {
+    const [optIn, fundApp, appCall, payGas, fundNft] = algosdk.assignGroupID(this.listingTransactions.transactions)
 
-    this.logger.info(`Asset ${assetId} transferred to ${appIndex}`)
+    const encodedOpnInTxn = this.prepareTransactionForTransportLayer(this.listingTransactions.encodeUnsignedTxn(optIn))
+    const signedFundAppTxn = this.prepareTransactionForTransportLayer(await this.listingTransactions.signTxn(fundApp))
+    const signedAppCallTxn = this.prepareTransactionForTransportLayer(await this.listingTransactions.signTxn(appCall))
+    const signedPayGasTxn = this.prepareTransactionForTransportLayer(await this.listingTransactions.signTxn(payGas))
+    const signedFundNftTxn = this.prepareTransactionForTransportLayer(await this.listingTransactions.signTxn(fundNft))
+
     return {
       encodedOpnInTxn,
       signedFundAppTxn,
@@ -126,33 +79,9 @@ export default class AuctionStrategy implements ListingStrategy {
     }
   }
 
-
-  async execute(db: DataSource, body: AuctionCreateAppData, asset: AssetNormalized): Promise<CreateListingResponse> {
-    const note = asset.note
-    this._avoidErrorMetadataQuantityOnBlockchain(asset)
-    const appIndex = await this.createApp(
-      body.assetId,
-      asset,
-      body.creatorWallet,
-      body.startDate,
-      body.endDate,
-      db,
-      note
-    )
-    this.logger.info(
-      `DONE: Sending back the asset ${body.assetId} to wallet owner.`
-    )
-
-      // const transactions2: TransactionLike[] = []
-      // const emptyGroupTxn = algosdk.assignGroupID(transactions2)
-
-      const unsignedTxnGroup = await this.createGroupTxn(appIndex, body.assetId, asset)
-      // await this.storeSellingData(db, body, asset, appIndex)
-
-
-    return { appIndex, unsignedTxnGroup }
-
-  }
+  private prepareTransactionForTransportLayer (txn: Uint8Array) {
+    return Buffer.from(txn).toString('base64')
+  } 
 
   _avoidErrorMetadataQuantityOnBlockchain(asset: AssetNormalized) {
     delete asset.note
@@ -161,7 +90,6 @@ export default class AuctionStrategy implements ListingStrategy {
   async createAuctionApp(
     assetId: number,
     reserve: number,
-    asset: AssetNormalized,
     creatorWallet: string,
     startDate: string,
     endDate: string
@@ -181,11 +109,6 @@ export default class AuctionStrategy implements ListingStrategy {
     if (!appIndex) {
       throw new Error('Cannot create Auction App')
     }
-
-    // this.logger.info(
-    //   `Auction created by ${this.account.account.addr} is ${appIndex} ${config.algoExplorerApi}/application/${appIndex}`
-    //   )
-    
     return appIndex
   }
 
@@ -195,8 +118,6 @@ export default class AuctionStrategy implements ListingStrategy {
     creatorWallet: string,
     startDate: string,
     endDate: string,
-    db: DataSource,
-    note?: string
   ) {
     if (!asset?.arc69?.properties?.cause || !asset?.arc69?.properties?.price) {
       throw new Error('Nft must be minted in our marketplace, cause and price fields not present')
@@ -206,12 +127,12 @@ export default class AuctionStrategy implements ListingStrategy {
     const appIndex = await this.createAuctionApp(
       assetId,
       asset.arc69.properties.price,
-      asset,
       creatorWallet,
       startDate,
       endDate
     )
-
+    const appAddr = this.application.getApplicationAddressFromAppIndex(appIndex)
+    this.logger.info(`App wallet is ${appAddr}`)
     return appIndex
   }
 

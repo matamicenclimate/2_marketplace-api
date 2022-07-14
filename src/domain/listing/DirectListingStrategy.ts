@@ -92,9 +92,9 @@ export default class DirectLisgingStrategy implements ListingStrategy {
     const signedAppCallTxn = this.prepareTransactionForTransportLayer(
       await this.listingTransactions.signTxn(appCall)
     )
-    // const signedPayGasTxn = this.prepareTransactionForTransportLayer(
-    //   await this.listingTransactions.signTxn(payGas)
-    // )
+    const signedPayGasTxn = this.prepareTransactionForTransportLayer(
+      await this.listingTransactions.signTxn(payGas)
+    )
     const signedFundNftTxn = this.prepareTransactionForTransportLayer(
       await this.listingTransactions.signTxn(fundNft)
     )
@@ -104,7 +104,7 @@ export default class DirectLisgingStrategy implements ListingStrategy {
       encodedTransferTxn,
       signedFundAppTxn,
       signedAppCallTxn,
-      // signedPayGasTxn,
+      signedPayGasTxn,
       signedFundNftTxn,
     }
   }

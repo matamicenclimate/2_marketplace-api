@@ -345,7 +345,7 @@ export default class ListingService {
   ): Promise<FinishListingStrategy> {
     const strategies = {
       auction: new FinishAuctionStrategy(body),
-      'direct-listing': new FinishDirectListingStrategy(body),
+      'direct-listing': new FinishAuctionStrategy(body),
     }
     return strategies[body.type]
   }

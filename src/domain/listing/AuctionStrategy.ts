@@ -45,8 +45,8 @@ export default class AuctionStrategy implements ListingStrategy {
       body.assetId,
       asset,
       body.creatorWallet,
-      body.startDate,
-      body.endDate
+      body.startDate as string,
+      body.endDate as string
     )
     this.logger.info(
       `DONE: Sending back the asset ${body.assetId} to wallet owner.`

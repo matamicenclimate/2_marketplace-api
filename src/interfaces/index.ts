@@ -132,8 +132,8 @@ export type AuctionCreateAppData = {
   assetId: number,
   creatorWallet: string,
   causePercentage: number,
-  startDate: string,
-  endDate: string
+  startDate?: string,
+  endDate?: string
 }
 
 export interface ListingStrategy {

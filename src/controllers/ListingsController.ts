@@ -23,7 +23,7 @@ import { AssetNormalized } from '../interfaces'
 import AssetEntity from '../domain/model/AssetEntity'
 import { In } from 'typeorm'
 import { Asset } from '@common/lib/api/entities'
-import { option } from '@octantis/option'
+import { Option } from '@octantis/option'
 import { TransactionOperation } from '@common/services/TransactionOperation'
 import { AuctionAppState } from '@common/lib/types'
 
@@ -168,7 +168,7 @@ export default class ListingsController {
       const populatedAsset = await this.listingService.populateAsset(
         body.assetId
       )
-      const asset: option<AssetNormalized> =
+      const asset: Option<AssetNormalized> =
         await this.listingService.normalizeAsset(populatedAsset)
       if (asset.isDefined()) {
         const strategy = await this.listingService.createAppStrategy(
@@ -204,7 +204,7 @@ export default class ListingsController {
       const populatedAsset = await this.listingService.populateAsset(
         state.nft_id
       )
-      const asset: option<AssetNormalized> =
+      const asset: Option<AssetNormalized> =
         await this.listingService.normalizeAsset(populatedAsset)
       if (asset.isDefined()) {
         const data = this.storeListingService.prepareSellingData(

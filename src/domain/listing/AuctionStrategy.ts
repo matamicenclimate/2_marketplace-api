@@ -68,8 +68,8 @@ export default class AuctionStrategy implements ListingStrategy {
     clientAddress: string,
     asset: AssetNormalized
   ): Promise<CreateListingResponse['unsignedTxnGroup']> {
-    await this.listingTransactions.addTransferRequest(assetId)
-    await this.listingTransactions.addTransferRequest(
+    await this.listingTransactions.addAssetOptInRequest(assetId)
+    await this.listingTransactions.addAssetTransferRequest(
       assetId,
       clientAddress,
       this.listingTransactions.walletProvider.account.addr,
@@ -83,9 +83,7 @@ export default class AuctionStrategy implements ListingStrategy {
       assetId,
       note
     )
-    const result = await this.prepareTransactions()
-
-    return result
+    return await this.prepareTransactions()
   }
 
   private async prepareTransactions(): Promise<
@@ -94,7 +92,7 @@ export default class AuctionStrategy implements ListingStrategy {
     // TODO Add tuple-type restriction (narrow the type) to the transaction array.
     const [optIn, transfer, fundApp, appCall, payGas, fundNft] =
       algosdk.assignGroupID(this.listingTransactions.transactions)
-    const encodedOptInTxn = this.prepareTransactionForTransportLayer(
+    const signedOptInTxn = this.prepareTransactionForTransportLayer(
       await this.listingTransactions.signTxn(optIn)
     )
     const encodedTransferTxn = this.prepareTransactionForTransportLayer(
@@ -114,7 +112,7 @@ export default class AuctionStrategy implements ListingStrategy {
     )
 
     return {
-      encodedOptInTxn,
+      signedOptInTxn,
       encodedTransferTxn,
       signedFundAppTxn,
       signedAppCallTxn,

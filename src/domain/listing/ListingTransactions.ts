@@ -35,19 +35,19 @@ export default class ListingTransactions {
    * When no sender, recipient and amount is specified, the transfer is considered
    * an **opt-in**.
    */
-  async addTransferRequest(assetId: number): Promise<void>
+  async addAssetTransferRequest(assetId: number): Promise<void>
   /**
    * ### Transfers an asset
    *
    * Transfers the _amount_ of an asset to _recipient_ from _sender_.
    */
-  async addTransferRequest(
+  async addAssetTransferRequest(
     assetId: number,
     sender: string,
     recipient: string,
     amount: number
   ): Promise<void>
-  async addTransferRequest(
+  async addAssetTransferRequest(
     assetId: number,
     sender: string = this.walletProvider.account.addr,
     recipient = sender,
@@ -58,18 +58,21 @@ export default class ListingTransactions {
     const closeRemainderTo = undefined
     const note = undefined
     console.log(`[TRANSACTION]\nsender = ${sender}\nrecipient = ${recipient}`)
-    const optInTxnUnsigned =
-      await algosdk.makeAssetTransferTxnWithSuggestedParams(
-        sender,
-        recipient,
-        closeRemainderTo,
-        revocationTarget,
-        amount,
-        note,
-        assetId,
-        params
-      )
-    this.transactions.push(optInTxnUnsigned)
+    const txn = await algosdk.makeAssetTransferTxnWithSuggestedParams(
+      sender,
+      recipient,
+      closeRemainderTo,
+      revocationTarget,
+      amount,
+      note,
+      assetId,
+      params
+    )
+    this.transactions.push(txn)
+  }
+
+  async addAssetOptInRequest(assetId: number) {
+    return await this.addAssetTransferRequest(assetId)
   }
 
   async makeTransferTransactions(

@@ -23,10 +23,10 @@ import { ListingStrategy } from '../interfaces/index'
 import DirectListingStrategy from 'src/domain/listing/DirectListingStrategy'
 import { Cause, ListingTypes } from '@common/lib/api/entities'
 import { Value } from '../../climate-nft-common/src/lib/AuctionCreationResult'
-import { CreateListingRequest } from '@common/lib/api/endpoints'
+import { CreateListingRequest, FinishCreateListingRequest } from '@common/lib/api/endpoints'
 import FinishAuctionStrategy from 'src/domain/listing/FinishAuctionStrategy'
-const FinishDirectListingStrategy = FinishAuctionStrategy
 import ListingTransactions from 'src/domain/listing/ListingTransactions'
+import FinishDirectListingStrategy from 'src/domain/listing/FinishDirectListingStrategy'
 export type Future<T> = Promise<option<T>>
 
 @Service()
@@ -341,14 +341,12 @@ export default class ListingService {
   }
 
   async finishListingStrategy(
-    body: CreateListingRequest
+    body: FinishCreateListingRequest
   ): Promise<FinishListingStrategy> {
     const strategies = {
       auction: new FinishAuctionStrategy(body),
-      /*@ts-ignore*/
       'direct-listing': new FinishDirectListingStrategy(body),
     }
-    /*@ts-ignore*/
     return strategies[body.type]
   }
 }

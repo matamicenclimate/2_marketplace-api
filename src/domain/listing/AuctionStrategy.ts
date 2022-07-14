@@ -2,7 +2,6 @@ import {
   ListingStrategy,
   AuctionCreateAppData,
   CauseAppInfo,
-  SellingData,
 } from 'src/interfaces'
 import { AssetNormalized } from '../../interfaces/index'
 import CustomLogger from '../../infrastructure/CustomLogger'
@@ -96,7 +95,7 @@ export default class AuctionStrategy implements ListingStrategy {
     const [optIn, transfer, fundApp, appCall, payGas, fundNft] =
       algosdk.assignGroupID(this.listingTransactions.transactions)
     const encodedOptInTxn = this.prepareTransactionForTransportLayer(
-      this.listingTransactions.encodeUnsignedTxn(optIn)
+      await this.listingTransactions.signTxn(optIn)
     )
     const encodedTransferTxn = this.prepareTransactionForTransportLayer(
       this.listingTransactions.encodeUnsignedTxn(transfer)

@@ -207,7 +207,11 @@ export default class ListingsController {
       const asset: Option<AssetNormalized> =
         await this.listingService.normalizeAsset(populatedAsset)
       if (asset.isDefined()) {
-        const data = this.storeListingService.prepareSellingData(
+        const data = body.type === 'auction' ? this.storeListingService.prepareAuctionSellingData(
+          state,
+          asset.value,
+          body.appIndex
+        ) : this.storeListingService.prepareDirectListingSellingData(
           state,
           asset.value,
           body.appIndex

@@ -21,8 +21,8 @@ export interface SellingData  {
   appIndex: number,
   assetId: number,
   wallet: string,
-  startDate: string,
-  endDate: string,
+  startDate?: string,
+  endDate?: string,
 }
 export interface Nft {
   note?: string
@@ -138,10 +138,6 @@ export type AuctionCreateAppData = {
 
 export interface ListingStrategy {
   execute(body: AuctionCreateAppData, asset: AssetNormalized): Promise<CreateListingResponse>
-}
-
-export interface FinishListingStrategy {
-  execute(): Promise<void>
 }
 
 export type CauseAppInfo = {

@@ -23,7 +23,15 @@ export default class storeListingService {
     this.walletProvider = WalletAccountProvider.get()
   }
 
-  prepareSellingData(state: AuctionAppState, asset: AssetNormalized, appIndex: number) {
+  prepareAuctionSellingData(state: AuctionAppState, asset: AssetNormalized, appIndex: number) {
+    const result = this.prepareDirectListingSellingData(state, asset, appIndex)
+    return { ...result, 
+      startDate: this.scDateToISOString(state.start),
+      endDate: this.scDateToISOString(state.end)
+    }
+  }
+
+  prepareDirectListingSellingData(state: AuctionAppState, asset: AssetNormalized, appIndex: number) {
     return {
       asset,
       cause: asset.arc69.properties.cause,
@@ -32,8 +40,6 @@ export default class storeListingService {
       appIndex,
       assetId: asset.id,
       wallet: this.walletProvider.account.addr,
-      startDate: this.scDateToISOString(state.start),
-      endDate: this.scDateToISOString(state.end)
     }
   }
 

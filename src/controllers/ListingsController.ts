@@ -22,10 +22,19 @@ import { core } from '@common/lib/api/endpoints'
 import { AssetNormalized } from '../interfaces'
 import AssetEntity from '../domain/model/AssetEntity'
 import { In } from 'typeorm'
-import { Asset } from '@common/lib/api/entities'
+import {
+  Asset,
+  AssetInformation,
+  AssetInformationType,
+  ListedAsAuctionAssetInfo,
+  ListedAsSellingAssetInfo,
+  Listing,
+  StoredInWalletAssetInfo,
+} from '@common/lib/api/entities'
 import { Option } from '@octantis/option'
 import { TransactionOperation } from '@common/services/TransactionOperation'
 import { AuctionAppState } from '@common/lib/types'
+import { HttpError } from 'koa'
 
 @Service()
 @JsonController('/api')
@@ -144,6 +153,13 @@ export default class ListingsController {
     @QueryParam('wallet') wallet?: string
   ): Promise<Response<core['get']['my-assets']>> {
     try {
+      if (wallet == null) {
+        const err = new HttpError(
+          "No wallet provided, this endpoint is meant to be used with user's wallet."
+        )
+        err.statusCode = 400
+        throw err
+      }
       const assetsInBlockchain =
         await this.listingService.getMyAssetsFromWallet(wallet)
       const result = await this._mapWithDatabaseExistentAssets(
@@ -207,15 +223,18 @@ export default class ListingsController {
       const asset: Option<AssetNormalized> =
         await this.listingService.normalizeAsset(populatedAsset)
       if (asset.isDefined()) {
-        const data = body.type === 'auction' ? this.storeListingService.prepareAuctionSellingData(
-          state,
-          asset.value,
-          body.appIndex
-        ) : this.storeListingService.prepareDirectListingSellingData(
-          state,
-          asset.value,
-          body.appIndex
-        )
+        const data =
+          body.type === 'auction'
+            ? this.storeListingService.prepareAuctionSellingData(
+                state,
+                asset.value,
+                body.appIndex
+              )
+            : this.storeListingService.prepareDirectListingSellingData(
+                state,
+                asset.value,
+                body.appIndex
+              )
         await this.storeListingService.store(data, db)
       }
 
@@ -251,21 +270,77 @@ export default class ListingsController {
     }
   }
 
-  async _mapWithDatabaseExistentAssets(assetsInBlockchain: Asset[]) {
-    if (Array.isArray(assetsInBlockchain)) {
-      const assetIds = assetsInBlockchain.map(i => i['asset-id'])
-      const assets = await this.assetFindAllByQueryService.execute({
-        assetIdBlockchain: In(assetIds),
-      })
-      const assetsInDBMap = assets.reduce((acc, item) => {
-        acc[item.assetIdBlockchain] = item
-        return acc
-      }, {} as Record<number, AssetEntity>)
-      return assetsInBlockchain.map(i => {
-        if (assetsInDBMap[i['asset-id']]) return assetsInDBMap[i['asset-id']]
-        return i
-      })
+  async _mapWithDatabaseExistentAssets(
+    assetsInBlockchain: Asset[]
+  ): Promise<AssetInformation[]> {
+    const die: (msg: string) => never = (msg: string) => {
+      throw new Error(msg)
     }
-    return []
+    const db = await DbConnectionService.create()
+    const assetIds = assetsInBlockchain.map(i => i['asset-id'])
+    const listingEntities = await this.listingService
+      .getAssetsFromWallet(undefined, db)
+      .then(r => r.get())
+    const assets = await this.assetFindAllByQueryService.execute({
+      assetIdBlockchain: In(assetIds),
+    })
+    const assetById = assets.reduce((acc, item) => {
+      acc[item.assetIdBlockchain] = {
+        asset: item,
+        listing: listingEntities.find(
+          e => e.assetIdBlockchain === item.assetIdBlockchain
+        ),
+      }
+      return acc
+    }, {} as Record<number, { asset: AssetEntity; listing?: Listing }>)
+    return assetsInBlockchain.map(asset => {
+      const { 'asset-id': id } = asset
+      if (id in assetById) {
+        const { asset: _original, listing } = assetById[id]
+        if (listing != null) {
+          if (listing.type === 'auction') {
+            return {
+              id,
+              type: AssetInformationType.LISTED_AS_AUCTION,
+              arc69: _original.arc69,
+              causeId: _original.causeId,
+              applicationIdBlockchain: _original.applicationIdBlockchain,
+              imageUrl: _original.imageUrl,
+              ipnft: _original.ipnft,
+              url: _original.url,
+              title: _original.title,
+              creator: _original.creator,
+              createdAt: _original.createdAt,
+              updatedAt: _original.updatedAt,
+              deletedAt: _original.deletedAt ?? null,
+              _original,
+            }
+          } else {
+            return {
+              id,
+              type: AssetInformationType.LISTED_AS_SELLING,
+              arc69: _original.arc69,
+              causeId: _original.causeId,
+              applicationIdBlockchain: _original.applicationIdBlockchain,
+              imageUrl: _original.imageUrl,
+              ipnft: _original.ipnft,
+              url: _original.url,
+              title: _original.title,
+              creator: _original.creator,
+              createdAt: _original.createdAt,
+              updatedAt: _original.updatedAt,
+              deletedAt: _original.deletedAt ?? null,
+              _original,
+            }
+          }
+        }
+      }
+      return {
+        id,
+        type: AssetInformationType.STORED_IN_WALLET,
+        amount: asset.amount ?? -1,
+        _original: asset,
+      }
+    })
   }
 }

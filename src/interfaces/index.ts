@@ -1,4 +1,6 @@
+import { core, CreateListingResponse } from "@common/lib/api/endpoints"
 import { Arc69 } from "@common/lib/AssetNote"
+import { DataSource } from "typeorm"
 
 export interface IpfsRequestData {
   title: string
@@ -19,8 +21,8 @@ export interface SellingData  {
   appIndex: number,
   assetId: number,
   wallet: string,
-  startDate: string,
-  endDate: string,
+  startDate?: string,
+  endDate?: string,
 }
 export interface Nft {
   note?: string
@@ -124,4 +126,22 @@ export interface Properties {
   }
   date: Date
   price: number
+}
+
+export type AuctionCreateAppData = {
+  assetId: number,
+  creatorWallet: string,
+  causePercentage: number,
+  startDate?: string,
+  endDate?: string
+}
+
+export interface ListingStrategy {
+  execute(body: AuctionCreateAppData, asset: AssetNormalized): Promise<CreateListingResponse>
+}
+
+export type CauseAppInfo = {
+  causeWallet: string,
+  causePercentage: number,
+  creatorPercentage: number
 }

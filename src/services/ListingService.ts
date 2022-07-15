@@ -7,6 +7,7 @@ import {
   Asset,
   AssetNormalized,
   AssetTransactionResponse,
+  CauseAppInfo,
   Transaction,
 } from 'src/interfaces'
 import { some, option, none } from '@octantis/option'
@@ -16,6 +17,14 @@ import { retrying } from '@common/lib/net'
 import ListEntity from '../domain/model/ListEntity'
 import ListRepostory from '../infrastructure/repositories/ListRepository'
 import { DataSource } from 'typeorm'
+import AuctionStrategy from 'src/domain/listing/AuctionStrategy'
+import { ListingStrategy } from '../interfaces/index'
+import DirectListingStrategy from 'src/domain/listing/DirectListingStrategy'
+import { Cause, ListingTypes } from '@common/lib/api/entities'
+import { Value } from '../../climate-nft-common/src/lib/AuctionCreationResult'
+import { CreateListingRequest, FinishCreateListingRequest } from '@common/lib/api/endpoints'
+import FinishListingStrategy from 'src/domain/listing/FinishListingStrategy'
+import ListingTransactions from 'src/domain/listing/ListingTransactions'
 export type Future<T> = Promise<option<T>>
 
 @Service()
@@ -45,12 +54,15 @@ export default class ListingService {
     return this.getNormalizedAssets(assetsPopulated)
   }
 
-  async getListing(assetIdBlockchain: number, db: DataSource): Future<ListEntity> {
+  async getListing(
+    assetIdBlockchain: number,
+    db: DataSource
+  ): Future<ListEntity> {
     const repo = db.getRepository(ListEntity)
     const query = new ListRepostory(repo)
     return await query.findOneByQuery({
       assetIdBlockchain,
-      isClosed: false
+      isClosed: false,
     })
   }
 
@@ -222,7 +234,7 @@ export default class ListingService {
         return some({
           ...metadata,
           id: (asset as any).id,
-          note: txn.note
+          note: txn.note,
         })
       } catch (error) {
         this.logger.error(error.message, { stack: error.stack })
@@ -232,7 +244,9 @@ export default class ListingService {
     return none()
   }
 
-  async getMyAssetsFromWallet(wallet: string = config.defaultWallet.address): Promise<{assets: Asset[]}>{
+  async getMyAssetsFromWallet(
+    wallet: string = config.defaultWallet.address
+  ): Promise<{ assets: Asset[] }> {
     const response = await axios.get(
       `${config.algoIndexerApi}/accounts/${wallet}/assets`,
       {
@@ -244,7 +258,93 @@ export default class ListingService {
     )
 
     return {
-      assets: response.data.assets
+      assets: response.data.assets,
     }
+  }
+
+  async _getCausesPercentages() {
+    this.logger.info('getting causes percentages')
+    const percentages = await axios.get(
+      `${config.apiUrlCauses}/causes/config`,
+      {
+        headers: {
+          accept: 'application/json',
+        },
+      }
+    )
+
+    return percentages
+  }
+
+  public async calculatePercentages(inputCausePercentage: number) {
+    const HUNDRED_PERCENT = 100
+    let causePercentage = inputCausePercentage
+    const percentages = await this._getCausesPercentages()
+    const causeP = percentages.data.percentages.cause
+    if (causeP > causePercentage) {
+      causePercentage = causeP
+    }
+    const creatorPercentage =
+      HUNDRED_PERCENT -
+      causePercentage -
+      percentages.data.percentages.marketplace
+
+    return {
+      causePercentage,
+      creatorPercentage,
+    }
+  }
+
+  async getCause(causeId: string): Promise<Cause> {
+    this.logger.info(
+      `getting causes info ${config.apiUrlCauses}causes/${causeId}`
+    )
+    const cause = await axios.get(`${config.apiUrlCauses}/causes/${causeId}`, {
+      headers: {
+        accept: 'application/json',
+      },
+    })
+
+    return cause.data
+  }
+
+  async getCauseInfo(
+    causeId: string,
+    inputCausePercentage: number
+  ): Promise<CauseAppInfo> {
+    const cause = await this.getCause(causeId)
+    const { causePercentage, creatorPercentage } =
+      await this.calculatePercentages(inputCausePercentage)
+
+    return {
+      causeWallet: cause.wallet,
+      causePercentage,
+      creatorPercentage,
+    }
+  }
+
+  async createAppStrategy(
+    type: ListingTypes,
+    inputCausePercentage: number,
+    causeId: string
+  ): Promise<ListingStrategy> {
+    const cause = await this.getCauseInfo(causeId, inputCausePercentage)
+    const listingTransactions = new ListingTransactions()
+    const strategies = {
+      auction: new AuctionStrategy(cause, listingTransactions),
+      'direct-listing': new DirectListingStrategy(cause, listingTransactions),
+    }
+
+    return strategies[type]
+  }
+
+  async finishListingStrategy(
+    body: FinishCreateListingRequest
+  ): Promise<FinishListingStrategy> {
+    const strategies = {
+      auction: new FinishListingStrategy(body),
+      'direct-listing': new FinishListingStrategy(body),
+    }
+    return strategies[body.type]
   }
 }

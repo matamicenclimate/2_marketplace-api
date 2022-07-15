@@ -6,10 +6,16 @@ import { UpdateResult } from 'typeorm'
 
 @Service()
 export default class UpdateAssetService {
-  async execute(assetIdBlockchain: number, data: Partial<AssetEntity>): Promise<UpdateResult | null> {
+  async execute(
+    assetIdBlockchain: number,
+    data: Partial<AssetEntity>
+  ): Promise<UpdateResult | null> {
     const db = await DbConnectionService.create()
     const repo = db.getRepository(AssetEntity)
-    const query =  new AssetRepository(repo)
-    return await query.updateOne(assetIdBlockchain, data)
+    const query = new AssetRepository(repo)
+    return await query.updateOne(
+      assetIdBlockchain,
+      data as Omit<typeof data, 'arc69'>
+    )
   }
 }
